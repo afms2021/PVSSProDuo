@@ -1,0 +1,30 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="PVSS.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="COMPort" Type="System.String" Scope="User">
+      <Value Profile="(Default)">COM4</Value>
+    </Setting>
+    <Setting Name="BaudRate" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">115200</Value>
+    </Setting>
+    <Setting Name="CompanyText" Type="System.String" Scope="User">
+      <Value Profile="(Default)">ISPTEL, Lda</Value>
+    </Setting>
+    <Setting Name="JobNameText" Type="System.String" Scope="User">
+      <Value Profile="(Default)">MV Vessel IWS</Value>
+    </Setting>
+    <Setting Name="DiverNameText" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Diver Name</Value>
+    </Setting>
+    <Setting Name="IsHDCameraChecked" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="IsSDCameraChecked" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="IsInterpolatedChecked" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

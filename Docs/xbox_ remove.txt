@@ -1,0 +1,2 @@
+powershell admin mode
+Get-AppxPackage Microsoft.XboxApp | Remove-AppxPackage

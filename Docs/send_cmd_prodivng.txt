@@ -1,0 +1,63 @@
+$RID,*73\r\n
+#RID,ISP0001,*14
+$DVD,0,0,*7A
+#DVD,13,ACK,*31
+$DVI,*77
+#DVI,*,+0.0,*77
+$DVD,0,0,*7A
+#DVD,13,ACK,*31
+$RLY,0,0,0,0,*6B
+$RLY,1,0,0,0,*6A
+$RLY,0,1,0,0,*6A
+$RLY,1,1,0,0,*6B
+
+#RLY,ACK,*E
+
+
+
+$DVD,0,0,*7A
+$DVD,2235,2160,*79
+$DVD,4095,4095,*7A
+
+#DVD,13,ACK,*31
+
+
+$DVA,*7F
+#DVA,1,0,0,1,2,0,0,1,*7C
+$DVD,0,0,*7A
+#DVD,13,ACK,*31
+$DVI,*77
+#DVI,*,+0.0,*77
+$DVD,0,0,*7A
+#DVD,13,ACK,*31
+$RLY,0,0,0,0,*6B
+#RLY,ACK,*E
+$DVD,0,0,*7A
+#DVD,13,ACK,*31
+$RID,*73
+#RID,ISP0001,*14
+$DVD,0,0,*7A
+#DVD,13,ACK,*31
+$DVI,*77
+#DVI,*,+0.0,*77
+$DVD,0,0,*7A
+#DVD,13,ACK,*31
+$RLY,0,0,0,0,*6B
+#RLY,ACK,*E$DVD,0,0,*7A
+
+  public static byte CheckSum(string sentence)
+    {
+      byte check = 0;
+      bool Startfound = false;
+      foreach (char c in sentence)
+      {
+        if ((c == '#') || (c == '$'))
+          Startfound = true;
+        if ((Startfound) && (c != '#') && (c != '$'))
+        {
+          if ((c == '*') || (c == '\n')) break;
+          check ^= (byte)c; /// Bitwise "exclusive OR" Arlindo
+                }
+            }
+      return check;
+    }
