@@ -1,6 +1,6 @@
-// +----------------------------------------------------------------------------------------------------------------------------------------------------------------+ 
+// +---------------------------------+-------------+----------------------------------------------------------------------------------------------------------------+ 
 // |    Developer                    |    Date     |                             Comments                                                                           |
-// |---------------------------------|-------------|----------------------------------------------------------------------------------------------------------------| 
+// |---------------------------------+-------------+----------------------------------------------------------------------------------------------------------------+
 // | Manuel Parente                  | 15/JUN/2012 | First Version CodeName DIVER-II                                                                                |
 // | Arlindo Silva                   | 03/DEC/2012 | SetBitrate to 3000, improve recorded video quality.                                                            |
 // | Arlindo Silva                   | 09/DEC/2012 | Set MP4 Mode.                                                                                                  |
@@ -51,7 +51,8 @@
 // | Arlindo Silva                   | 14/FEB/2022 | Added Cleanup on Close and updated to Sensoray 1.2.46.0 DLL solved issues with 32bit running on 64bits machine | 
 // | Arlindo Silva                   | 05/APR/2022 | Added Directory Create based on JobName, if not exist.                                                         | 
 // | Arlindo Silva                   | 05/APR/2022 | Save Chart when batery level is critical and Stop/Start Recoding every minute                                  | 
-// |----------------------------------------------------------------------------------------------------------------------------------------------------------------+
+// | Arlindo Silva                   | 20/APR/2022 | PVSS PRO DUO Initial Version                                                                                   | 
+// +---------------------------------+-------------+----------------------------------------------------------------------------------------------------------------+
 
 
 #define PVSS  // PVSS or PVSS_PRO  *** PVSS 115200 baudrate / Prodving 19600 baudrate ***
@@ -311,7 +312,7 @@ namespace PVSS.ViewModel
 
                 MaxDepthValue = 0f;
                 MaxDepthString = "Max: - m";
-
+        
                 MyPlotModel.Axes.Clear();
                 MyPlotModel2.Axes.Clear();
                 (MyPlotModel.Series[0] as LineSeries).Points.Clear();
@@ -325,7 +326,7 @@ namespace PVSS.ViewModel
             {
                 SetOSDStyledRECSTOP(STREAM_A);
 
-               
+
                 StopRecording();
                 SaveChartImage(); //Arlindo OUT21
 
@@ -436,6 +437,35 @@ namespace PVSS.ViewModel
                 RaisePropertyChanged(BoardInfoStringPropertyName);
             }
         }
+        /// <summary>
+        /// The <see cref="BoardInfoString2" /> property's name.
+        /// </summary>
+        public const string BoardInfoStringPropertyName2 = "BoardInfoString2";
+
+        private string _boardInfo2 = "Board Info:";
+
+        /// <summary>
+        /// Sets and gets the BoardInfoString property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string BoardInfoString2
+        {
+            get
+            {
+                return _boardInfo2;
+            }
+
+            set
+            {
+                if (_boardInfo2 == value)
+                {
+                    return;
+                }
+
+                _boardInfo2 = value;
+                RaisePropertyChanged(BoardInfoStringPropertyName2);
+            }
+        }
 
         #endregion
 
@@ -526,7 +556,6 @@ namespace PVSS.ViewModel
                 DepthSensorStatusText = "Depth sensor malfunction. (short)";
                 DepthSensorMessageColor = RedBrush;
                 DepthString = "32,4 m";
-
                 Longitude = "41°11'14,2139''N";
                 Latitude = "008°42'12,269''W";
                 return;
@@ -546,7 +575,7 @@ namespace PVSS.ViewModel
             //Used to start the application with telemetry already on
             COMPortIsEnabled = true;
             ExecuteStartOrStopCOMPortMethod();
-
+            
             SetupBoard();
 
             // Updates Dive time
@@ -573,7 +602,7 @@ namespace PVSS.ViewModel
             DisplayLineTimer.Tick += new EventHandler(DisplayLineTimer_tick);
 
             System.Windows.Application.Current.MainWindow.KeyUp += new System.Windows.Input.KeyEventHandler(MainWindow_KeyUp);
-
+      
             VideoDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos";
             SnapshotsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots";
             ChartsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts";
@@ -687,6 +716,11 @@ namespace PVSS.ViewModel
             OSDLine1Submitted = ""; // Clear Styled text
             SetOSDStyled1(STREAM_A);
             SetOSDStyled1(STREAM_B);
+
+            OSDLine12Submitted = ""; // Clear Styled text
+            SetOSDStyled12(STREAM_A);
+            SetOSDStyled12(STREAM_B);
+
             DisplayLineTimer.Stop();
         }
 
@@ -697,6 +731,7 @@ namespace PVSS.ViewModel
             if (extension == ".bmp")
             {
                 LastSnapshotImage = new Uri(e.FullPath);
+                LastSnapshotImage2 = new Uri(e.FullPath);
             }
 
         }
@@ -709,30 +744,29 @@ namespace PVSS.ViewModel
                 case System.Windows.Input.Key.F1:
                     IsCameraOn = !IsCameraOn;
                     break;
-                case System.Windows.Input.Key.F2:
-                    if (!IsRecording)
-                    {
-                        ExecuteOpenFolderCommand();
-                    }
-                    break;
-                case System.Windows.Input.Key.F3:
+                //case System.Windows.Input.Key.F2:
+                //    if (!IsRecording)
+                //    {
+                //        ExecuteOpenFolderCommand();
+                //    }
+                //    break;
+                case System.Windows.Input.Key.F3:  // REC 1
                     IsRecording = !IsRecording;
                     break;
-
-                //case System.Windows.Input.Key.F4: // Now F3 is toggle STOP/REC
-                //    IsRecording = false;
-                //    break;
-                //F5 case is made in the MainWindow.xaml.cs
-
-                case System.Windows.Input.Key.F6:
+                case System.Windows.Input.Key.F4:  // REC 2
+                    IsRecording = !IsRecording;
+                    break;
+                case System.Windows.Input.Key.F5: // Comment 1 
                     OSDPopupVisibility = !OSDPopupVisibility;
                     break;
-                case System.Windows.Input.Key.F7:
+                case System.Windows.Input.Key.F6: // Comment 2
+                    OSDPopupVisibility = !OSDPopupVisibility;
+                    break;
+                case System.Windows.Input.Key.F9:  // Light 1
                     IsLightOn = !IsLightOn;
-                    break;
-                case System.Windows.Input.Key.F8:
-                    break;
-                case System.Windows.Input.Key.F9:
+                    break;                
+                case System.Windows.Input.Key.F10: // Light 2
+                    IsLightOn = !IsLightOn;
                     break;
                 case System.Windows.Input.Key.Enter:
 
@@ -741,7 +775,7 @@ namespace PVSS.ViewModel
                         OSDLine1Submitted = OSDLine1;
                         OSDLine4Submitted = OSDLine4;
                         OSDPopupVisibility = false;
-                        SendKeys.SendWait("{F5}"); // Added Auto Smapshot ARLINDO 15-NOV-2017 ( must be duplicated to get overlay comment text grabbed)
+                        SendKeys.SendWait("{F5}"); // Added Auto Smapshot ARLINDO 15-NOV-2017 ( must be duplicated to get overlay comment text grabbed ) 
                         SendKeys.SendWait("{F5}"); // Added Auto Smapshot ARLINDO 15-NOV-2017
                     }
                     break;
@@ -965,17 +999,17 @@ namespace PVSS.ViewModel
 
             if (DepthSensorStatus == DEPTH_SENSOR_STATUS_OK)
             {
-                DepthSensorStatusText = "Depth sensor OK.";
+                DepthSensorStatusText = "Depth sensor OK";
                 DepthSensorMessageColor = GreenBrush;
             }
             else if (DepthSensorStatus == DEPTH_SENSOR_STATUS_OPEN)
             {
-                DepthSensorStatusText = "Depth sensor malfunction. (open)";
+                DepthSensorStatusText = "Depth sensor malfunction (open)";
                 DepthSensorMessageColor = RedBrush;
             }
             else if (DepthSensorStatus == DEPTH_SENSOR_STATUS_SHORT)
             {
-                DepthSensorStatusText = "Depth sensor malfunction. (short)";
+                DepthSensorStatusText = "Depth sensor malfunction (short)";
                 DepthSensorMessageColor = RedBrush;
             }
         }
@@ -1161,6 +1195,8 @@ namespace PVSS.ViewModel
             Int32 numDevices = 0;
             UInt32 serial_number = 0;
             Int32 param = 0;
+            UInt32 serial_number2 = 0;
+            Int32 param2 = 0;
 
             S2253.OpenBoard(-1);
 
@@ -1177,8 +1213,11 @@ namespace PVSS.ViewModel
             S2253.GetSerialNumber(ref serial_number, 0);
             S2253.GetParam(S2253.MID2253_PARAM.MID2253_PARAM_FIRMWARE, ref param, 0, 0);
 
-            BoardInfoString = String.Format("Board Info: ID:{0} SN:{1} FW:{2}", numDevices, serial_number, param);
+            S2253.GetSerialNumber(ref serial_number2, 1);
+            S2253.GetParam(S2253.MID2253_PARAM.MID2253_PARAM_FIRMWARE, ref param2, 1, 0);
 
+            BoardInfoString = String.Format("Board Info: ID:{0} SN:{1} FW:{2}", numDevices, serial_number, param);
+            BoardInfoString2 = String.Format("Board Info: ID:{0} SN:{1} FW:{2}", numDevices, serial_number2, param2);
 
             #endregion
 
@@ -1201,15 +1240,10 @@ namespace PVSS.ViewModel
             S2253.SetLevel(Sensoray.S2253.MID2253_LEVEL_SATURATION, 128, 0);
             S2253.SetLevel(Sensoray.S2253.MID2253_LEVEL_HUE, 0, 0);
 
-            //S2253.SetLevel(S2253.MID2253_LEVEL_BRIGHTNESS, 128, STREAM_A);
-            //S2253.SetLevel(S2253.MID2253_LEVEL_CONTRAST, 128, STREAM_A);
-            //S2253.SetLevel(S2253.MID2253_LEVEL_SATURATION, 128, STREAM_A);
-            //S2253.SetLevel(S2253.MID2253_LEVEL_HUE, 0, STREAM_A);
-
-            //S2253.SetLevel(S2253.MID2253_LEVEL_BRIGHTNESS, 128, STREAM_B);
-            //S2253.SetLevel(S2253.MID2253_LEVEL_CONTRAST, 128, STREAM_B);
-            //S2253.SetLevel(S2253.MID2253_LEVEL_SATURATION, 128, STREAM_B);
-            //S2253.SetLevel(S2253.MID2253_LEVEL_HUE, 0, STREAM_B);
+            S2253.SetLevel(Sensoray.S2253.MID2253_LEVEL_BRIGHTNESS, 128, 1);
+            S2253.SetLevel(Sensoray.S2253.MID2253_LEVEL_CONTRAST, 128, 1);
+            S2253.SetLevel(Sensoray.S2253.MID2253_LEVEL_SATURATION, 128, 1);
+            S2253.SetLevel(Sensoray.S2253.MID2253_LEVEL_HUE, 0, 1);
 
             // Set default values for the streams
             IsPALChecked = true;
@@ -1232,17 +1266,30 @@ namespace PVSS.ViewModel
 
             S2253.SetVidSys(S2253.MID2253_VIDSYS.MID2253_VIDSYS_PAL, 0);
             S2253.SetPreviewType(S2253.MID2253_PREVIEWTYPE.MID2253_PREVIEWTYPE_VMR9, 0, STREAM_A);
-            //S2253.SetPreviewType(S2253.MID2253_PREVIEWTYPE.MID2253_PREVIEWTYPE_DEFAULT, 0, STREAM_B);
+
+            S2253.SetVidSys(S2253.MID2253_VIDSYS.MID2253_VIDSYS_PAL, 1);
+            S2253.SetPreviewType(S2253.MID2253_PREVIEWTYPE.MID2253_PREVIEWTYPE_VMR9, 1, STREAM_A);
 
             S2253.SetStreamType((Int32)S2253.MID2253_STREAMTYPE.MID2253_STYPE_UYVY, 0, STREAM_A);
             S2253.SetStreamType((Int32)S2253.MID2253_STREAMTYPE.MID2253_STYPE_H264, 0, STREAM_B);
             S2253.SetOutputMode(S2253.MID2253_OUTPUT_MODE.MID2253_OUTPUT_PASSTHRU, 0); // new by ARLINDO 14-Jan-2015  Pass Video to Output
 
+            S2253.SetStreamType((Int32)S2253.MID2253_STREAMTYPE.MID2253_STYPE_UYVY, 1, STREAM_A);
+            S2253.SetStreamType((Int32)S2253.MID2253_STREAMTYPE.MID2253_STYPE_H264, 1, STREAM_B);
+            S2253.SetOutputMode(S2253.MID2253_OUTPUT_MODE.MID2253_OUTPUT_PASSTHRU, 1); 
+
             S2253.SetRecordMode(S2253.MID2253_RECMODE.MID2253_RECMODE_AV, 0, STREAM_B);  // Video + Audio
             S2253.SetMp4Mode(S2253.MID2253_MP4MODE.MID2253_MP4MODE_STANDARD, 0, STREAM_B); // new 6.Dec.2012
 
+            S2253.SetRecordMode(S2253.MID2253_RECMODE.MID2253_RECMODE_AV, 1, STREAM_B);  
+            S2253.SetMp4Mode(S2253.MID2253_MP4MODE.MID2253_MP4MODE_STANDARD, 1, STREAM_B);
+
             S2253.SetImageSize(640, 480, 0, STREAM_A);
             S2253.SetImageSize(640, 480, 0, STREAM_B);
+
+            S2253.SetImageSize(640, 480, 1, STREAM_A);
+            S2253.SetImageSize(640, 480, 1, STREAM_B);
+
             //S2253.SetImageSize(720, 576, 0, STREAM_A);
             //S2253.SetImageSize(720, 576, 0, STREAM_B);
 
@@ -1251,7 +1298,7 @@ namespace PVSS.ViewModel
             //S2253.SetInterpolateMode(1, 0);
 
             S2253.SetIDR(1, 0, STREAM_B); //new at 10.SET.2013 by Arlindo (speed-up seek in play mode)
-
+            S2253.SetIDR(1, 1, STREAM_B); 
 
             // Memory allocation for snapshots & Overlay
             bufHandle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
@@ -1259,16 +1306,17 @@ namespace PVSS.ViewModel
             //OSDOption = true;
 
 
-
-
             // AAC Audio bit rate verification
             //S2253.MID2253_AUDIO_BITRATE bitrate = new S2253.MID2253_AUDIO_BITRATE();
             //S2253.GetAudioBitrate(ref bitrate, 0, STREAM_B);
 
             S2253.SetAudioInput(S2253.MID2253_AUDIO_INPUT.MID2253_AUDIO_LINE, 0);
+            S2253.SetAudioInput(S2253.MID2253_AUDIO_INPUT.MID2253_AUDIO_LINE, 1);
+
 
             /* Bitrate must be 96, otherwise it will crash due to USB bandwith - Manuel/Arlindo 02/12/2015 */
             S2253.SetAudioBitrate(S2253.MID2253_AUDIO_BITRATE.MID2253_AUDBR_96, 0, STREAM_B);
+            S2253.SetAudioBitrate(S2253.MID2253_AUDIO_BITRATE.MID2253_AUDBR_96, 1, STREAM_B);
 
             AGC = true;
             AudioGainValue = 50;
@@ -1283,33 +1331,8 @@ namespace PVSS.ViewModel
             SetOSDStyledDiverName(STREAM_A); // Diver Name
             SetOSDStyledDiverName(STREAM_B);
 
-            //SetOSDStyledRECSTOP(STREAM_A); // Arlindo NOV2021
-
-            //// Load LOGO bitmap Greyscale Style
-            //{
-            //    MemoryStream strm = new MemoryStream();
-            //    S2253.MID2253_OSD_BMP osdBmp = new S2253.MID2253_OSD_BMP();
-            //    ImageConverter converter = new ImageConverter();
-            //    Bitmap mybmp = (Bitmap)Bitmap.FromFile(@"logo.png");
-            //    byte[] bmpByteArray = new byte[0];
-            //    using (strm)
-            //    {
-            //        mybmp.Save(strm, System.Drawing.Imaging.ImageFormat.Bmp);
-            //        strm.Close();
-            //        bmpByteArray = strm.ToArray();
-            //    }
-
-            //    GCHandle pinnedArray = GCHandle.Alloc(bmpByteArray, GCHandleType.Pinned);
-            //    IntPtr ptr = pinnedArray.AddrOfPinnedObject();
-            //    osdBmp.bmp = ptr;
-            //    osdBmp.id = 1;
-            //    osdBmp.osdChan = 3;
-            //    osdBmp.osdOn = 1;
-            //    osdBmp.xoffset = 50;
-            //    osdBmp.yoffset = 50;
-            //    int retVal = S2253.SetOsd(ref osdBmp, 0, STREAM_A);
-            //    pinnedArray.Free();
-            //}
+            SetOSDStyledDiver2Name(STREAM_A); // Diver Name
+            SetOSDStyledDiver2Name(STREAM_B);
 
         }
 
@@ -1336,6 +1359,9 @@ namespace PVSS.ViewModel
 
             S2253.SetBitrate(3000, 0, STREAM_B); //was 2500 03.12.2012 by Arlindo
             S2253.SetJpegQ(75, 0, STREAM_B);
+            S2253.SetBitrate(3000, 1, STREAM_B); 
+            S2253.SetJpegQ(75, 1, STREAM_B);
+
             try
             {
                 S2253.StartRecord(OutputVideoFileName, 0, STREAM_B);
@@ -1359,7 +1385,7 @@ namespace PVSS.ViewModel
                           MessageBoxButton.OK,
                           MessageBoxImage.Warning); // file existe but is empty
                 Log("Video File is Empty or Severe Corruted");
-            }            
+            }
         }
 
 
@@ -1433,6 +1459,44 @@ namespace PVSS.ViewModel
             S2253.SetOsd(ref st_osd_time, 0, strmidx);
         }
 
+        public void SetOSDStyled_TodayTime2(int strmidx)
+        {
+            S2253.MID2253_OSD_STYLEDTEXT st_osd_time;
+            st_osd_time.osdChan = strmidx;
+            //st_osd_time.osdOn = 1; Option ON/OFF
+            st_osd_time.id = 4; //"Time" "HH:mm:ss"
+            st_osd_time.xoffset = 450;
+            st_osd_time.yoffset = 440;
+            st_osd_time.size = 14;
+            st_osd_time.font = "Segoe UI";
+
+
+            if (ShowDate)
+            {
+                st_osd_time.line = DateTime.Now.ToString("HH:mm:ss") + " -";  //Time
+            }
+            else
+            {
+                st_osd_time.line = DateTime.Now.ToString("HH:mm:ss");  //Time
+                st_osd_time.xoffset = 530;
+            }
+
+            if (ShowTime)
+            {
+                st_osd_time.osdOn = 1;
+            }
+            else
+            {
+                st_osd_time.osdOn = 0;
+            }
+
+            st_osd_time.style = S2253.MID2253_STYLE_OUTLINE;
+            st_osd_time.outline = 4;
+            st_osd_time.background = 0;
+            st_osd_time.color = 0; // 16777215; // White color for VIDEO_OUT only
+            S2253.SetOsd(ref st_osd_time, 1, strmidx);
+        }
+
         public void SetOSDStyled_TodayDate(int strmidx)
         {
             S2253.MID2253_OSD_STYLEDTEXT st_osd_date;
@@ -1460,6 +1524,33 @@ namespace PVSS.ViewModel
             st_osd_date.color = 0; // 16777215; // White color for VIDEO_OUT only
             S2253.SetOsd(ref st_osd_date, 0, strmidx);
         }
+        public void SetOSDStyled_TodayDate2(int strmidx)
+        {
+            S2253.MID2253_OSD_STYLEDTEXT st_osd_date;
+            st_osd_date.osdChan = strmidx;
+            //st_osd_date.osdOn = 1;  Option ON/OFF
+            st_osd_date.id = 7; // "Date" "dd/MM/yyyy"
+            st_osd_date.xoffset = 518;
+            st_osd_date.yoffset = 440;
+            st_osd_date.size = 14;
+            st_osd_date.font = "Segoe UI";
+            st_osd_date.line = DateTime.Now.ToString("dd/MM/yyyy");  //DATE
+
+            if (ShowDate)
+            {
+                st_osd_date.osdOn = 1;
+            }
+            else
+            {
+                st_osd_date.osdOn = 0;
+            }
+
+            st_osd_date.style = S2253.MID2253_STYLE_OUTLINE;
+            st_osd_date.outline = 4;
+            st_osd_date.background = 0;
+            st_osd_date.color = 0; // 16777215; // White color for VIDEO_OUT only
+            S2253.SetOsd(ref st_osd_date, 1, strmidx);
+        }
 
         public void SetOSDStyled_DiveTime(int strmidx)
         {
@@ -1477,6 +1568,24 @@ namespace PVSS.ViewModel
             st_osd_divetime.background = 0;
             st_osd_divetime.color = 0; // 16777215; // White color for VIDEO_OUT only
             S2253.SetOsd(ref st_osd_divetime, 0, strmidx);
+
+        }
+        public void SetOSDStyled_DiveTime2(int strmidx)
+        {
+            S2253.MID2253_OSD_STYLEDTEXT st_osd_divetime;
+            st_osd_divetime.osdChan = strmidx;
+            st_osd_divetime.osdOn = 1;
+            st_osd_divetime.id = 6; // "DiveTime" and "Depth" 
+            st_osd_divetime.xoffset = 66;
+            st_osd_divetime.yoffset = 419;
+            st_osd_divetime.size = 14;
+            st_osd_divetime.font = "Segoe UI";
+            st_osd_divetime.line = DiveTime.ToString("hh\\:mm\\:ss") + " " + DepthString;  //DiveTime OSDLine3 
+            st_osd_divetime.style = S2253.MID2253_STYLE_OUTLINE;
+            st_osd_divetime.outline = 4;
+            st_osd_divetime.background = 0;
+            st_osd_divetime.color = 0; // 16777215; // White color for VIDEO_OUT only
+            S2253.SetOsd(ref st_osd_divetime, 1, strmidx);
 
         }
 
@@ -1498,26 +1607,24 @@ namespace PVSS.ViewModel
             S2253.SetOsd(ref st_osd1, 0, strmidx);
 
         }
+        public void SetOSDStyled12(int strmidx)
+        {
+            S2253.MID2253_OSD_STYLEDTEXT st_osd1;
+            st_osd1.osdChan = strmidx;
+            st_osd1.osdOn = 1;
+            st_osd1.id = 1; // User Text line Comments
+            st_osd1.xoffset = 66;
+            st_osd1.yoffset = 377;
+            st_osd1.size = 14;
+            st_osd1.font = "Segoe UI";
+            st_osd1.line = OSDLine12Submitted; // User Text line Comments
+            st_osd1.style = S2253.MID2253_STYLE_OUTLINE;
+            st_osd1.outline = 4;
+            st_osd1.background = 0;
+            st_osd1.color = 0; // 16777215; // White color for VIDEO_OUT only
+            S2253.SetOsd(ref st_osd1, 1, strmidx);
 
-        //public void SetOSDStyled4(int strmidx)
-        //{
-        //    S2253.MID2253_OSD_STYLEDTEXT st_osd4;
-        //    st_osd4.osdChan = strmidx;
-        //    st_osd4.osdOn = 1;
-        //    st_osd4.id = 4;              // Line2 submited by F6 não usada
-        //    st_osd4.xoffset = 66;
-        //    st_osd4.yoffset = 398;
-        //    st_osd4.size = 14;
-        //    st_osd4.font = "Segoe UI";
-        //    st_osd4.line = OSDLine4Submitted;
-        //    st_osd4.style = S2253.MID2253_STYLE_OUTLINE;
-        //    st_osd4.outline = 4;
-        //    st_osd4.background = 0;
-        //    st_osd4.color = 0; // 16777215; // White color for VIDEO_OUT only
-        //    S2253.SetOsd(ref st_osd4, 0, strmidx);
-
-        //}
-
+        }
 
         public void SetOSDStyled2(int strmidx)
         {
@@ -1573,6 +1680,25 @@ namespace PVSS.ViewModel
             st_osd_diver.background = 0;
             st_osd_diver.color = 0; // 16777215; // White color for VIDEO_OUT only
             S2253.SetOsd(ref st_osd_diver, 0, strmidx);
+
+        }
+
+        public void SetOSDStyledDiver2Name(int strmidx)
+        {
+            S2253.MID2253_OSD_STYLEDTEXT st_osd_diver;
+            st_osd_diver.osdChan = strmidx;
+            st_osd_diver.osdOn = 1;
+            st_osd_diver.id = 0; // "Diver Name"
+            st_osd_diver.xoffset = 250;
+            st_osd_diver.yoffset = 440;
+            st_osd_diver.size = 14;
+            st_osd_diver.font = "Segoe UI";
+            st_osd_diver.line = "Diver: " + DiverName;
+            st_osd_diver.style = S2253.MID2253_STYLE_OUTLINE;
+            st_osd_diver.outline = 4;
+            st_osd_diver.background = 0;
+            st_osd_diver.color = 0; // 16777215; // White color for VIDEO_OUT only
+            S2253.SetOsd(ref st_osd_diver, 1, strmidx);
 
         }
 
@@ -2041,6 +2167,7 @@ namespace PVSS.ViewModel
                 }
 
                 OSDLine1Submitted = "";
+                OSDLine12Submitted = "";
                 DisplayLineTimer.Stop();
 
                 RaisePropertyChanged(TimerValuePropertyName);
@@ -2329,6 +2456,46 @@ namespace PVSS.ViewModel
                 SetOSDStyled1(STREAM_B);
 
                 RaisePropertyChanged(OSDLine1SubmittedPropertyName);
+
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="OSDLine12Submitted" /> property's name.
+        /// </summary>
+        public const string OSDLine12SubmittedPropertyName = "OSDLine1Submitted";
+
+        private string _OSDLine12Submitted = "";
+
+        /// <summary>
+        /// Sets and gets the OSDLine1Submitted property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string OSDLine12Submitted
+        {
+            get
+            {
+                return _OSDLine12Submitted;
+            }
+
+            set
+            {
+                if (_OSDLine12Submitted == value)
+                {
+                    return;
+                }
+
+                _OSDLine12Submitted = value;
+
+                if (TimerValue.Content.ToString() != "Always On")
+                {
+                    DisplayLineTimer.Start();
+                }
+
+                SetOSDStyled12(STREAM_A);
+                SetOSDStyled12(STREAM_B);
+
+                RaisePropertyChanged(OSDLine12SubmittedPropertyName);
 
             }
         }
@@ -3502,6 +3669,35 @@ namespace PVSS.ViewModel
                 RaisePropertyChanged(LastSnapshotImagePropertyName);
             }
         }
+        /// <summary>
+        /// The <see cref="LastSnapshotImage2" /> property's name.
+        /// </summary>
+        public const string LastSnapshotImagePropertyName2 = "LastSnapshotImage2";
+
+        public Uri _lastSnapshotImage2;
+
+        /// <summary>
+        /// Sets and gets the LastSnapshotImage property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public Uri LastSnapshotImage2
+        {
+            get
+            {
+                return _lastSnapshotImage2;
+            }
+
+            set
+            {
+                if (_lastSnapshotImage2 == value)
+                {
+                    return;
+                }
+                _lastSnapshotImage2 = value;
+
+                RaisePropertyChanged(LastSnapshotImagePropertyName2);
+            }
+        }
         #endregion
 
         #region Charting & Plotting
@@ -3838,6 +4034,41 @@ namespace PVSS.ViewModel
 
         #endregion
 
+        #region DIVER2
+        /// <summary>
+        /// The <see cref="Diver2IsEnabled" /> property's name.
+        /// </summary>
+        public const string Diver2IsEnabledPropertyName = "Diver2IsEnabled";
+
+        private bool _Diver2IsEnabled = false;
+
+        /// <summary>
+        /// Sets and gets the GPSIsEnabled property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool Diver2IsEnabled
+        {
+            get
+            {
+                return _Diver2IsEnabled;
+            }
+
+            set
+            {
+                _Diver2IsEnabled = value;
+
+                MainWindow2.Diver2IsEnabled_Checked(Diver2IsEnabled);
+
+                if (_Diver2IsEnabled == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanged(Diver2IsEnabledPropertyName);
+            }
+        }
+        #endregion DIVER2
+
         #region GPS
 
         /// <summary>
@@ -3866,6 +4097,7 @@ namespace PVSS.ViewModel
                 }
 
                 _GPSIsEnabled = value;
+
                 RaisePropertyChanged(GPSIsEnabledPropertyName);
             }
         }

@@ -6,13 +6,15 @@
     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" 
     xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
 	xmlns:ToggleSwitch="clr-namespace:ToggleSwitch;assembly=ToggleSwitch"
+    xmlns:DateTime="clr-namespace:PVSS.Helpers"
     xmlns:Custom="http://www.galasoft.ch/mvvmlight"
+    xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf"
     xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
     xmlns:Controls="clr-namespace:WPFMediaKit.DirectShow.Controls;assembly=WPFMediaKit"
     
     mc:Ignorable="d"
-    Title="ISPTEL - PVSS 5.6 Diver 2"
-    Background="Gray" WindowStyle="None" d:DesignWidth="1366" d:DesignHeight="768" Width="Auto" Height="Auto" WindowStartupLocation="Manual" SizeToContent="WidthAndHeight" AllowsTransparency="True">
+    Title="ISPTEL - PVSS DUO PRO Diver 2"
+    Background="Gray" WindowStyle="None" d:DesignWidth="1920" d:DesignHeight="1080"  Width="Auto" Height="Auto" KeyUp="Window_KeyUp2" WindowStartupLocation="Manual" AllowsTransparency="False">
 
     <Window.Resources>
         <ResourceDictionary>
@@ -106,9 +108,9 @@
         <Binding Path="Main" Source="{StaticResource Locator}"/>
     </Window.DataContext>
 
-    <Grid x:Name="LayoutRoot" Width="1366" Height="768" Background="#FF333333" ScrollViewer.VerticalScrollBarVisibility="Disabled" Margin="7,7,0,0">
+    <Grid x:Name="LayoutRoot" Background="#FF333333" ScrollViewer.VerticalScrollBarVisibility="Disabled" Margin="0,0,0,0">
         <Grid.RowDefinitions>
-            <RowDefinition Height="768"/>
+            <RowDefinition Height="1080"/>
         </Grid.RowDefinitions>
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="VisibilityPopup">
@@ -129,15 +131,14 @@
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1366"/>
+            <ColumnDefinition Width="1920"/>
         </Grid.ColumnDefinitions>
-        <Grid Margin="344,0,0,0">
+        <Grid Margin="380,16,10,0">
             <Grid.RowDefinitions>
-                <RowDefinition Height="7*"/>
-                <RowDefinition Height="377*"/>
+                <RowDefinition/>
             </Grid.RowDefinitions>
-            <Controls:VideoCaptureElement x:Name="video1Element" VideoCaptureDevice="{Binding Video1, Mode=OneWay}" DesiredPixelWidth="640" DesiredPixelHeight="480" Volume="100"  FPS="25" RenderTransformOrigin="0,0" IsManipulationEnabled="True" Margin="0,0,0,0" Grid.RowSpan="2"/>
-            <Grid x:Name="grid" Height="83" VerticalAlignment="Center" Margin="104,299,131,372" Background="#80333333" Visibility="Hidden" Grid.Row="1">
+            <Controls:VideoCaptureElement x:Name="video1Element" VideoCaptureDevice="{Binding Video1, Mode=OneWay}" DesiredPixelWidth="640" DesiredPixelHeight="480" Volume="100"  FPS="25" RenderTransformOrigin="0,0" IsManipulationEnabled="True" Margin="0,0,10,10"/>
+            <Grid x:Name="grid" Height="83" VerticalAlignment="Top" Margin="104,425,131,0" Background="#80333333" Visibility="Hidden">
                 <Grid.Style>
                     <Style>
                         <Style.Triggers>
@@ -160,7 +161,7 @@
             </Grid>
         </Grid>
 
-        <TextBlock TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="18.667" Margin="118,263,1029,0" Text="{Binding StatusMessage}" Height="25" />
+        <TextBlock TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="18.667" Margin="118,263,1583,0" Text="{Binding StatusMessage}" Height="25" />
         <ToggleSwitch:HorizontalToggleSwitch HorizontalAlignment="Left" Margin="13,264,0,0" VerticalAlignment="Top" IsChecked="{Binding IsRecording, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
             <i:Interaction.Triggers>
                 <ei:PropertyChangedTrigger Binding="{Binding IsRecording}">
@@ -168,16 +169,16 @@
                 </ei:PropertyChangedTrigger>
             </i:Interaction.Triggers>
         </ToggleSwitch:HorizontalToggleSwitch>
-        <Grid Background="#FF333330" Height="112" Margin="8,32,1028,0" VerticalAlignment="Top" >
+        <Grid Background="#FF333330" Height="112" Margin="8,32,1583,0" VerticalAlignment="Top" >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             <TextBlock TextWrapping="Wrap" Foreground="White" FontFamily="Segoe UI Light" FontSize="20" HorizontalAlignment="Left" Width="312" Margin="8,75,0,0" Height="32" VerticalAlignment="Top" Text="{Binding MaxDepthString}"/>
             <TextBlock TextWrapping="Wrap" Foreground="White" FontFamily="Segoe UI Light" FontSize="48" HorizontalAlignment="Left" Width="312" TextAlignment="Center" Margin="9.768,0,0,0" VerticalAlignment="Top" Text="{Binding DepthString}"/>
-            <TextBlock TextWrapping="Wrap" VerticalAlignment="Bottom" FontFamily="Segoe UI Light" FontSize="14" Margin="117,0,10,12" Text="{Binding DepthSensorStatusText}" Foreground="{Binding DepthSensorMessageColor}" TextAlignment="Right" />
+            <TextBlock TextWrapping="Wrap" VerticalAlignment="Top" FontFamily="Segoe UI Light" FontSize="14" Margin="107,81,0,0" Text="{Binding DepthSensorStatusText}" Foreground="{Binding DepthSensorMessageColor}" TextAlignment="Right" Height="20" HorizontalAlignment="Left" Width="203" />
         </Grid>
         <TextBlock TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="18.667" Margin="13,3,0,0" HorizontalAlignment="Left" Text="Diver 2 Actual Depth" Height="25" Width="246"/>
-        <Grid Background="#FF333333" Height="72" Margin="8,174,1028,0" VerticalAlignment="Top" >
+        <Grid Background="#FF333333" Height="72" Margin="8,174,1581,0" VerticalAlignment="Top" >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="7*"/>
                 <ColumnDefinition Width="23*"/>
@@ -186,9 +187,9 @@
         </Grid>
         <TextBlock TextWrapping="Wrap" Foreground="White" FontFamily="Segoe UI Light" FontSize="18.667" Margin="8,144,0,0" HorizontalAlignment="Left" Text="Diver 2 Total Dive Time" VerticalAlignment="Top" Height="25" Width="207"/>
         <Image HorizontalAlignment="Left" Height="25" Margin="121,318,0,0" Source="Design/Video Camera.png" Stretch="Fill" VerticalAlignment="Top" Width="25"/>
-        <TextBlock TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="18.667" Margin="160,318,0,0" Text="Camera - ALT+F1" HorizontalAlignment="Left" Height="25" Width="153"/>
-        <TextBlock TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="18.667" Margin="160,352,0,0" Text="Light - ALT+F7" HorizontalAlignment="Left" Height="25" Width="133"><Run Language="pt-pt" /></TextBlock>
-        <Image Height="25" Margin="121,352,1220,0" Source="Design/Light Bulb.png" Stretch="Fill" VerticalAlignment="Top"/>
+        <TextBlock TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="18.667" Margin="160,318,0,0" Text="Camera - F2" HorizontalAlignment="Left" Height="25" Width="153"/>
+        <TextBlock TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="18.667" Margin="160,352,0,0" Text="Light - F10" HorizontalAlignment="Left" Height="25" Width="133"><Run Language="pt-pt" /></TextBlock>
+        <Image Height="25" Width="25" Margin="121,352,1774,0" Source="Design/Light Bulb.png" Stretch="Fill" VerticalAlignment="Top"/>
         <ToggleSwitch:HorizontalToggleSwitch HorizontalAlignment="Left" Margin="13,318,0,0" VerticalAlignment="Top" IsChecked="{Binding IsCameraOn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
             <i:Interaction.Triggers>
                 <ei:PropertyChangedTrigger Binding="{Binding IsCameraOn}">
@@ -203,35 +204,41 @@
                 </ei:PropertyChangedTrigger>
             </i:Interaction.Triggers>
         </ToggleSwitch:HorizontalToggleSwitch>
-        <TabControl Height="303" VerticalAlignment="Bottom" Background="Gray" BorderBrush="#008C8E94" Margin="0,0,1022,5">
+        <TabControl Height="303" VerticalAlignment="Bottom" Background="Gray" BorderBrush="#008C8E94" Margin="4,0,1579,0">
             <TabItem Header="Snapshot" BorderBrush="#00005E93" Background="Gray" Margin="0" Foreground="White" IsSelected="True" FocusVisualStyle="{DynamicResource SimpleButtonFocusVisual}" FontSize="14" Template="{DynamicResource TabItemControlTemplate1}">
                 <Grid Background="#FF333333">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="97*"/>
-                        <ColumnDefinition Width="241*"/>
-                    </Grid.ColumnDefinitions>
+                    <Grid Background="#FF333333" Height="260" Margin="1,1,1,1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="325"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text=" Take a snapshot (F8) to see the preview here." VerticalAlignment="Top" HorizontalAlignment="Center" Background="#FF333333" Foreground="White" Margin="8,122,0,0" Width="296" Height="26"/>
+                        <Image Source="{Binding LastSnapshotImage2}" MouseLeftButtonUp="Image_MouseLeftButtonUp2" Cursor="Hand" Width="324" HorizontalAlignment="Left" Margin="3,3,3,3"/>
+                    </Grid>
                 </Grid>
             </TabItem>
-            <TabItem Header="Video" BorderBrush="#00005E93" Background="Gray" Foreground="White" FontSize="14" Template="{DynamicResource TabItemControlTemplate1}" Margin="0" HorizontalAlignment="Left" Width="50">
+            <TabItem Header="Video" BorderBrush="#00005E93" Background="Gray" Foreground="White" FontSize="14" Template="{DynamicResource TabItemControlTemplate1}">
                 <Grid Background="#FF333333">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
-                    <Grid Margin="3,0,-16,-24">
-                        <Grid Height="80" Margin="0,0,160,22" VerticalAlignment="Bottom" Background="#FF333333">
-                            <TextBlock HorizontalAlignment="Left" Margin="26,2,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontFamily="Segoe UI Light" Foreground="White" Text="Brightness" FontSize="10"/>
-                            <TextBlock HorizontalAlignment="Left" Margin="26,18,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontFamily="Segoe UI Light" Foreground="White" Text="Contrast" FontSize="10"/>
-                            <TextBlock HorizontalAlignment="Left" Margin="26,4,2,32" TextWrapping="Wrap" VerticalAlignment="Bottom" FontFamily="Segoe UI Light" Foreground="White" Text="Saturation" FontSize="10"/>
+                    <Grid Margin="0,0,-16,-24" HorizontalAlignment="Center" Width="344">
+                        <Grid Height="92" Margin="13,0,147,34" VerticalAlignment="Bottom" Background="#FF333333">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock HorizontalAlignment="Left" Margin="27,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontFamily="Segoe UI Light" Foreground="White" Text="Brightness" FontSize="10"/>
+                            <TextBlock HorizontalAlignment="Left" Margin="33,26,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontFamily="Segoe UI Light" Foreground="White" Text="Contrast" FontSize="10"/>
+                            <TextBlock HorizontalAlignment="Left" Margin="27,0,0,35" TextWrapping="Wrap" VerticalAlignment="Bottom" FontFamily="Segoe UI Light" Foreground="White" Text="Saturation" FontSize="10"/>
                             <TextBlock HorizontalAlignment="Left" Margin="26,0,0,7" TextWrapping="Wrap" VerticalAlignment="Bottom" FontFamily="Segoe UI Light" Foreground="White" Text="Hue" FontSize="10" Visibility="Hidden"/>
-                            <Slider Height="14" Style="{DynamicResource SimpleSlider}" Value="{Binding HueValue}" Maximum="255" SmallChange="1" Visibility="Hidden"/>
-                            <Slider Height="14" Style="{DynamicResource SimpleSlider}" Value="{Binding SaturationValue}" Maximum="255" SmallChange="1" Margin="80,37,10,29"/>
-                            <Slider Height="14" Style="{DynamicResource SimpleSlider}" Value="{Binding ContrastValue}" Maximum="255" SmallChange="1" Margin="80,20,10,46"/>
-                            <Slider Height="14" Style="{DynamicResource SimpleSlider}" Value="{Binding BrightnessValue}" Maximum="255" SmallChange="1" Margin="80,4,10,62"/>
-                            <Image HorizontalAlignment="Left" Source="Design/Brightness.png" Stretch="Fill" Width="25" Height="25" VerticalAlignment="Top" d:LayoutOverrides="Height" Margin="0,-2,0,0"/>
-                            <Image HorizontalAlignment="Left" Margin="2.486,0,0,26" Source="Design/Chrome.png" Stretch="Fill" Width="20" Height="20" VerticalAlignment="Bottom"/>
-                            <Image HorizontalAlignment="Left" Margin="2.319,11,0,36.529" Source="Design/Contrast.png" Stretch="Fill" Width="20" Height="20"/>
+                            <Slider Height="14" Style="{DynamicResource SimpleSlider}" Value="{Binding HueValue}" Maximum="255" SmallChange="1" Visibility="Hidden" Margin="0,39,0,39"/>
+                            <Slider Height="14" Style="{DynamicResource SimpleSlider}" Value="{Binding SaturationValue}" Maximum="255" SmallChange="1" Margin="80,43,10,35"/>
+                            <Slider Height="14" Style="{DynamicResource SimpleSlider}" Value="{Binding ContrastValue}" Maximum="255" SmallChange="1" Margin="80,26,10,52"/>
+                            <Slider Height="14" Style="{DynamicResource SimpleSlider}" Value="{Binding BrightnessValue}" Maximum="255" SmallChange="1" Margin="80,10,10,68"/>
+                            <Image HorizontalAlignment="Left" Source="Design/Brightness.png" Stretch="Fill" Width="25" Height="25" VerticalAlignment="Top" Margin="0,4,0,0"/>
+                            <Image HorizontalAlignment="Left" Margin="2,0,0,32" Source="Design/Chrome.png" Stretch="Fill" Width="20" Height="20" VerticalAlignment="Bottom"/>
+                            <Image HorizontalAlignment="Left" Margin="2,23,0,49" Source="Design/Contrast.png" Stretch="Fill" Width="20" Height="20"/>
                         </Grid>
-                        <TextBlock HorizontalAlignment="Left" Margin="3,0,0,107" TextWrapping="Wrap" VerticalAlignment="Bottom" Foreground="White" FontSize="10" FontWeight="Bold" Width="41"><Run Language="pt-pt" Text="Levels:"/></TextBlock>
+                        <TextBlock HorizontalAlignment="Left" Margin="3,0,0,126" TextWrapping="Wrap" VerticalAlignment="Bottom" Foreground="White" FontSize="10" FontWeight="Bold" Width="41"><Run Language="pt-pt" Text="Levels:"/></TextBlock>
                         <Grid Height="36" Margin="0,0,75,84" VerticalAlignment="Bottom" Background="#FF333333" HorizontalAlignment="Right" Width="80"/>
                         <Grid Margin="3,20,27,144" Background="#FF333333">
                             <Grid.ColumnDefinitions>
@@ -274,15 +281,16 @@
                             </Grid.ColumnDefinitions>
                         </Grid>
                     </Grid>
-                    <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" HorizontalAlignment="Left" Height="128" Margin="4,18,0,0" VerticalAlignment="Top" Width="248"/>
-                    <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" HorizontalAlignment="Left" Height="64" Margin="4,188,0,0" VerticalAlignment="Top" Width="248"/>
+                    <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" HorizontalAlignment="Left" Height="128" Margin="8,18,0,0" VerticalAlignment="Top" Width="248"/>
+                    <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" HorizontalAlignment="Left" Height="68" Margin="8,170,0,0" VerticalAlignment="Top" Width="248"/>
                     <CheckBox Content="Interpolated" IsEnabled="{Binding SuppressEditing}" HorizontalAlignment="Left" Margin="205,243,0,8" Foreground="White" FontFamily="Segoe UI Light" FontSize="12" IsChecked="{Binding IsInterpolatedChecked}" Width="95" Opacity="0.4" Visibility="Hidden"/>
                 </Grid>
             </TabItem>
-            <TabItem Header="Settings" BorderBrush="#008C8E94" Background="Gray" Margin="0,0,-11,0" Foreground="White" FontSize="14" Template="{DynamicResource TabItemControlTemplate1}">
-                <Grid Background="#FF333333">
+            
+            <TabItem Header="Settings" BorderBrush="#008C8E94" Background="Gray" Margin="0.5,0,-4,0" Foreground="White" FontSize="14" Template="{DynamicResource TabItemControlTemplate1}">
+                <Grid Background="#FF333333" HorizontalAlignment="Center" Width="331">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
+                        <ColumnDefinition Width="329"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock HorizontalAlignment="Left" Margin="8,52,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontFamily="Segoe UI Light" Foreground="Black" FontSize="10" Visibility="Hidden" Height="13" Width="45"><Run Language="pt-pt" Text="Baud Rate:"/></TextBlock>
                     <TextBox HorizontalAlignment="Left" TextWrapping="Wrap" Text="{Binding BaudRate, Mode=TwoWay, UpdateSourceTrigger=Default}" VerticalAlignment="Top" Margin="8,69,0,0" Width="120" Visibility="Hidden" Height="21"/>

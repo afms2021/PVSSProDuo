@@ -10,7 +10,6 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Linq;
 
 namespace PVSS
 {
@@ -21,8 +20,8 @@ namespace PVSS
     [ComVisible(false)]
     public partial class MainWindow : Window
     {
-        private string SnapshotsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots";
-        private string ChartsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts";
+        public string SnapshotsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots";
+        public string ChartsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts";
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
         /// </summary>
@@ -32,7 +31,7 @@ namespace PVSS
             this.WindowState = System.Windows.WindowState.Maximized;
             try
             {
-               InitializeComponent();
+                InitializeComponent();
             }
             catch (Exception)
             {
@@ -41,36 +40,35 @@ namespace PVSS
             Closing += (s, e) => ViewModelLocator.Cleanup();
         }
 
-        private void Image_MouseUp(object sender, MouseButtonEventArgs e)
+        public void Image_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            //SnapshotsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots";
             TakeSnapshot();
         }
 
-        private void Window_KeyUp(object sender, KeyEventArgs e)
+        public void Window_KeyUp(object sender, KeyEventArgs e)
         {
-
-            if (e.Key == System.Windows.Input.Key.F5)
+            if (e.Key == System.Windows.Input.Key.F8)
             {
-                //SnapshotsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots";
-                TakeSnapshot();
+                MainWindow2 win2 = new MainWindow2();
+
+                win2.TakeSnapshot2();
             }
 
-
+            if (e.Key == System.Windows.Input.Key.F7)
+            {
+                TakeSnapshot();
+            }
         }
 
 
-        private void TakeSnapshot()
+        public void TakeSnapshot()
         {
-            //SnapshotsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots";
-
-            RenderTargetBitmap bmp = new RenderTargetBitmap(1022, 768, 96, 96, PixelFormats.Pbgra32);
+            RenderTargetBitmap bmp = new RenderTargetBitmap(1450, 1053, 96, 96, PixelFormats.Pbgra32);
             bmp.Render(videoElement);
 
             PngBitmapEncoder encoder = new PngBitmapEncoder();
 
             encoder.Frames.Add(BitmapFrame.Create(bmp));
-
 
             if (!Directory.Exists(SnapshotsDirectoryPath))
             {
@@ -98,8 +96,9 @@ namespace PVSS
 
         }
 
-
-        private string LastTakenPhoto = null;
+        public string LastTakenPhoto;
+        public string LastTakenPhoto2;
+       
         private void Image_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             var psi = new ProcessStartInfo("Explorer.exe", "/select," + LastTakenPhoto);
@@ -145,7 +144,6 @@ namespace PVSS
             }
         }
 
-
         private void OpenContainingFolder(string fileName)
         {
             // var folder = Path.GetDirectoryName(fileName);
@@ -162,17 +160,7 @@ namespace PVSS
         {
 
         }
-        
-        public void Button_Click(object sender, RoutedEventArgs e)
-        {
-            PVSS.MainWindow2 bWin = new PVSS.MainWindow2
-            {
-                Topmost = true,
-                Owner = this
-            };
-            bWin.DataContext = this.DataContext;
 
-            bWin.Show();
-        }
+        
     }
 }
