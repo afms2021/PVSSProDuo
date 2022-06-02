@@ -15,7 +15,7 @@
       <Value Profile="(Default)">MV Vessel IWS</Value>
     </Setting>
     <Setting Name="DiverNameText" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Diver Name</Value>
+      <Value Profile="(Default)">Diver 1 Name</Value>
     </Setting>
     <Setting Name="IsHDCameraChecked" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
@@ -25,6 +25,9 @@
     </Setting>
     <Setting Name="IsInterpolatedChecked" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="Diver2NameText" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Diver 2 Name</Value>
     </Setting>
   </Settings>
 </SettingsFile>

@@ -26,6 +26,7 @@ namespace PVSS
         /// Initializes a new instance of the MainWindow class.
         /// </summary>
         /// 
+              
         public MainWindow()
         {
             this.WindowState = System.Windows.WindowState.Maximized;
@@ -59,8 +60,7 @@ namespace PVSS
                 TakeSnapshot();
             }
         }
-
-
+       
         public void TakeSnapshot()
         {
             RenderTargetBitmap bmp = new RenderTargetBitmap(1450, 1053, 96, 96, PixelFormats.Pbgra32);
@@ -97,7 +97,7 @@ namespace PVSS
         }
 
         public string LastTakenPhoto;
-        public string LastTakenPhoto2;
+      //  public string LastTakenPhoto2;
        
         private void Image_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {

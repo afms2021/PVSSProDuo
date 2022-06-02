@@ -20,7 +20,6 @@ namespace PVSS
         {
             try
             {
-
                 InitializeComponent();
                 var screens = System.Windows.Forms.Screen.AllScreens;
                 var firstSecondary = screens.FirstOrDefault(s => s.Primary == false);
@@ -53,8 +52,7 @@ namespace PVSS
         {
             if (e.Key == System.Windows.Input.Key.F7)
             {
-                MainWindow win1 = new MainWindow();
-                win1.TakeSnapshot();
+                (Application.Current.MainWindow as MainWindow).TakeSnapshot();             
             }
 
             if (e.Key == System.Windows.Input.Key.F8)
@@ -104,6 +102,7 @@ namespace PVSS
 
         private void Image_MouseLeftButtonUp2(object sender, MouseButtonEventArgs e)
         {
+            LastTakenPhoto2 = (Application.Current.MainWindow as MainWindow).LastTakenPhoto;
             var psi = new ProcessStartInfo("Explorer.exe", "/select," + LastTakenPhoto2);
             Process.Start(psi);            
         }

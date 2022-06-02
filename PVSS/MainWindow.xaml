@@ -236,7 +236,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="302"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text=" Take a snapshot (F8) to see the preview here." VerticalAlignment="Center" HorizontalAlignment="Left" Background="#FF333333" Foreground="White" Margin="18,0,0,0" Width="284" Height="26"/>
+                    <TextBlock Text=" Take a snapshot (F7) to see the preview here." VerticalAlignment="Center" HorizontalAlignment="Left" Background="#FF333333" Foreground="White" Margin="16,0,0,0" Width="284" Height="26"/>
                     <Image Source="{Binding LastSnapshotImage}" MouseLeftButtonUp="Image_MouseLeftButtonUp" Cursor="Hand" Width="306" HorizontalAlignment="left" Margin="3,3,3,3"/>
                 </Grid>
             </TabItem>
@@ -282,7 +282,7 @@
                             <Slider Style="{DynamicResource SimpleSlider}" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Left" Width="90" Margin="0,1,0,0" VerticalAlignment="Top" LargeChange="5" Maximum="127" SmallChange="1" Value="{Binding AudioGainValue}" Height="14"/>
                             <CheckBox Content="AGC" HorizontalAlignment="Left"  VerticalAlignment="Top" Background="#FFF4F4F4" Foreground="White" FontFamily="Segoe UI Light" FontSize="10" IsChecked="{Binding AGC, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" RenderTransformOrigin="1.078,0.533" Height="16" Width="42" Margin="95,0,0,0"/>
                         </Grid>
-                        <Grid Margin="3,20,76,144" Background="#FF333333">
+                        <Grid Margin="3,20,76,117" Background="#FF333333">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
@@ -350,7 +350,7 @@
                             <RadioButton x:Name="myHD_Camera" Content=" 16:9 Camera" IsEnabled="{Binding SuppressEditing}" HorizontalAlignment="Left" Margin="8,20,-1,0"  Style="{DynamicResource SimpleRadioButton}" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="10" GroupName="CameraType" IsChecked="{Binding IsHDCameraChecked}" Height="16" Width="73" Checked="MyHD_Camera_Checked"  />
                         </Grid>
                     </Grid>
-                    <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" HorizontalAlignment="Left" Height="114" Margin="4,20,0,0" VerticalAlignment="Top" Width="207"/>
+                    <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" HorizontalAlignment="Left" Height="132" Margin="4,20,0,0" VerticalAlignment="Top" Width="207"/>
                     <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" HorizontalAlignment="Left" Height="98" Margin="154,166,0,0" VerticalAlignment="Top" Width="154"/>
                     <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" Margin="216,94,4,135">
                         <TextBlock Margin="0,7,19,9" TextWrapping="Wrap" Foreground="White" FontFamily="Segoe UI Light" Text="{Binding TemperatureStatus, StringFormat=\{0:F1\} ºC}" HorizontalAlignment="Right" Width="53" TextAlignment="Center"/>
