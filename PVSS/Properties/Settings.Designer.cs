@@ -37,7 +37,7 @@ namespace PVSS.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("115200")]
+        [global::System.Configuration.DefaultSettingValueAttribute("19200")]
         public int BaudRate {
             get {
                 return ((int)(this["BaudRate"]));

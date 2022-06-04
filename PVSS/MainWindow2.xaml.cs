@@ -114,9 +114,9 @@ namespace PVSS
             this.WindowState = WindowState.Maximized;            
         }
 
-
         public static bool _Diver2Window_Open = false;
-        public static void Diver2IsEnabled_Checked(bool Diver2IsEnabled)
+        
+        public static void PerformDiver2IsEnabled_Checked(bool Diver2IsEnabled)
         {
             if (Diver2IsEnabled)
             {

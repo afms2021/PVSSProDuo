@@ -131,9 +131,9 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1920"/>
         </Grid.ColumnDefinitions>
-        <Grid Margin="380,16,10,0">
+        <Grid Margin="380,10,10,10">
             <Grid.RowDefinitions>
-                <RowDefinition/>
+                <RowDefinition Height="1060"/>
             </Grid.RowDefinitions>
             <Controls:VideoCaptureElement x:Name="video1Element" VideoCaptureDevice="{Binding Video1, Mode=OneWay}" DesiredPixelWidth="640" DesiredPixelHeight="480" Volume="100"  FPS="25" RenderTransformOrigin="0,0" IsManipulationEnabled="True" Margin="0,0,10,10"/>
             <Grid x:Name="grid" Height="83" VerticalAlignment="Top" Margin="104,425,131,0" Background="#80333333" Visibility="Hidden">
@@ -142,20 +142,20 @@
                         <Style.Triggers>
                             <MultiDataTrigger>
                                 <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding OSDPopupVisibility}" Value="True" />
+                                    <Condition Binding="{Binding OSDPopupVisibility2}" Value="True" />
                                     <Condition Binding="{Binding Path=Visibility, ElementName=grid}" Value="Visible" />
                                 </MultiDataTrigger.Conditions>
-                                <Setter Property="FocusManager.FocusedElement" Value="{Binding ElementName=OSDLine}"/>
+                                <Setter Property="FocusManager.FocusedElement" Value="{Binding ElementName=OSDLine2}"/>
                             </MultiDataTrigger>
                         </Style.Triggers>
                     </Style>
                 </Grid.Style>
                 <i:Interaction.Behaviors>
-                    <ei:DataStateBehavior Binding="{Binding OSDPopupVisibility}" Value="True" TrueState="Visible" FalseState="Invisible"/>
+                    <ei:DataStateBehavior Binding="{Binding OSDPopupVisibility2}" Value="True" TrueState="Visible" FalseState="Invisible"/>
                 </i:Interaction.Behaviors>
                 <TextBlock TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="18" Margin="19,19,0,0" HorizontalAlignment="Left" ><Run Language="en-us" Text="Text:"/></TextBlock>
                 <TextBlock TextWrapping="Wrap" Foreground="White" FontFamily="Segoe UI Light" FontSize="18" Margin="0,0,0,8" VerticalAlignment="Bottom" d:LayoutOverrides="Width" HorizontalAlignment="Center" ><Run Language="en-us" Text="Press ENTER to submit, F6 to cancel"/></TextBlock>
-                <TextBox x:Name="OSDLine" TextWrapping="Wrap" Text="{Binding OSDLine1, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Margin="68,19,22,0" MaxLength="40" FontSize="18" />
+                <TextBox x:Name="OSDLine2" TextWrapping="Wrap" Text="{Binding OSDLine12, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Margin="68,19,22,0" MaxLength="40" FontSize="18" />
             </Grid>
         </Grid>
 
@@ -171,9 +171,9 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <TextBlock TextWrapping="Wrap" Foreground="White" FontFamily="Segoe UI Light" FontSize="20" HorizontalAlignment="Left" Width="312" Margin="8,75,0,0" Height="32" VerticalAlignment="Top" Text="{Binding MaxDepthString}"/>
-            <TextBlock TextWrapping="Wrap" Foreground="White" FontFamily="Segoe UI Light" FontSize="48" HorizontalAlignment="Left" Width="312" TextAlignment="Center" Margin="9.768,0,0,0" VerticalAlignment="Top" Text="{Binding DepthString}"/>
-            <TextBlock TextWrapping="Wrap" VerticalAlignment="Top" FontFamily="Segoe UI Light" FontSize="14" Margin="107,81,0,0" Text="{Binding DepthSensorStatusText}" Foreground="{Binding DepthSensorMessageColor}" TextAlignment="Right" Height="20" HorizontalAlignment="Left" Width="203" />
+            <TextBlock TextWrapping="Wrap" Foreground="White" FontFamily="Segoe UI Light" FontSize="20" HorizontalAlignment="Left" Width="312" Margin="8,75,0,0" Height="32" VerticalAlignment="Top" Text="{Binding MaxDepthString2}"/>
+            <TextBlock TextWrapping="Wrap" Foreground="White" FontFamily="Segoe UI Light" FontSize="48" HorizontalAlignment="Left" Width="312" TextAlignment="Center" Margin="9.768,0,0,0" VerticalAlignment="Top" Text="{Binding DepthString2}"/>
+            <TextBlock TextWrapping="Wrap" VerticalAlignment="Top" FontFamily="Segoe UI Light" FontSize="14" Margin="0,56,0,0" Text="{Binding DepthSensorStatusText}" Foreground="{Binding DepthSensorMessageColor}" TextAlignment="Right" Height="20" HorizontalAlignment="Center" Width="204" />
         </Grid>
         <TextBlock TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="18.667" Margin="13,3,0,0" HorizontalAlignment="Left" Text="Diver 2 Actual Depth" Height="25" Width="246"/>
         <Grid Background="#FF333333" Height="72" Margin="8,174,1581,0" VerticalAlignment="Top" >
@@ -181,7 +181,7 @@
                 <ColumnDefinition Width="7*"/>
                 <ColumnDefinition Width="23*"/>
             </Grid.ColumnDefinitions>
-            <TextBlock TextWrapping="Wrap" Foreground="White" FontFamily="Segoe UI Light" FontSize="48" HorizontalAlignment="Left" Width="330" TextAlignment="Center" VerticalAlignment="Top" Text="{Binding DiveTime, StringFormat=hh\\:mm\\:ss}" Height="72" Margin="0,-1,0,0" Grid.ColumnSpan="2"/>
+            <TextBlock TextWrapping="Wrap" Foreground="White" FontFamily="Segoe UI Light" FontSize="48" HorizontalAlignment="Left" Width="330" TextAlignment="Center" VerticalAlignment="Top" Text="{Binding DiveTime2, StringFormat=hh\\:mm\\:ss}" Height="72" Margin="0,-1,0,0" Grid.ColumnSpan="2"/>
         </Grid>
         <TextBlock TextWrapping="Wrap" Foreground="White" FontFamily="Segoe UI Light" FontSize="18.667" Margin="8,144,0,0" HorizontalAlignment="Left" Text="Diver 2 Total Dive Time" VerticalAlignment="Top" Height="25" Width="207"/>
         <Image HorizontalAlignment="Left" Height="25" Margin="121,318,0,0" Source="Design/Video Camera.png" Stretch="Fill" VerticalAlignment="Top" Width="25"/>
@@ -303,7 +303,7 @@
             </TabItem>
         </TabControl>
         <Border BorderBrush="Gray" BorderThickness="2" CornerRadius="2" HorizontalAlignment="Left" Height="72" Margin="8,174,0,0" VerticalAlignment="Top" Width="329"/>
-        <Border BorderBrush="Gray" BorderThickness="2" CornerRadius="2" HorizontalAlignment="Left" Height="106" Margin="8,33,0,0" VerticalAlignment="Top" Width="329"/>
+        <Border BorderBrush="Gray" BorderThickness="2" CornerRadius="2" HorizontalAlignment="Left" Height="106" Margin="8,28,0,0" VerticalAlignment="Top" Width="329"/>
     </Grid>
 </Window>
 

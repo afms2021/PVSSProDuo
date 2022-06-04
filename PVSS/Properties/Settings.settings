@@ -6,7 +6,7 @@
       <Value Profile="(Default)">COM4</Value>
     </Setting>
     <Setting Name="BaudRate" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">115200</Value>
+      <Value Profile="(Default)">19200</Value>
     </Setting>
     <Setting Name="CompanyText" Type="System.String" Scope="User">
       <Value Profile="(Default)">ISPTEL, Lda</Value>
