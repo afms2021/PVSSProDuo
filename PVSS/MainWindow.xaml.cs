@@ -51,7 +51,6 @@ namespace PVSS
             if (e.Key == System.Windows.Input.Key.F8)
             {
                 MainWindow2 win2 = new MainWindow2();
-
                 win2.TakeSnapshot2();
             }
 
@@ -97,8 +96,7 @@ namespace PVSS
         }
 
         public string LastTakenPhoto;
-      //  public string LastTakenPhoto2;
-       
+               
         private void Image_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             var psi = new ProcessStartInfo("Explorer.exe", "/select," + LastTakenPhoto);

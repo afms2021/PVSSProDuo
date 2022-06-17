@@ -64,7 +64,6 @@ using System;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Threading;
-using System.Windows.Input;
 using System.Windows.Threading;
 using System.Windows;
 using Sensoray;
@@ -81,7 +80,7 @@ using DotSpatial.Positioning;
 using System.Windows.Forms;
 using System.Windows.Controls;
 using GalaSoft.MvvmLight.Messaging;
-
+using System.Windows.Input;
 
 namespace PVSS.ViewModel
 {
@@ -144,9 +143,13 @@ namespace PVSS.ViewModel
         private static SolidColorBrush RedBrush = new SolidColorBrush(Color.FromScRgb(1f, 1f, 0f, 0f));
 
         //Depth Sensor status
-        private static string DEPTH_SENSOR_STATUS_OK = "ok";
-        private static string DEPTH_SENSOR_STATUS_OPEN = "open";
-        private static string DEPTH_SENSOR_STATUS_SHORT = "short";
+        private static string DEPTH_SENSOR1_STATUS_OK = "ok";
+        private static string DEPTH_SENSOR1_STATUS_OPEN = "open";
+        private static string DEPTH_SENSOR1_STATUS_SHORT = "short";
+        private static string DEPTH_SENSOR2_STATUS_OK = "ok";
+        private static string DEPTH_SENSOR2_STATUS_OPEN = "open";
+        private static string DEPTH_SENSOR2_STATUS_SHORT = "short";
+
 
         // Battery Charger Status
         private static string BATTERY_CHARGER_STATUS_ON = "on";
@@ -154,24 +157,44 @@ namespace PVSS.ViewModel
 
         private bool Sensoray_codec = false;
         private string Last_file_name = "noname";
-        private float BatteryLevel;
-        private string TemperatureLevel;
+        //private float BatteryLevel;
+        //private string TemperatureLevel;
 
 #if PVSS_PRO
         private int result;
         private int _pro_open1 = 0;
         private int _pro_short1 = 0;
+        private int _pro_open2 = 0;
+        private int _pro_short2 = 0;
+
         // Change Baudrate in settings to 19200 / PVSS use 115200
 
 #endif
 
         #region IO COMMANDS
 #if PVSS_PRO
-        private const string IO_COMMAND_TURN_LIGHT_ON = "$DVD,4095,4095,*7A\r\n";
-        private const string IO_COMMAND_TURN_CAMERA_ON = "$RLY,1,1,0,0,*6B\r\n";
-        private const string IO_COMMAND_TURN_LIGHT_OFF = "$DVD,0,0,*7A\r\n"; 
-        private const string IO_COMMAND_TURN_CAMERA_OFF = "$RLY,0,0,0,0,*6B\r\n";
+        
+        private const string IO_COMMAND_TURN_CAMERA_ON_1_2 = "$RLY,1,1,0,0,*6B\r\n";
+        private const string IO_COMMAND_TURN_CAMERA_ON_1 = "$RLY,1,0,0,0,*6A\r\n";
+        private const string IO_COMMAND_TURN_CAMERA_ON_2 = "$RLY,0,1,0,0,*6A\r\n";  
+
+        private const string IO_COMMAND_TURN_CAMERA_OFF_1_2 = "$RLY,0,0,0,0,*6B\r\n";
+        private const string IO_COMMAND_TURN_CAMERA_OFF_1 = "$RLY,0,1,0,0,*6A\r\n";
+        private const string IO_COMMAND_TURN_CAMERA_OFF_2 = "$RLY,1,0,0,0,*6A\r\n";
+
+
+        private const string IO_COMMAND_TURN_LIGHT_ON_1_2 = "$DVD,4095,4095,*7A\r\n";
+        private const string IO_COMMAND_TURN_LIGHT_ON_1 = "$DVD,4095,0,*42\r\n"; 
+        private const string IO_COMMAND_TURN_LIGHT_ON_2 = "$DVD,0,4095,*42\r\n"; 
+        /// <summary>
+        /// scadacore.com/tools/programming-calculators/online-checksum-calculator/
+        /// </summary>
+        private const string IO_COMMAND_TURN_LIGHT_OFF_1_2 = "$DVD,0,0,*7A\r\n";
+        private const string IO_COMMAND_TURN_LIGHT_OFF_1 = "$DVD,0,4095,*42\r\n"; 
+        private const string IO_COMMAND_TURN_LIGHT_OFF_2 = "$DVD,4095,0,*42\r\n"; 
+
         private string sensorstatus1 = "";
+        private string sensorstatus2 = "";
         //private int _depth1;
         //private int _depth2;
 #else
@@ -307,18 +330,23 @@ namespace PVSS.ViewModel
                 startDateTime1 = DateTime.Now;
                 StartRecording();
                 StatusMessage = "Recording - F3 STOP"; //Was F3 now toggle START/STOP Arlindo 02.MAR.2017
+                
                 SuppressEditing = true;
+
+                if (IsRecording2)
+                {
+                    SuppressEditing2 = true;
+                }
+                
                 DivingTimer1.Start();
 
-                Log("System Started and Internal Temperature was:" + TemperatureLevel + " ºC");
-                Log("Battery Level was:" + " " + string.Format("{0:0.00}", BatteryLevel) + " Vdc");
+                //Log("System Started and Internal Temperature was:" + TemperatureLevel + " ºC");
                 Log("Start Recording");
                 Log("Start Diving Depth was: " + Depth1 + " m");
 
                 MaxDepthValue1 = 0f;
-                MaxDepthString1 = "Max: - m";
-           
-
+                MaxDepthString1 = "0.0 m";
+         
                 MyPlotModel.Axes.Clear();
                 MyPlotModel2.Axes.Clear();
                 (MyPlotModel.Series[0] as LineSeries).Points.Clear();
@@ -337,12 +365,18 @@ namespace PVSS.ViewModel
                 SaveChartImage(); //Arlindo OUT21
 
                 Log("Stop Recording");
-                Log("Battery Level was:" + " " + string.Format("{0:0.00}", BatteryLevel) + " Vdc");
                 Log("Maximum Depht was: " + MaxDepthValue1 + " m");
                 Log("Ended Dive Depth was: " + Depth1 + " m");
                 Log("Save Dive Profile Chart" + "\r\n");
                 StatusMessage = "Stopped - F3 REC";
+
                 SuppressEditing = false;
+
+                if (IsRecording2)
+                {
+                    SuppressEditing2 = false;
+                }
+                
                 DivingTimer1.Stop();
                 startDateTime1 = DateTime.Now;
                 string fullPathToSound = Path.GetFullPath(@"Stop_Rec.wav");
@@ -398,7 +432,6 @@ namespace PVSS.ViewModel
         {
             if (IsRecording2)
             {
-
                 SetOSDStyledREC2(STREAM_A);
                 string fullPathToSound = Path.GetFullPath(@"Start_Rec.wav");
                 SoundPlayer soundPlayer = new SoundPlayer();
@@ -409,24 +442,31 @@ namespace PVSS.ViewModel
                 startDateTime2 = DateTime.Now;
                 StartRecording2();
                 StatusMessage2 = "Recording - F4 STOP"; // F4 now toggle START/STOP Arlindo 02.MAR.2017
-                SuppressEditing = true;
+                
+                
+                if (IsRecording)
+                {
+                    SuppressEditing = true;
+                }
+
+                SuppressEditing2 = true;
+
                 DivingTimer2.Start();
 
-                Log("System Started and Internal Temperature was:" + TemperatureLevel + " ºC");
-                Log("Battery Level was:" + " " + string.Format("{0:0.00}", BatteryLevel) + " Vdc");
+                //Log("System Started and Internal Temperature was:" + TemperatureLevel + " ºC");
                 Log("Start Recording");
                 Log("Start Diving Depth was: " + Depth2 + " m");
 
                 MaxDepthValue2 = 0f;
-                MaxDepthString2 = "Max: - m";
+                MaxDepthString2 = "0.0 m";
 
-                MyPlotModel.Axes.Clear();
-                MyPlotModel2.Axes.Clear();
-                (MyPlotModel.Series[0] as LineSeries).Points.Clear();
-                (MyPlotModel2.Series[0] as LineSeries).Points.Clear();
-                MyPlotModel.Series.Clear();
-                MyPlotModel2.Series.Clear();
-                SetupCharting();
+                MyPlotModel21.Axes.Clear();
+                MyPlotModel22.Axes.Clear();
+                (MyPlotModel21.Series[0] as LineSeries).Points.Clear();
+                (MyPlotModel22.Series[0] as LineSeries).Points.Clear();
+                MyPlotModel21.Series.Clear();
+                MyPlotModel22.Series.Clear();
+                SetupCharting2();
                 Log("Start Dive Profile Chart");
             }
             else
@@ -438,12 +478,17 @@ namespace PVSS.ViewModel
                 SaveChartImage(); //Arlindo OUT21
 
                 Log("Stop Recording");
-                Log("Battery Level was:" + " " + string.Format("{0:0.00}", BatteryLevel) + " Vdc");
                 Log("Maximum Depht was: " + MaxDepthValue2 + " m");
                 Log("Ended Dive Depth was: " + Depth2 + " m");
                 Log("Save Dive Profile Chart" + "\r\n");
-                StatusMessage = "Stopped - F4 REC";
-                SuppressEditing = false;
+                StatusMessage2 = "Stopped - F4 REC";
+
+                if (IsRecording)
+                {
+                    SuppressEditing = false;
+                }
+                SuppressEditing2 = false;
+                
                 DivingTimer2.Stop();
                 startDateTime2 = DateTime.Now;
                 string fullPathToSound = Path.GetFullPath(@"Stop_Rec.wav");
@@ -470,13 +515,19 @@ namespace PVSS.ViewModel
                 Directory.CreateDirectory(ChartsDirectoryPath);
             }
             // Changed to PDF due to Win 10 photo viwer black background, no axes visible by Arlindo Dez-2015
-            //string fileName = string.Format(@"{0}\{1}.png", DirectoryPathCharts, DateTime.Now.ToString("dd-MM-yyyy HH_mm_ss_fff"));
             string fileName = string.Format(@"{0}\{1}.pdf", ChartsDirectoryPath, DateTime.Now.ToString("dd-MM-yyyy HH_mm_ss_fff"));
-            // ((OxyPlot.Wpf.Plot)MyPlotModel2.PlotControl).SaveBitmap(fileName);
-            OxyPlot.Pdf.PdfExporter.Export(MyPlotModel2, fileName, MyPlotModel2.Width - 0, MyPlotModel2.Height); // was Width - 50
+            OxyPlot.Pdf.PdfExporter.Export(MyPlotModel2, fileName, MyPlotModel2.Width, MyPlotModel2.Height); // was Width - 50
+            
+            ChartsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts2";
+            if (!Directory.Exists(ChartsDirectoryPath))
+            {
+                Directory.CreateDirectory(ChartsDirectoryPath);
+            }
+            // Changed to PDF due to Win 10 photo viwer black background, no axes visible by Arlindo Dez-2015
+            string fileName2 = string.Format(@"{0}\{1}.pdf", ChartsDirectoryPath, DateTime.Now.ToString("dd-MM-yyyy HH_mm_ss_fff"));
+            OxyPlot.Pdf.PdfExporter.Export(MyPlotModel22, fileName2, MyPlotModel22.Width, MyPlotModel22.Height); // was Width - 50
 
         }
-
         #endregion
 
         #region Status String
@@ -637,6 +688,37 @@ namespace PVSS.ViewModel
             }
         }
 
+        /// <summary>
+        /// The <see cref="SuppressEditing2" /> property's name.
+        /// </summary>
+        public const string SuppressEditingPropertyName2 = "SuppressEditing2";
+
+        private bool _suppress2 = false;
+
+        /// <summary>
+        /// Sets and gets the SuppressEditing property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool SuppressEditing2
+        {
+            get
+            {
+                return !IsRecording2;
+            }
+
+            set
+            {
+                if (_suppress2 == value)
+                {
+                    return;
+                }
+
+                _suppress2 = value;
+                RaisePropertyChanged(SuppressEditingPropertyName2);
+            }
+        }
+
+
         #endregion
 
 
@@ -690,8 +772,11 @@ namespace PVSS.ViewModel
                 BatteryPercentage = 50;
                 FreeDiskSpace_GB = 90.01;
                 AvailableVideoTime_Hours = "12341234.34:23:123";
-                DepthSensorStatusText = "Depth sensor malfunction. (short)";
-                DepthSensorMessageColor = RedBrush;
+                DepthSensorStatusText1 = "Depth sensor malfunction. (short)";
+                DepthSensorMessageColor1 = RedBrush;
+                DepthSensorStatusText2 = "Depth sensor malfunction. (short)";
+                DepthSensorMessageColor2 = RedBrush;
+
                 DepthString1 = "32,4 m";
                 DepthString2 = "22,4 m";
                 Longitude = "41°11'14,2139''N";
@@ -743,7 +828,7 @@ namespace PVSS.ViewModel
             DisplayLineTimer.Tick += new EventHandler(DisplayLineTimer_tick);
 
             System.Windows.Application.Current.MainWindow.KeyUp += new System.Windows.Input.KeyEventHandler(MainWindow_KeyUp);
-      
+            
             VideoDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos";
             SnapshotsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots";
             ChartsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts";
@@ -786,7 +871,9 @@ namespace PVSS.ViewModel
                 Directory.CreateDirectory(ChartsDirectoryPath);
             }
 
+
             SetupCharting();
+            SetupCharting2();
 
             // List of devices at Developer Machine
             //Blackmagic WDM Capture
@@ -881,32 +968,28 @@ namespace PVSS.ViewModel
         {
             switch (e.Key)
             {
-
-                case System.Windows.Input.Key.F1:
-                    IsCameraOn = !IsCameraOn;
+                case Key.F1: // Camera 1
+                    IsCameraOn1 = !IsCameraOn1;
                     break;
-                case System.Windows.Input.Key.F2:
-                    IsCameraOn = !IsCameraOn;
+                case Key.F2: // Camera 2
+                    IsCameraOn2 = !IsCameraOn2;
                     break;
-                case System.Windows.Input.Key.F3:  // REC 1
+                case Key.F3:  // REC 1
                     IsRecording = !IsRecording;
                     break;
-                case System.Windows.Input.Key.F4:  // REC 2
+                case Key.F4:  // REC 2
                     IsRecording2 = !IsRecording2;
                     break;
-                case System.Windows.Input.Key.F5: // Comment 1 
+                case Key.F5: // Comment 1 
                     OSDPopupVisibility = !OSDPopupVisibility;
                     break;
-                case System.Windows.Input.Key.F6: // Comment 2
+                case Key.F6: // Comment 2
                     OSDPopupVisibility2 = !OSDPopupVisibility2;
                     break;
-                case System.Windows.Input.Key.F9:  // Light 1
-                    IsLightOn = !IsLightOn;
-                    break;                
-                case System.Windows.Input.Key.F10: // Light 2
+                case Key.F9:  // Light 1
                     IsLightOn = !IsLightOn;
                     break;
-                case System.Windows.Input.Key.Enter:
+                case Key.Enter:
 
                     if (OSDPopupVisibility)
                     {
@@ -920,112 +1003,152 @@ namespace PVSS.ViewModel
                         OSDLine12Submitted = OSDLine12;
                         OSDPopupVisibility2 = false;
                         SendKeys.SendWait("{F8}"); // Added Auto Smapshot ARLINDO 15-NOV-2017 ( must be duplicated to get overlay comment text grabbed ) 
-                        SendKeys.SendWait("{F8}"); // Added Auto Smapshot ARLINDO 15-NOV-2017
+                        //SendKeys.SendWait("{F8}"); // Added Auto Smapshot ARLINDO 15-NOV-2017
                     }
                     break;
                 default:
                     break;
             }
+            
+            switch (e.SystemKey)
+            {
+                case Key.F10: // Light 2
+                    IsLightOn2 = !IsLightOn2;
+                    break;
+                
+                default:
+                    break;
+            }
         }
 
-        private bool AlreadyShownWarningBatteryLevelWarning = false;
-        private bool AlreadyShownWarningBatteryLevelCritical = false;
+        private static string getChecksum(string sentence)
+        {
+            //Start with first Item
+            int checksum = Convert.ToByte(sentence[sentence.IndexOf('#') + 1]);
+            // Loop through all chars to get a checksum
+            for (int i = sentence.IndexOf('#') + 2; i < sentence.IndexOf('*'); i++)
+            {
+                // No. XOR the checksum with this character's value
+                checksum ^= Convert.ToByte(sentence[i]);
+            }
+            // Return the checksum formatted as a two-character hexadecimal
+            return checksum.ToString("X2");
+        }
+
         private bool AlreadyShownWarningChargerOn = false;
 
         private void IOPort_DataReceived(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
         {
-            string pattern_temp = "<pcbtemp>(?<pcbtemp>.+)</pcbtemp>\r\n";
-            string pattern_depth = "<depth>(?<depth>.+)</depth>\r\n";
-            string pattern_vbat = "<vbat>(?<vbat>.+)</vbat>\r\n";
-            string pattern_sensorstatus = "<sensorstatus>(?<sensorstatus>.+)</sensorstatus>\r\n";
-            string pattern_chargerstatus = "<chargerstatus>(?<chargerstatus>.+)</chargerstatus>\r\n";
-
-
-            Match m_pattern_temp = Regex.Match(MyCommunicationManager.LastMsg, pattern_temp);
-            Match m_pattern_depth = Regex.Match(MyCommunicationManager.LastMsg, pattern_depth);
-            Match m_pattern_vbat = Regex.Match(MyCommunicationManager.LastMsg, pattern_vbat);
-            Match m_pattern_sensorstatus = Regex.Match(MyCommunicationManager.LastMsg, pattern_sensorstatus);
-            Match m_pattern_chargerstatus = Regex.Match(MyCommunicationManager.LastMsg, pattern_chargerstatus);
-
-
+              
 #if PVSS_PRO
-            //Console.WriteLine("New Depth: " + MyCommunicationManager.LastMsg); //Arlindo 2021
-            if (string.IsNullOrEmpty(MyCommunicationManager.LastMsg) == false)
-            {
-                string new_depth = MyCommunicationManager.LastMsg;
-                if (new_depth.Contains("#DVA"))  // #DVA,1,0,0,1,2,0,0,1,*7C 
-                {
-                    string[] new_depthinfo = new_depth.Split(',');
-                    string ch1 = new_depthinfo[1];
-                    //Console.WriteLine("Diver " + ch1);
-
-                
-
-                    string ch1_depth = new_depthinfo[2];
-                    if (int.TryParse(ch1_depth, out result) == true)
-                    {
-                        int _pro_depth1 = int.Parse(ch1_depth, CultureInfo.InvariantCulture.NumberFormat);
-                        //Console.WriteLine("Depth " + _pro_depth1);
-                        _depth1 = _pro_depth1;
-                    }
-            
-
-                    string ch1_short = new_depthinfo[3];
-                    if (int.TryParse(ch1_short, out result) == true)
-                    {
-                        _pro_short1 = int.Parse(ch1_short, CultureInfo.InvariantCulture.NumberFormat);
-                    }
-
-                    string ch1_open = new_depthinfo[4];
-                    if (int.TryParse(ch1_open, out result) == true)
-                    {
-                        _pro_open1 = int.Parse(ch1_open, CultureInfo.InvariantCulture.NumberFormat);
-                    }
-
-
-                    //Console.WriteLine("Sensor Open " + _pro_open1);
-                    if (_pro_open1 == 1)
-                    {
-                        sensorstatus1 = "open";
-                    }
-                    if (_pro_short1 == 1)
-                    {
-                        sensorstatus1 = "short";
-                    }
-                    if ((_pro_open1 == 0) && (_pro_short1 == 0))
-                    {
-                        sensorstatus1 = "ok";
-                    }
-
-                    string ch2 = new_depthinfo[5];
-                    //Console.WriteLine("Diver " + ch2);
-
-                    string ch2_depth = new_depthinfo[6];
-                    //Console.WriteLine("Depth " + ch2_depth);
-                    if (int.TryParse(ch2_depth, out result) == true)
-                    {
-                        int _pro_depth2 = int.Parse(ch2_depth, CultureInfo.InvariantCulture.NumberFormat);
-                        //Console.WriteLine("Depth " + _pro_depth2);
-                        _depth2 = _pro_depth2;
-                    }
-
-                    string ch2_short = new_depthinfo[7];
-                    //Console.WriteLine("Sensor Short " + ch2_short);
-
-                    string ch2_open = new_depthinfo[8];
-                    //Console.WriteLine("Sensor Open " + ch2_open);
-
-                }
-                
-            }
-#endif
-
+            //Console.WriteLine("Before: " + MyCommunicationManager.LastMsg); //Arlindo 2021
             try
             {
-                ChargerStatus = m_pattern_chargerstatus.Groups["chargerstatus"].Value;
+                if ((!string.IsNullOrEmpty(MyCommunicationManager.LastMsg)) && (MyCommunicationManager.LastMsg.StartsWith("#DVA")))
+                {
+                    string new_depth = MyCommunicationManager.LastMsg;
+                    //Console.WriteLine("After: " + MyCommunicationManager.LastMsg); //Arlindo 2021
+                    
+                    string s1 = getChecksum(new_depth);
+                    string y = new_depth.Substring(new_depth.Length - 5);
+                    
+                    int s1_value = Int32.Parse(s1);
+                    int y_value = Int32.Parse(y);
+                   
+                    bool _depthStringValid = false;
+
+                    if (s1_value == y_value)
+                    {
+                        _depthStringValid =true;
+                    }
+                 
+                    if (_depthStringValid)  // #DVA,1,1024,0,1,2,1024,0,1,*7C => #DVA, <1>, <value1>, <short1>, <open1>, <2>, <value2>, <short2>, <open2>*<checksum>
+                    {
+                        //Console.WriteLine("After: " + MyCommunicationManager.LastMsg); //Arlindo 2021
+                        string[] new_depthinfo = new_depth.Split(',');
+                        string ch1 = new_depthinfo[1];
+                        //Console.WriteLine("Diver " + ch1);
+
+                        string ch1_depth = new_depthinfo[2];
+                        if (int.TryParse(ch1_depth, out result) == true)
+                        {
+                            int _pro_depth1 = int.Parse(ch1_depth, CultureInfo.InvariantCulture.NumberFormat);
+                            //Console.WriteLine("Depth 1 " + _pro_depth1);
+                            _depth1 = _pro_depth1;
+                        }
+
+                        string ch1_short = new_depthinfo[3];
+                        if (int.TryParse(ch1_short, out result) == true)
+                        {
+                            _pro_short1 = int.Parse(ch1_short, CultureInfo.InvariantCulture.NumberFormat);
+                        }
+
+                        string ch1_open = new_depthinfo[4];
+                        if (int.TryParse(ch1_open, out result) == true)
+                        {
+                            _pro_open1 = int.Parse(ch1_open, CultureInfo.InvariantCulture.NumberFormat);
+                        }
+
+                        //Console.WriteLine("Sensor Open " + _pro_open1);
+                        if (_pro_open1 == 1)
+                        {
+                            sensorstatus1 = "open";
+                        }
+                        if (_pro_short1 == 1)
+                        {
+                            sensorstatus1 = "short";
+                        }
+                        if ((_pro_open1 == 0) && (_pro_short1 == 0))
+                        {
+                            sensorstatus1 = "ok";
+                        }
+
+                        string ch2 = new_depthinfo[5];
+                        //Console.WriteLine("Diver " + ch2);
+
+                        string ch2_depth = new_depthinfo[6];
+                        //Console.WriteLine("Depth " + ch2_depth);
+                        if (int.TryParse(ch2_depth, out result) == true)
+                        {
+                            int _pro_depth2 = int.Parse(ch2_depth, CultureInfo.InvariantCulture.NumberFormat);
+                            //Console.WriteLine("Depth 2 " + _pro_depth2);
+                            _depth2 = _pro_depth2;
+                        }
+
+                        string ch2_short = new_depthinfo[7];
+                        //Console.WriteLine("Sensor Short " + ch2_short);
+                        if (int.TryParse(ch1_short, out result) == true)
+                        {
+                            _pro_short2 = int.Parse(ch2_short, CultureInfo.InvariantCulture.NumberFormat);
+                        }
+
+                        string ch2_open = new_depthinfo[8];
+                        //Console.WriteLine("Sensor Open " + ch2_open);
+                        if (int.TryParse(ch2_open, out result) == true)
+                        {
+                            _pro_open2 = int.Parse(ch2_open, CultureInfo.InvariantCulture.NumberFormat);
+                        }
+
+                        if (_pro_open2 == 1)
+                        {
+                            sensorstatus2 = "open";
+                        }
+                        if (_pro_short2 == 1)
+                        {
+                            sensorstatus2 = "short";
+                        }
+                        if ((_pro_open2 == 0) && (_pro_short2 == 0))
+                        {
+                            sensorstatus2 = "ok";
+                        }
+                    }
+                }                
             }
             catch { }
+#endif
 
+            ChargerStatus = BATTERY_CHARGER_STATUS_ON; // Overide condition for PVSS PRO DUO
+            
             if (ChargerStatus == BATTERY_CHARGER_STATUS_ON && !AlreadyShownWarningChargerOn)
             {
                 AlreadyShownWarningChargerOn = true;
@@ -1034,7 +1157,7 @@ namespace PVSS.ViewModel
                     () =>
                     {
                         System.Windows.MessageBox.Show("! CAUTION ! External Mains Power apllied to System." + "\n" + "      !!! Dot use when Diver is in Water !!!" + "\n" + "Use only if Grounding and RCD is present ",
-                            "* WARNING * Battery Charger ON",
+                            "* WARNING * Mains Power ON",
                             MessageBoxButton.OK,
                             MessageBoxImage.Exclamation);
                     });
@@ -1045,24 +1168,7 @@ namespace PVSS.ViewModel
             {
                 AlreadyShownWarningChargerOn = false;
             }
-
-            try
-            {
-                TemperatureStatus = float.Parse(m_pattern_temp.Groups["pcbtemp"].Value, CultureInfo.InvariantCulture);
-                TemperatureLevel = TemperatureStatus.ToString("00");
-
-                if (TemperatureStatus > 52)  // Telemetry PCB Board Temperature in ºC 
-                {
-                    System.Windows.MessageBox.Show("  Internal Over Temperature at " + TemperatureStatus.ToString("00") + " ºC" + " ,too High" + "\n" + " !! Stop Diving Operations and turn off system !!",
-                          "* WARNING * Internal Temperature",
-                          MessageBoxButton.OK,
-                          MessageBoxImage.Warning);
-                    Log("Warning Internal Over Temperature at: " + TemperatureLevel + " ºC");
-                }
-            }
-            catch { }
-
-
+      
             try
             {
 #if PVSS_PRO
@@ -1071,10 +1177,8 @@ namespace PVSS.ViewModel
 #else
                 int DepthSensorReading = int.Parse(m_pattern_depth.Groups["depth"].Value);
 #endif
-
-                //Depth = (float)Math.Round((DepthSensorReading * 99.0f) / 1024.0f, 1); // ARLINDO 25.OUT.2016
-                Depth1 = (float)Math.Round((DepthSensorReading1 * SensorFactor / WaterFactor) / 1024.0f, 1) + Convert.ToSingle(Sensor_Offset); //ARLINDO 27.FEV.2017 Ver 5.0
-                Depth2 = (float)Math.Round((DepthSensorReading2 * SensorFactor / WaterFactor) / 1024.0f, 1) + Convert.ToSingle(Sensor_Offset); //ARLINDO 27.FEV.2017 Ver 5.0
+                Depth1 = (float)Math.Round((DepthSensorReading1 * SensorFactor / WaterFactor) / 1024.0f, 1) + Convert.ToSingle(Sensor1_Offset); //ARLINDO 27.FEV.2017 Ver 5.0
+                Depth2 = (float)Math.Round((DepthSensorReading2 * SensorFactor / WaterFactor) / 1024.0f, 1) + Convert.ToSingle(Sensor2_Offset); 
             }
             catch { }
 
@@ -1082,86 +1186,59 @@ namespace PVSS.ViewModel
             {
                 MaxDepthValue1 = Depth1;
 
-                MaxDepthString1 = "Max: " + MaxDepthValue1 + " m"; // was #.#
+                MaxDepthString1 = MaxDepthValue1 + " m"; // was #.#
             }
 
-            try
+            if (Depth2 > MaxDepthValue2 && IsRecording2)
             {
-                int BatterySensorValue = int.Parse(m_pattern_vbat.Groups["vbat"].Value);
-                BatteryLevel = ((BatterySensorValue * (5.00f / 1024) * 4.675578f) - 4.82f);
+                MaxDepthValue2 = Depth2;
 
-                if (BatterySensorValue <= BATTERY_LEVEL_CRITICAL && !AlreadyShownWarningBatteryLevelCritical)
-                {
-                    AlreadyShownWarningBatteryLevelCritical = true;
-                    LowBatErrorTimer.Start();
-                    var thread = new Thread(
-                        () =>
-                        {
-                            System.Windows.MessageBox.Show("Battery Level Critical. The video will stop recording.",
-                                "Battery Level Critical",
-                                MessageBoxButton.OK,
-                                MessageBoxImage.Stop);
-                            Log("Battery Level Critical" + " " + string.Format("{0:0.00}", BatteryLevel) + " Vdc");
-                        });
-                    thread.Start();
-                    if (IsRecording)
-                    {
-                        SaveChartImage(); // Arlindo 05/APR/2022
-                        StopRecording();
-                        StartRecording();
-                    }
-                }
-                else if (BatterySensorValue <= BATTERY_LEVEL_WARNING && !AlreadyShownWarningBatteryLevelWarning)
-                {
-                    AlreadyShownWarningBatteryLevelWarning = true;
-                    LowBatErrorTimer.Start();
-
-                    var thread = new Thread(
-                        () =>
-                        {
-                            System.Windows.MessageBox.Show("Battery level too low. Please recharge battery.",
-                                              "Battery Level Low",
-                                              MessageBoxButton.OK,
-                                              MessageBoxImage.Exclamation);
-
-                            Log("Battery Level Low" + " " + string.Format("{0:0.00}", BatteryLevel) + " Vdc");
-                        });
-                    thread.Start();
-                }
-
-
-                BatteryStatus = ((BatterySensorValue * (5.00f / 1024)) * 4.675578f) - 4.82f; // y=xm+b => m=4.675578 and b=-4.8 by Arlindo 14.ABR:2015
-
-                BatteryPercentage = Convert.ToInt32(((BatteryStatus - 10.00f) * 100) / (13.20f - 10.00f)); // was min 11,80 was max 13,80 (was 13,00 9.SET.2013)(was 12,87 11.FEB.2014)
-                // Percentage display desable at XAML layout Expresion Blend                               // was  ((( BatteryStatus - 11.00f) * 100) / (13.20f - 11.00f))
+                MaxDepthString2 = MaxDepthValue2 + " m"; // was #.#
             }
-            catch { }
 
             try
             {
 #if PVSS_PRO
-                DepthSensorStatus = sensorstatus1;
+                DepthSensorStatus1 = sensorstatus1;
+                DepthSensorStatus2 = sensorstatus2;
 #else
                 DepthSensorStatus = m_pattern_sensorstatus.Groups["sensorstatus"].Value;
 #endif
             }
             catch { }
 
-            if (DepthSensorStatus == DEPTH_SENSOR_STATUS_OK)
+            if (DepthSensorStatus1 == DEPTH_SENSOR1_STATUS_OK)
             {
-                DepthSensorStatusText = "Depth sensor OK";
-                DepthSensorMessageColor = GreenBrush;
+                DepthSensorStatusText1 = "Depth sensor OK";
+                DepthSensorMessageColor1 = GreenBrush;
             }
-            else if (DepthSensorStatus == DEPTH_SENSOR_STATUS_OPEN)
+            else if (DepthSensorStatus1 == DEPTH_SENSOR1_STATUS_OPEN)
             {
-                DepthSensorStatusText = "Depth sensor malfunction (open)";
-                DepthSensorMessageColor = RedBrush;
+                DepthSensorStatusText1 = "Depth sensor malfunction (open)";
+                DepthSensorMessageColor1 = RedBrush;
             }
-            else if (DepthSensorStatus == DEPTH_SENSOR_STATUS_SHORT)
+            else if (DepthSensorStatus1 == DEPTH_SENSOR1_STATUS_SHORT)
             {
-                DepthSensorStatusText = "Depth sensor malfunction (short)";
-                DepthSensorMessageColor = RedBrush;
+                DepthSensorStatusText1 = "Depth sensor malfunction (short)";
+                DepthSensorMessageColor1 = RedBrush;
             }
+
+            if (DepthSensorStatus2 == DEPTH_SENSOR2_STATUS_OK)
+            {
+                DepthSensorStatusText2 = "Depth sensor OK";
+                DepthSensorMessageColor2 = GreenBrush;
+            }
+            else if (DepthSensorStatus2 == DEPTH_SENSOR2_STATUS_OPEN)
+            {
+                DepthSensorStatusText2 = "Depth sensor malfunction (open)";
+                DepthSensorMessageColor2 = RedBrush;
+            }
+            else if (DepthSensorStatus2 == DEPTH_SENSOR2_STATUS_SHORT)
+            {
+                DepthSensorStatusText2 = "Depth sensor malfunction (short)";
+                DepthSensorMessageColor2 = RedBrush;
+            }
+
         }
 
 
@@ -1192,7 +1269,7 @@ namespace PVSS.ViewModel
             if (IsRecording)
             {
                 DataPoint data = new DataPoint(float.NaN, float.NaN);
-                if (DepthSensorStatus == DEPTH_SENSOR_STATUS_OK)
+                if (DepthSensorStatus1 == DEPTH_SENSOR1_STATUS_OK)
                 {
                     data = new DataPoint(TimeSpanAxis.ToDouble(DiveTime1), -Depth1);
                 }
@@ -1200,22 +1277,39 @@ namespace PVSS.ViewModel
                 (MyPlotModel.Series[0] as LineSeries).Points.Add(data);
                 MyPlotModel.RefreshPlot(true);
 
-                //MyPlotModel.Updated();
-
                 (MyPlotModel2.Series[0] as LineSeries).Points.Add(data);
                 MyPlotModel2.RefreshPlot(true);
 
                 MyPlotModel2.Update();
 
             }
+            if (IsRecording2)
+            {
+                DataPoint data2 = new DataPoint(float.NaN, float.NaN);
+
+                if (DepthSensorStatus2 == DEPTH_SENSOR2_STATUS_OK)
+                {
+                    data2 = new DataPoint(TimeSpanAxis.ToDouble(DiveTime2), -Depth2);
+                }
+  
+                (MyPlotModel21.Series[0] as LineSeries).Points.Add(data2);
+                MyPlotModel21.RefreshPlot(true);
+
+                (MyPlotModel22.Series[0] as LineSeries).Points.Add(data2);
+                MyPlotModel22.RefreshPlot(true);
+
+                MyPlotModel22.Update();
+
+            }
+
         }
 
         #region IOPorts
 
         private void SetupIOPorts()
         {
-            MyCommunicationManager.WriteData(IO_COMMAND_TURN_CAMERA_OFF);
-            MyCommunicationManager.WriteData(IO_COMMAND_TURN_LIGHT_OFF);
+            MyCommunicationManager.WriteData(IO_COMMAND_TURN_CAMERA_OFF_1_2);
+            MyCommunicationManager.WriteData(IO_COMMAND_TURN_LIGHT_OFF_1_2);
             SetOSDStyledRECSTOP(STREAM_A);
         }
 
@@ -1338,7 +1432,7 @@ namespace PVSS.ViewModel
         {
             LowBatErrorTimer.Stop();
             SendKeys.SendWait("{ESC}");
-            AlreadyShownWarningBatteryLevelCritical = false;
+           // AlreadyShownWarningBatteryLevelCritical = false;
             LowBatErrorTimer.Start();
         }
         #endregion
@@ -1579,7 +1673,7 @@ namespace PVSS.ViewModel
                           "*** WARNING ***",
                           MessageBoxButton.OK,
                           MessageBoxImage.Warning); // file existe but is empty
-                Log("Video File is Empty or Severe Corruted");
+                Log("Diver 1 Video File is Empty or Severe Corruted");
             }
         }
 
@@ -1594,7 +1688,7 @@ namespace PVSS.ViewModel
                           "*** WARNING ***",
                           MessageBoxButton.OK,
                           MessageBoxImage.Warning); // file existe but is empty
-                Log("Video File is Empty or Severe Corruted");
+                Log("Diver 2 Video File is Empty or Severe Corruted");
             }
         }
 
@@ -3006,63 +3100,145 @@ namespace PVSS.ViewModel
         #region IsCameraOn
 
         /// <summary>
-        /// The <see cref="IsCameraOn" /> property's name.
+        /// The <see cref="IsCameraOn1" /> property's name.
         /// </summary>
-        public const string IsCameraOnPropertyName = "IsCameraOn";
+        public const string IsCameraOnPropertyName1 = "IsCameraOn1";
 
-        private bool _isCameraOn = false;
+        private bool _isCameraOn1 = false;
 
         /// <summary>
-        /// Sets and gets the IsCameraOn property.
+        /// Sets and gets the IsCameraOn1 property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public bool IsCameraOn
+        public bool IsCameraOn1
         {
             get
             {
-                return _isCameraOn;
+                return _isCameraOn1;
             }
 
             set
             {
-                if (_isCameraOn == value)
+                if (_isCameraOn1 == value)
                 {
                     return;
                 }
 
-                _isCameraOn = value;
-                RaisePropertyChanged(IsCameraOnPropertyName);
+                _isCameraOn1 = value;
+                RaisePropertyChanged(IsCameraOnPropertyName1);
             }
         }
 
+        /// <summary>
+        /// The <see cref="IsCameraOn2" /> property's name.
+        /// </summary>
+        public const string IsCameraOnPropertyName2 = "IsCameraOn2";
+
+        private bool _isCameraOn2 = false;
+
+        /// <summary>
+        /// Sets and gets the IsCameraOn2 property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IsCameraOn2
+        {
+            get
+            {
+                return _isCameraOn2;
+            }
+
+            set
+            {
+                if (_isCameraOn2 == value)
+                {
+                    return;
+                }
+
+                _isCameraOn2 = value;
+                RaisePropertyChanged(IsCameraOnPropertyName2);
+            }
+        }
         #endregion
 
         #region Turn Camera On/Off
 
-        private RelayCommand _ChangeCameraState;
+        private RelayCommand _ChangeCameraState1;
 
         /// <summary>
-        /// Gets the ChangeCameraState.
+        /// Gets the ChangeCameraState1.
         /// </summary>
-        public RelayCommand ChangeCameraState
+        public RelayCommand ChangeCameraState1
         {
             get
             {
-                return _ChangeCameraState
-                    ?? (_ChangeCameraState = new RelayCommand(ExecuteChangeCameraState));
+                return _ChangeCameraState1
+                    ?? (_ChangeCameraState1 = new RelayCommand(ExecuteChangeCameraState1));
             }
         }
 
-        private void ExecuteChangeCameraState()
+        private void ExecuteChangeCameraState1()
         {
-            if (IsCameraOn)
+            if (IsCameraOn1)
             {
-                MyCommunicationManager.WriteData(IO_COMMAND_TURN_CAMERA_ON);
+                if (IsCameraOn2)
+                {
+                    MyCommunicationManager.WriteData(IO_COMMAND_TURN_CAMERA_ON_1_2);
+                }
+                else
+                    MyCommunicationManager.WriteData(IO_COMMAND_TURN_CAMERA_ON_1);
+
             }
             else
             {
-                MyCommunicationManager.WriteData(IO_COMMAND_TURN_CAMERA_OFF);
+                if (IsCameraOn2)
+                {
+                    MyCommunicationManager.WriteData(IO_COMMAND_TURN_CAMERA_OFF_1);
+                }
+                else
+                    MyCommunicationManager.WriteData(IO_COMMAND_TURN_CAMERA_OFF_1_2);
             }
+
+
+
+        }
+
+        private RelayCommand _ChangeCameraState2;
+        /// <summary>
+        /// Gets the ChangeCameraState2.
+        /// </summary>
+        public RelayCommand ChangeCameraState2
+        {
+            get
+            {
+                return _ChangeCameraState2
+                    ?? (_ChangeCameraState2 = new RelayCommand(ExecuteChangeCameraState2));
+            }
+        }
+
+        private void ExecuteChangeCameraState2()
+        {
+           
+            if (IsCameraOn2)
+            {
+                if (IsCameraOn1)
+                {
+                    MyCommunicationManager.WriteData(IO_COMMAND_TURN_CAMERA_ON_1_2);
+                }
+                else
+                    MyCommunicationManager.WriteData(IO_COMMAND_TURN_CAMERA_ON_2);
+
+            }
+            else
+            {
+                if (IsCameraOn1)
+                {
+                    MyCommunicationManager.WriteData(IO_COMMAND_TURN_CAMERA_OFF_2);
+                }
+                else
+                MyCommunicationManager.WriteData(IO_COMMAND_TURN_CAMERA_OFF_1_2);
+            }
+
+
         }
 
         #endregion
@@ -3103,7 +3279,35 @@ namespace PVSS.ViewModel
                 RaisePropertyChanged(IsLightOnPropertyName);
             }
         }
+        /// <summary>
+        /// The <see cref="IsLightOn2" /> property's name.
+        /// </summary>
+        public const string IsLightOnPropertyName2 = "IsLightOn2";
 
+        private bool _isLightOn2 = false;
+
+        /// <summary>
+        /// Sets and gets the IsLightOn property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IsLightOn2
+        {
+            get
+            {
+                return _isLightOn2;
+            }
+
+            set
+            {
+                if (_isLightOn2 == value)
+                {
+                    return;
+                }
+
+                _isLightOn2 = value;
+                RaisePropertyChanged(IsLightOnPropertyName2);
+            }
+        }
         #endregion
 
         #region Turn Light On/Off
@@ -3126,11 +3330,59 @@ namespace PVSS.ViewModel
         {
             if (IsLightOn)
             {
-                MyCommunicationManager.WriteData(IO_COMMAND_TURN_LIGHT_ON);
+                if (IsLightOn2)
+                {
+                    MyCommunicationManager.WriteData(IO_COMMAND_TURN_LIGHT_ON_1_2);
+                }
+                else
+                    MyCommunicationManager.WriteData(IO_COMMAND_TURN_LIGHT_ON_1);
+
             }
             else
             {
-                MyCommunicationManager.WriteData(IO_COMMAND_TURN_LIGHT_OFF);
+                if (IsLightOn2)
+                {
+                    MyCommunicationManager.WriteData(IO_COMMAND_TURN_LIGHT_OFF_1);
+                }
+                else
+                    MyCommunicationManager.WriteData(IO_COMMAND_TURN_LIGHT_OFF_1_2);
+            }
+        }
+
+        private RelayCommand _changeLightState2;
+
+        /// <summary>
+        /// Gets the ChangeLightState2.
+        /// </summary>
+        public RelayCommand ChangeLightState2
+        {
+            get
+            {
+                return _changeLightState2
+                    ?? (_changeLightState2 = new RelayCommand(ExecuteChangeLightState2));
+            }
+        }
+
+        private void ExecuteChangeLightState2()
+        {
+            if (IsLightOn2)
+            {
+                if (IsLightOn)
+                {
+                    MyCommunicationManager.WriteData(IO_COMMAND_TURN_LIGHT_ON_1_2);
+                }
+                else
+                    MyCommunicationManager.WriteData(IO_COMMAND_TURN_LIGHT_ON_2);
+
+            }
+            else
+            {
+                if (IsLightOn)
+                {
+                    MyCommunicationManager.WriteData(IO_COMMAND_TURN_LIGHT_OFF_2);
+                }
+                else
+                    MyCommunicationManager.WriteData(IO_COMMAND_TURN_LIGHT_OFF_1_2);
             }
         }
 
@@ -3204,7 +3456,7 @@ namespace PVSS.ViewModel
         /// </summary>
         public const string MaxDepthStringPropertyName1 = "MaxDepthString1";
 
-        private string _maxDepthString1 = "Max: 0,0 m";
+        private string _maxDepthString1 = "0,0 m";
 
         /// <summary>
         /// Sets and gets the MaxDepthString property.
@@ -3238,7 +3490,7 @@ namespace PVSS.ViewModel
         /// </summary>
         public const string MaxDepthStringPropertyName2 = "MaxDepthString2";
 
-        private string _maxDepthString2 = "Max: 0,0 m";
+        private string _maxDepthString2 = "0,0 m";
 
         /// <summary>
         /// Sets and gets the MaxDepthString property.
@@ -3581,14 +3833,25 @@ namespace PVSS.ViewModel
         #endregion
 
         /// <summary>
-        /// The <see cref="Sensor_Offset_Value" /> property's name.
+        /// The <see cref="Sensor1_Offset_Value" /> property's name.
         /// </summary>
         /// 
-        public double Sensor_Offset = 0.0;
-        public double Sensor_Offset_Value
+        public double Sensor1_Offset = 0.0;
+        public double Sensor1_Offset_Value
         {
-            get { return Sensor_Offset; }
-            set { Sensor_Offset = value; }
+            get { return Sensor1_Offset; }
+            set { Sensor1_Offset = value; }
+        }
+
+        /// <summary>
+        /// The <see cref="Sensor2_Offset_Value" /> property's name.
+        /// </summary>
+        /// 
+        public double Sensor2_Offset = 0.0;
+        public double Sensor2_Offset_Value
+        {
+            get { return Sensor2_Offset; }
+            set { Sensor2_Offset = value; }
         }
 
 
@@ -3874,34 +4137,34 @@ namespace PVSS.ViewModel
         #region Depth Sensor Status
 
         /// <summary>
-        /// The <see cref="DepthSensorStatus" /> property's name.
+        /// The <see cref="DepthSensorStatus1" /> property's name.
         /// </summary>
-        public const string DepthSensorStatusPropertyName = "DepthSensorStatus";
+        public const string DepthSensorStatusPropertyName1 = "DepthSensorStatus1";
 
-        private string _depthSensorStatus = "";
+        private string _depthSensorStatus1 = "";
 
         /// <summary>
         /// Sets and gets the DepthSensorStatus property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public string DepthSensorStatus
+        public string DepthSensorStatus1
         {
             get
             {
-                return _depthSensorStatus;
+                return _depthSensorStatus1;
             }
 
             set
             {
-                if (_depthSensorStatus == value)
+                if (_depthSensorStatus1 == value)
                 {
                     return;
                 }
 
-                _depthSensorStatus = value;
+                _depthSensorStatus1 = value;
 
 
-                RaisePropertyChanged(DepthSensorStatusPropertyName);
+                RaisePropertyChanged(DepthSensorStatusPropertyName1);
             }
         }
         #endregion
@@ -3909,66 +4172,167 @@ namespace PVSS.ViewModel
         #region DepthSensorStatusText
 
         /// <summary>
-        /// The <see cref="DepthSensorStatusText" /> property's name.
+        /// The <see cref="DepthSensorStatusText1" /> property's name.
         /// </summary>
-        public const string DepthSensorStatusTextPropertyName = "DepthSensorStatusText";
+        public const string DepthSensorStatusTextPropertyName1 = "DepthSensorStatusText1";
 
-        private string _DepthSensorStatusText = "";
+        private string _DepthSensorStatusText1 = "";
 
         /// <summary>
         /// Sets and gets the DepthSensorStatusText property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public string DepthSensorStatusText
+        public string DepthSensorStatusText1
         {
             get
             {
-                return _DepthSensorStatusText;
+                return _DepthSensorStatusText1;
             }
 
             set
             {
-                if (_DepthSensorStatusText == value)
+                if (_DepthSensorStatusText1 == value)
                 {
                     return;
                 }
 
-                _DepthSensorStatusText = value;
-                RaisePropertyChanged(DepthSensorStatusTextPropertyName);
+                _DepthSensorStatusText1 = value;
+                RaisePropertyChanged(DepthSensorStatusTextPropertyName1);
             }
         }
+
+
+
+        /// <summary>
+        /// The <see cref="DepthSensorStatus2" /> property's name.
+        /// </summary>
+        public const string DepthSensorStatusPropertyName2 = "DepthSensorStatus2";
+
+        private string _depthSensorStatus2 = "";
+
+        /// <summary>
+        /// Sets and gets the DepthSensorStatus property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string DepthSensorStatus2
+        {
+            get
+            {
+                return _depthSensorStatus2;
+            }
+
+            set
+            {
+                if (_depthSensorStatus2 == value)
+                {
+                    return;
+                }
+
+                _depthSensorStatus2 = value;
+
+
+                RaisePropertyChanged(DepthSensorStatusPropertyName2);
+            }
+        }
+        #endregion
+
+        #region DepthSensorStatusText
+
+        /// <summary>
+        /// The <see cref="DepthSensorStatusText2" /> property's name.
+        /// </summary>
+        public const string DepthSensorStatusTextPropertyName2 = "DepthSensorStatusText2";
+
+        private string _DepthSensorStatusText2 = "";
+
+        /// <summary>
+        /// Sets and gets the DepthSensorStatusText property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string DepthSensorStatusText2
+        {
+            get
+            {
+                return _DepthSensorStatusText2;
+            }
+
+            set
+            {
+                if (_DepthSensorStatusText2 == value)
+                {
+                    return;
+                }
+
+                _DepthSensorStatusText2 = value;
+                RaisePropertyChanged(DepthSensorStatusTextPropertyName2);
+            }
+        }
+
+
 
         #endregion
 
         #region DepthSensorMessageColor
 
         /// <summary>
-        /// The <see cref="DepthSensorMessageColor" /> property's name.
+        /// The <see cref="DepthSensorMessageColor1" /> property's name.
         /// </summary>
-        public const string DepthSensorMessageColorPropertyName = "DepthSensorMessageColor";
+        public const string DepthSensorMessageColorPropertyName1 = "DepthSensorMessageColor1";
 
-        private Brush _DepthSensorMessageColor = GreenBrush;
+        private Brush _DepthSensorMessageColor1 = GreenBrush;
 
         /// <summary>
         /// Sets and gets the DepthSensorMessageColor property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>  
-        public Brush DepthSensorMessageColor
+        public Brush DepthSensorMessageColor1
         {
             get
             {
-                return _DepthSensorMessageColor;
+                return _DepthSensorMessageColor1;
             }
 
             set
             {
-                if (_DepthSensorMessageColor == value)
+                if (_DepthSensorMessageColor1 == value)
                 {
                     return;
                 }
 
-                _DepthSensorMessageColor = value;
-                RaisePropertyChanged(DepthSensorMessageColorPropertyName);
+                _DepthSensorMessageColor1 = value;
+                RaisePropertyChanged(DepthSensorMessageColorPropertyName1);
+            }
+        }
+
+
+
+        /// <summary>
+        /// The <see cref="DepthSensorMessageColor2" /> property's name.
+        /// </summary>
+        public const string DepthSensorMessageColorPropertyName2 = "DepthSensorMessageColor2";
+
+        private Brush _DepthSensorMessageColor2 = GreenBrush;
+
+        /// <summary>
+        /// Sets and gets the DepthSensorMessageColor property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>  
+        public Brush DepthSensorMessageColor2
+        {
+            get
+            {
+                return _DepthSensorMessageColor2;
+            }
+
+            set
+            {
+                if (_DepthSensorMessageColor2 == value)
+                {
+                    return;
+                }
+
+                _DepthSensorMessageColor2 = value;
+                RaisePropertyChanged(DepthSensorMessageColorPropertyName2);
             }
         }
 
@@ -4101,6 +4465,70 @@ namespace PVSS.ViewModel
             }
         }
 
+
+
+        /// <summary>
+        /// The <see cref="MyPlotModel21" /> property's name.
+        /// </summary>
+        public const string MyPlotModelPropertyName21 = "MyPlotModel21";
+
+        private PlotModel _myPlotModel21 = new PlotModel();
+
+        /// <summary>
+        /// Sets and gets the MyPlotModel property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public PlotModel MyPlotModel21
+        {
+            get
+            {
+                return _myPlotModel21;
+            }
+
+            set
+            {
+                if (_myPlotModel21 == value)
+                {
+                    return;
+                }
+
+                _myPlotModel21 = value;
+                RaisePropertyChanged(MyPlotModelPropertyName21);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="MyPlotModel22" /> property's name.
+        /// </summary>
+        public const string MyPlotModel22PropertyName = "MyPlotModel22";
+
+        private PlotModel _myPlotModel22 = new PlotModel();
+
+        /// <summary>
+        /// Sets and gets the MyPlotModel property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public PlotModel MyPlotModel22
+        {
+            get
+            {
+                return _myPlotModel22;
+            }
+
+            set
+            {
+                if (_myPlotModel22 == value)
+                {
+                    return;
+                }
+
+                _myPlotModel22 = value;
+                RaisePropertyChanged(MyPlotModel22PropertyName);
+            }
+        }
+
+
+
         #endregion
 
 
@@ -4165,6 +4593,68 @@ namespace PVSS.ViewModel
             MyPlotModel2.AutoAdjustPlotMargins = true;
         }
 
+        private void SetupCharting2()
+        {
+
+            MyPlotModel21.Series.Add(new LineSeries()  // View window
+            {
+                 Title = DateTime.Now.ToString() + " " + Diver2Name,
+                 Points = new List<IDataPoint>(),
+                 BrokenLineColor = OxyColors.Red,
+                 BrokenLineThickness = 1,
+                 BrokenLineStyle = LineStyle.Dash,
+                 TextColor = OxyColors.White
+            });
+
+            MyPlotModel21.Axes.Add(new TimeSpanAxis(AxisPosition.Bottom, "Time", "hh:mm:ss"));
+            MyPlotModel21.Axes.Add(new LinearAxis(AxisPosition.Left, "Depth"));
+
+            MyPlotModel21.Axes[0].MajorGridlineStyle = LineStyle.Solid;
+            MyPlotModel21.Axes[0].MinorGridlineStyle = LineStyle.Dot;
+            MyPlotModel21.Axes[0].TicklineColor = OxyColors.White;
+
+            MyPlotModel21.Axes[1].MajorGridlineStyle = LineStyle.Solid;
+            MyPlotModel21.Axes[1].MinorGridlineStyle = LineStyle.Dot;
+            MyPlotModel21.Axes[1].TicklineColor = OxyColors.White;
+
+            MyPlotModel21.AutoAdjustPlotMargins = true;
+
+            MyPlotModel21.TextColor = OxyColors.White;
+            MyPlotModel21.Axes[0].TextColor = OxyColors.White;
+            MyPlotModel21.Axes[1].TextColor = OxyColors.White;
+            MyPlotModel21.PlotAreaBorderColor = OxyColors.White;
+
+            //--------------------------------------------------------------
+
+            MyPlotModel22.Series.Add(new LineSeries() //Printed Chart
+            {
+                Title = DateTime.Now.ToString() + " " + Diver2Name,
+                Points = new List<IDataPoint>(),
+
+                BrokenLineColor = OxyColors.Red,
+                BrokenLineThickness = 1,
+                BrokenLineStyle = LineStyle.Dash,
+                TextColor = OxyColors.Black,
+                Background = OxyColors.AliceBlue
+
+            });
+
+            MyPlotModel22.Title = "Dive Profile";
+
+            MyPlotModel22.Axes.Add(new TimeSpanAxis(AxisPosition.Bottom, "Time (hh:mm:ss)", "hh:mm:ss"));
+            MyPlotModel22.Axes.Add(new LinearAxis(AxisPosition.Left, "Depth (m)"));
+
+            MyPlotModel22.Axes[0].MajorGridlineStyle = LineStyle.Solid;
+            MyPlotModel22.Axes[0].MinorGridlineStyle = LineStyle.Dot;
+
+            MyPlotModel22.Axes[1].MajorGridlineStyle = LineStyle.Solid;
+            MyPlotModel22.Axes[1].MinorGridlineStyle = LineStyle.Dot;
+
+            MyPlotModel22.Padding = new OxyThickness(0, 40, 40, 40);
+
+            MyPlotModel22.AutoAdjustPlotMargins = true;
+        }
+    
 
         #endregion
 
@@ -4620,7 +5110,6 @@ namespace PVSS.ViewModel
         public const string LongitudePropertyName = "Longitude";
         private string _longitude = "";
         private string Last_file_name2;
-
         /// <summary>
         /// Sets and gets the Longitude property.
         /// Changes to that property's value raise the PropertyChanged event. 
@@ -4649,7 +5138,7 @@ namespace PVSS.ViewModel
         #region Cleanup
         public override void Cleanup()
         {
-            Log("System Stopped and Internal Temperature was: " + TemperatureLevel + " ºC" + "\r\n");
+            //Log("System Stopped and Internal Temperature was: " + TemperatureLevel + " ºC" + "\r\n");
           
             SaveChartImage(); // Arlindo 05/APR/2022
             StopRecording();
@@ -4666,8 +5155,8 @@ namespace PVSS.ViewModel
             SetOSDStyledRECSTOP(STREAM_A);
             SetOSDStyledRECSTOP2(STREAM_A);
 
-            MyCommunicationManager.WriteData(IO_COMMAND_TURN_CAMERA_OFF); // by ARLINDO 14-Jan-2015
-            MyCommunicationManager.WriteData(IO_COMMAND_TURN_LIGHT_OFF); // by ARLINDO 14-Jan-2015
+            MyCommunicationManager.WriteData(IO_COMMAND_TURN_CAMERA_OFF_1_2); // by ARLINDO 14-Jan-2015
+            MyCommunicationManager.WriteData(IO_COMMAND_TURN_LIGHT_OFF_1_2); // by ARLINDO 14-Jan-2015
 
             S2253.CloseBoard(-1); // by ARLINDO 14-Jan-2015
 
