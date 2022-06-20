@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
-using System.Media;
 using System.Windows;
-using System.Windows.Media.Imaging;
 using System.Windows.Input;
 using System.Linq;
 using System.Windows.Forms;
-using System.Windows.Media;
+using System.Threading;
 
 namespace PVSS
 {
@@ -15,13 +12,16 @@ namespace PVSS
     /// Interaction logic for MainWindow2.xaml
     /// </summary>
     public partial class MainWindow2 : Window
+    
     {
         public MainWindow2()
         {
+            
             try
             {
                 InitializeComponent();
-                var screens = System.Windows.Forms.Screen.AllScreens;
+                
+                var screens = Screen.AllScreens;
                 var firstSecondary = screens.FirstOrDefault(s => s.Primary == false);
                 if (firstSecondary != null)
                 {
@@ -43,70 +43,31 @@ namespace PVSS
             }
             catch (Exception)
             {
-
+               
             }
 
-        }
-      
-        public void Window_KeyUp2(object sender, System.Windows.Input.KeyEventArgs e)
-        {
-            switch (e.Key)
-            {
-               case Key.F7:
-                   (System.Windows.Application.Current.MainWindow as MainWindow).TakeSnapshot();
-                   break;
-               case Key.F8:
-                    TakeSnapshot2();
-                    break;
-               default:
-                    break;
-            }
         }
         
-        public string SnapshotsDirectoryPath;
-        private string LastTakenPhoto2;
-
-        public void TakeSnapshot2()
+        public void Window_KeyUp2(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            RenderTargetBitmap bmp = new RenderTargetBitmap(1450, 1053, 96, 96, PixelFormats.Pbgra32);
-            bmp.Render(video1Element);
-
-            PngBitmapEncoder encoder = new PngBitmapEncoder();
-
-            encoder.Frames.Add(BitmapFrame.Create(bmp));
-            SnapshotsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots2";
-
-            if (!Directory.Exists(SnapshotsDirectoryPath))
+        switch (e.Key == Key.System ? e.SystemKey : e.Key)
             {
-                Directory.CreateDirectory(SnapshotsDirectoryPath);
-            }
-
-            
-
-            string OutputVideoFileName = string.Format(@"{0}\{1}.bmp", SnapshotsDirectoryPath, DateTime.Now.ToString("dd-MM-yyyy HH_mm_ss_fff")); // was dd-MM-yyyy hh_mm_ss_fff due to PM/AM format
-            try
-            {
-                using (FileStream s = new FileStream(OutputVideoFileName, FileMode.CreateNew, FileAccess.Write))
-                {
-                    encoder.Save(s);
-                    LastTakenPhoto2 = OutputVideoFileName;
-                }
-            }
-            catch (IOException)
-            {
-
-            }
-            
-
-            string fullPathToSound = Path.GetFullPath(@"Photo.wav");
-            SoundPlayer simpleSound = new SoundPlayer(fullPathToSound);
-            simpleSound.Play();
-
+               case Key.F7:
+                  (System.Windows.Application.Current.MainWindow as MainWindow).TakeSnapshot();
+                  break;
+               case Key.F8:
+                  (System.Windows.Application.Current.MainWindow as MainWindow).TakeSnapshot2();
+                  break;
+               default:
+                  break;
+             }           
         }
+
+
 
         private void Image_MouseLeftButtonUp2(object sender, MouseButtonEventArgs e)
         {
-            LastTakenPhoto2 = (System.Windows.Application.Current.MainWindow as MainWindow).LastTakenPhoto;
+            string LastTakenPhoto2 = (System.Windows.Application.Current.MainWindow as MainWindow).LastTakenPhoto;
             var psi = new ProcessStartInfo("Explorer.exe", "/select," + LastTakenPhoto2);
             Process.Start(psi);            
         }

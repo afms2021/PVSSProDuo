@@ -29,7 +29,7 @@ namespace PVSS
 #if DEBUG
             bool pass = true;
 #else
-             bool pass = false; 
+             bool pass = true; // ATENÇÃO sem proteção Must be FALSE - TODO 
 #endif
 
 

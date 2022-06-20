@@ -81,6 +81,7 @@ using System.Windows.Forms;
 using System.Windows.Controls;
 using GalaSoft.MvvmLight.Messaging;
 using System.Windows.Input;
+using System.Linq;
 
 namespace PVSS.ViewModel
 {
@@ -98,8 +99,10 @@ namespace PVSS.ViewModel
     {
 
         private string VideoDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos";
+        private string VideoDirectoryPath2 = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos2";
         private string SnapshotsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots";
         private string ChartsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts";
+        private string ChartsDirectoryPath2 = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts2";
         private string LogPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\log.txt";
         private string JobNameDiretory = Directory.GetCurrentDirectory() + "\\My Dives";
 
@@ -126,9 +129,6 @@ namespace PVSS.ViewModel
         private DateTime startDateTime1;
         private DateTime startDateTime2;
 
-        private const int BATTERY_LEVEL_WARNING = 720; // was 740 /753 / 750 by ARLINDO 20.ABR.2015 (NOTE: 720 => 11.6Vdc) depend on PCB version with or without Schotky Diode  
-        private const int BATTERY_LEVEL_CRITICAL = 702; //was 720 /732 / 730  (NOTE: 702 => 11.2Vdc) 
-
         //Snapshot variables
         private IntPtr bufPtr;
         private GCHandle bufHandle;
@@ -149,15 +149,16 @@ namespace PVSS.ViewModel
         private static string DEPTH_SENSOR2_STATUS_OK = "ok";
         private static string DEPTH_SENSOR2_STATUS_OPEN = "open";
         private static string DEPTH_SENSOR2_STATUS_SHORT = "short";
+        float DepthSensorReading1;
+        float DepthSensorReading2;
 
 
-        // Battery Charger Status
+        // Battery Charger Status / Now is Always conneted to Power Line
         private static string BATTERY_CHARGER_STATUS_ON = "on";
         private static string BATTERY_CHARGER_STATUS_OFF = "off";
 
         private bool Sensoray_codec = false;
         private string Last_file_name = "noname";
-        //private float BatteryLevel;
         //private string TemperatureLevel;
 
 #if PVSS_PRO
@@ -166,6 +167,9 @@ namespace PVSS.ViewModel
         private int _pro_short1 = 0;
         private int _pro_open2 = 0;
         private int _pro_short2 = 0;
+        public bool _IsDepthStringValid = false;
+        private bool _Chart1_saved = false;
+        private bool _Chart2_saved = false;
 
         // Change Baudrate in settings to 19200 / PVSS use 115200
 
@@ -173,7 +177,7 @@ namespace PVSS.ViewModel
 
         #region IO COMMANDS
 #if PVSS_PRO
-        
+
         private const string IO_COMMAND_TURN_CAMERA_ON_1_2 = "$RLY,1,1,0,0,*6B\r\n";
         private const string IO_COMMAND_TURN_CAMERA_ON_1 = "$RLY,1,0,0,0,*6A\r\n";
         private const string IO_COMMAND_TURN_CAMERA_ON_2 = "$RLY,0,1,0,0,*6A\r\n";  
@@ -186,17 +190,13 @@ namespace PVSS.ViewModel
         private const string IO_COMMAND_TURN_LIGHT_ON_1_2 = "$DVD,4095,4095,*7A\r\n";
         private const string IO_COMMAND_TURN_LIGHT_ON_1 = "$DVD,4095,0,*42\r\n"; 
         private const string IO_COMMAND_TURN_LIGHT_ON_2 = "$DVD,0,4095,*42\r\n"; 
-        /// <summary>
-        /// scadacore.com/tools/programming-calculators/online-checksum-calculator/
-        /// </summary>
+     
         private const string IO_COMMAND_TURN_LIGHT_OFF_1_2 = "$DVD,0,0,*7A\r\n";
         private const string IO_COMMAND_TURN_LIGHT_OFF_1 = "$DVD,0,4095,*42\r\n"; 
         private const string IO_COMMAND_TURN_LIGHT_OFF_2 = "$DVD,4095,0,*42\r\n"; 
 
         private string sensorstatus1 = "";
         private string sensorstatus2 = "";
-        //private int _depth1;
-        //private int _depth2;
 #else
 
         private const string IO_COMMAND_TURN_LIGHT_ON = "L";
@@ -329,6 +329,8 @@ namespace PVSS.ViewModel
                 DiveTime1 = TimeSpan.Zero;
                 startDateTime1 = DateTime.Now;
                 StartRecording();
+
+                _Chart1_saved = false;
                 StatusMessage = "Recording - F3 STOP"; //Was F3 now toggle START/STOP Arlindo 02.MAR.2017
                 
                 SuppressEditing = true;
@@ -363,6 +365,7 @@ namespace PVSS.ViewModel
 
                 StopRecording();
                 SaveChartImage(); //Arlindo OUT21
+                _Chart1_saved = true;
 
                 Log("Stop Recording");
                 Log("Maximum Depht was: " + MaxDepthValue1 + " m");
@@ -442,8 +445,8 @@ namespace PVSS.ViewModel
                 startDateTime2 = DateTime.Now;
                 StartRecording2();
                 StatusMessage2 = "Recording - F4 STOP"; // F4 now toggle START/STOP Arlindo 02.MAR.2017
-                
-                
+                _Chart2_saved = false;
+
                 if (IsRecording)
                 {
                     SuppressEditing = true;
@@ -476,6 +479,7 @@ namespace PVSS.ViewModel
 
                 StopRecording2();
                 SaveChartImage(); //Arlindo OUT21
+                _Chart2_saved = true;
 
                 Log("Stop Recording");
                 Log("Maximum Depht was: " + MaxDepthValue2 + " m");
@@ -518,13 +522,13 @@ namespace PVSS.ViewModel
             string fileName = string.Format(@"{0}\{1}.pdf", ChartsDirectoryPath, DateTime.Now.ToString("dd-MM-yyyy HH_mm_ss_fff"));
             OxyPlot.Pdf.PdfExporter.Export(MyPlotModel2, fileName, MyPlotModel2.Width, MyPlotModel2.Height); // was Width - 50
             
-            ChartsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts2";
-            if (!Directory.Exists(ChartsDirectoryPath))
+            ChartsDirectoryPath2 = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts2";
+            if (!Directory.Exists(ChartsDirectoryPath2))
             {
-                Directory.CreateDirectory(ChartsDirectoryPath);
+                Directory.CreateDirectory(ChartsDirectoryPath2);
             }
             // Changed to PDF due to Win 10 photo viwer black background, no axes visible by Arlindo Dez-2015
-            string fileName2 = string.Format(@"{0}\{1}.pdf", ChartsDirectoryPath, DateTime.Now.ToString("dd-MM-yyyy HH_mm_ss_fff"));
+            string fileName2 = string.Format(@"{0}\{1}.pdf", ChartsDirectoryPath2, DateTime.Now.ToString("dd-MM-yyyy HH_mm_ss_fff"));
             OxyPlot.Pdf.PdfExporter.Export(MyPlotModel22, fileName2, MyPlotModel22.Width, MyPlotModel22.Height); // was Width - 50
 
         }
@@ -832,6 +836,7 @@ namespace PVSS.ViewModel
             VideoDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos";
             SnapshotsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots";
             ChartsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts";
+            ChartsDirectoryPath2 = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts2";
             LogPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\log.txt";
             JobNameDiretory = Directory.GetCurrentDirectory() + "\\My Dives";
 
@@ -849,6 +854,12 @@ namespace PVSS.ViewModel
             {
                 Directory.CreateDirectory(VideoDirectoryPath);
             }
+
+            if (!Directory.Exists(VideoDirectoryPath2))
+            {
+                Directory.CreateDirectory(VideoDirectoryPath2);
+            }
+
 
             if (!File.Exists(LogPath))
             {
@@ -870,7 +881,10 @@ namespace PVSS.ViewModel
             {
                 Directory.CreateDirectory(ChartsDirectoryPath);
             }
-
+            if (!Directory.Exists(ChartsDirectoryPath2))
+            {
+                Directory.CreateDirectory(ChartsDirectoryPath2);
+            }
 
             SetupCharting();
             SetupCharting2();
@@ -952,7 +966,7 @@ namespace PVSS.ViewModel
             DisplayLineTimer.Stop();
         }
 
-        void FileSystemWatcher_Created(object sender, FileSystemEventArgs e) // Solved Exception by Manuel ALberto 27.Abri.2019
+        void FileSystemWatcher_Created(object sender, FileSystemEventArgs e) // Solved Exception by Manuel Alberto 27.Abri.2019
         {
             string filepath = new Uri(e.FullPath).ToString();
             string extension = Path.GetExtension(filepath);
@@ -964,9 +978,10 @@ namespace PVSS.ViewModel
 
         }
 
-        void MainWindow_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        void MainWindow_KeyUp(object sender, System.Windows.Input.KeyEventArgs e) // due to use of "F10" a special system key
         {
-            switch (e.Key)
+           
+            switch (e.Key == Key.System ? e.SystemKey : e.Key) // due to use of "F10" a special system key
             {
                 case Key.F1: // Camera 1
                     IsCameraOn1 = !IsCameraOn1;
@@ -989,39 +1004,47 @@ namespace PVSS.ViewModel
                 case Key.F9:  // Light 1
                     IsLightOn = !IsLightOn;
                     break;
+                case Key.F10: // Light 2
+                    IsLightOn2 = !IsLightOn2;
+                    e.Handled = true;
+                    break;
                 case Key.Enter:
 
                     if (OSDPopupVisibility)
                     {
                         OSDLine1Submitted = OSDLine1;
                         OSDPopupVisibility = false;
-                        SendKeys.SendWait("{F7}"); // Added Auto Smapshot ARLINDO 15-NOV-2017 ( must be duplicated to get overlay comment text grabbed ) 
-                        SendKeys.SendWait("{F7}"); // Added Auto Smapshot ARLINDO 15-NOV-2017
+                        
+                        MainWindow win11 = System.Windows.Application.Current.Windows.OfType<MainWindow>().FirstOrDefault();
+                        if (win11 != null)
+                        {
+                            Thread.Sleep(150);
+                            win11.TakeSnapshot();
+                        }
                     }
+                     
                     if (OSDPopupVisibility2)
                     {
                         OSDLine12Submitted = OSDLine12;
                         OSDPopupVisibility2 = false;
-                        SendKeys.SendWait("{F8}"); // Added Auto Smapshot ARLINDO 15-NOV-2017 ( must be duplicated to get overlay comment text grabbed ) 
-                        //SendKeys.SendWait("{F8}"); // Added Auto Smapshot ARLINDO 15-NOV-2017
+                        MainWindow win12 = System.Windows.Application.Current.Windows.OfType<MainWindow>().FirstOrDefault();
+                        if (win12 != null)
+                        {
+                            Thread.Sleep(150);
+                            win12.TakeSnapshot2();                          
+                        }
                     }
                     break;
-                default:
-                    break;
-            }
-            
-            switch (e.SystemKey)
-            {
-                case Key.F10: // Light 2
-                    IsLightOn2 = !IsLightOn2;
-                    break;
-                
                 default:
                     break;
             }
         }
 
-        private static string getChecksum(string sentence)
+        // Just because we are using PRODIVING telemetry
+        private bool AlreadyShownWarningChargerOn = false; // Power Line Warning Always on
+
+        // Calculate Checksum of incoming string to check if is valid
+        public static string GetChecksum(string sentence)
         {
             //Start with first Item
             int checksum = Convert.ToByte(sentence[sentence.IndexOf('#') + 1]);
@@ -1035,11 +1058,8 @@ namespace PVSS.ViewModel
             return checksum.ToString("X2");
         }
 
-        private bool AlreadyShownWarningChargerOn = false;
-
         private void IOPort_DataReceived(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
-        {
-              
+        {     
 #if PVSS_PRO
             //Console.WriteLine("Before: " + MyCommunicationManager.LastMsg); //Arlindo 2021
             try
@@ -1047,24 +1067,26 @@ namespace PVSS.ViewModel
                 if ((!string.IsNullOrEmpty(MyCommunicationManager.LastMsg)) && (MyCommunicationManager.LastMsg.StartsWith("#DVA")))
                 {
                     string new_depth = MyCommunicationManager.LastMsg;
-                    //Console.WriteLine("After: " + MyCommunicationManager.LastMsg); //Arlindo 2021
+                                        
+                    string _ReadCheckSum = new_depth.Substring(new_depth.Length - 5);
+                    string _CalculatedCheckSum = (GetChecksum(new_depth));
                     
-                    string s1 = getChecksum(new_depth);
-                    string y = new_depth.Substring(new_depth.Length - 5);
-                    
-                    int s1_value = Int32.Parse(s1);
-                    int y_value = Int32.Parse(y);
-                   
-                    bool _depthStringValid = false;
+ 
+                    int _Read = int.Parse(_ReadCheckSum, System.Globalization.NumberStyles.HexNumber);  // Because checksum is a 2 bytes hex p. ex. "7C" "73"
+                    int _Calculated = int.Parse(_CalculatedCheckSum, System.Globalization.NumberStyles.HexNumber);
 
-                    if (s1_value == y_value)
+                    if (_Read == _Calculated)
                     {
-                        _depthStringValid =true;
+                        _IsDepthStringValid =true;
+                    }
+                    else
+                    {
+                        _IsDepthStringValid = false;
                     }
                  
-                    if (_depthStringValid)  // #DVA,1,1024,0,1,2,1024,0,1,*7C => #DVA, <1>, <value1>, <short1>, <open1>, <2>, <value2>, <short2>, <open2>*<checksum>
+                    if (_IsDepthStringValid)  // #DVA,1,1024,0,1,2,1024,0,1,*7C => #DVA, <1>, <value1>, <short1>, <open1>, <2>, <value2>, <short2>, <open2>*<checksum>
                     {
-                        //Console.WriteLine("After: " + MyCommunicationManager.LastMsg); //Arlindo 2021
+                        //Console.WriteLine("Valid: " + MyCommunicationManager.LastMsg); //Arlindo 2021
                         string[] new_depthinfo = new_depth.Split(',');
                         string ch1 = new_depthinfo[1];
                         //Console.WriteLine("Diver " + ch1);
@@ -1072,21 +1094,21 @@ namespace PVSS.ViewModel
                         string ch1_depth = new_depthinfo[2];
                         if (int.TryParse(ch1_depth, out result) == true)
                         {
-                            int _pro_depth1 = int.Parse(ch1_depth, CultureInfo.InvariantCulture.NumberFormat);
+                            int _pro_depth1 = int.Parse(ch1_depth);//, CultureInfo.InvariantCulture.NumberFormat);
                             //Console.WriteLine("Depth 1 " + _pro_depth1);
-                            _depth1 = _pro_depth1;
+                            DepthSensorReading1 = _pro_depth1;
                         }
 
                         string ch1_short = new_depthinfo[3];
                         if (int.TryParse(ch1_short, out result) == true)
                         {
-                            _pro_short1 = int.Parse(ch1_short, CultureInfo.InvariantCulture.NumberFormat);
+                            _pro_short1 = int.Parse(ch1_short);//, CultureInfo.InvariantCulture.NumberFormat);
                         }
 
                         string ch1_open = new_depthinfo[4];
                         if (int.TryParse(ch1_open, out result) == true)
                         {
-                            _pro_open1 = int.Parse(ch1_open, CultureInfo.InvariantCulture.NumberFormat);
+                            _pro_open1 = int.Parse(ch1_open);//, CultureInfo.InvariantCulture.NumberFormat);
                         }
 
                         //Console.WriteLine("Sensor Open " + _pro_open1);
@@ -1110,23 +1132,23 @@ namespace PVSS.ViewModel
                         //Console.WriteLine("Depth " + ch2_depth);
                         if (int.TryParse(ch2_depth, out result) == true)
                         {
-                            int _pro_depth2 = int.Parse(ch2_depth, CultureInfo.InvariantCulture.NumberFormat);
+                            int _pro_depth2 = int.Parse(ch2_depth); //, CultureInfo.InvariantCulture.NumberFormat);
                             //Console.WriteLine("Depth 2 " + _pro_depth2);
-                            _depth2 = _pro_depth2;
+                            DepthSensorReading2 = _pro_depth2;
                         }
 
                         string ch2_short = new_depthinfo[7];
                         //Console.WriteLine("Sensor Short " + ch2_short);
                         if (int.TryParse(ch1_short, out result) == true)
                         {
-                            _pro_short2 = int.Parse(ch2_short, CultureInfo.InvariantCulture.NumberFormat);
+                            _pro_short2 = int.Parse(ch2_short); //, CultureInfo.InvariantCulture.NumberFormat);
                         }
 
                         string ch2_open = new_depthinfo[8];
                         //Console.WriteLine("Sensor Open " + ch2_open);
                         if (int.TryParse(ch2_open, out result) == true)
                         {
-                            _pro_open2 = int.Parse(ch2_open, CultureInfo.InvariantCulture.NumberFormat);
+                            _pro_open2 = int.Parse(ch2_open); //, CultureInfo.InvariantCulture.NumberFormat);
                         }
 
                         if (_pro_open2 == 1)
@@ -1142,7 +1164,7 @@ namespace PVSS.ViewModel
                             sensorstatus2 = "ok";
                         }
                     }
-                }                
+                }
             }
             catch { }
 #endif
@@ -1172,13 +1194,13 @@ namespace PVSS.ViewModel
             try
             {
 #if PVSS_PRO
-                float DepthSensorReading1 = _depth1;
-                float DepthSensorReading2 = _depth2;
+               
+                Depth1 = (float)Math.Round((DepthSensorReading1 * SensorFactor / WaterFactor) / 1024.0f, 1) + Convert.ToSingle(Sensor1_Offset); //ARLINDO 27.FEV.2017 Ver 5.0
+                Depth2 = (float)Math.Round((DepthSensorReading2 * SensorFactor / WaterFactor) / 1024.0f, 1) + Convert.ToSingle(Sensor2_Offset);
+               
 #else
                 int DepthSensorReading = int.Parse(m_pattern_depth.Groups["depth"].Value);
 #endif
-                Depth1 = (float)Math.Round((DepthSensorReading1 * SensorFactor / WaterFactor) / 1024.0f, 1) + Convert.ToSingle(Sensor1_Offset); //ARLINDO 27.FEV.2017 Ver 5.0
-                Depth2 = (float)Math.Round((DepthSensorReading2 * SensorFactor / WaterFactor) / 1024.0f, 1) + Convert.ToSingle(Sensor2_Offset); 
             }
             catch { }
 
@@ -1248,7 +1270,7 @@ namespace PVSS.ViewModel
 
 #if PVSS_PRO
             //MyCommunicationManager.WriteData("$RID,*73\r\n");
-            MyCommunicationManager.WriteData("$DVA,*7F\r\n");
+            MyCommunicationManager.WriteData("$DVA,*7F\r\n"); // Get depth string
             //MyCommunicationManager.WriteData("$RLY,0,0,0,0,*6A\r\n");
 #endif
             SetOSDStyled_DiveTime(STREAM_A);
@@ -1630,21 +1652,21 @@ namespace PVSS.ViewModel
         }
         private void StartRecording2()
         {
-            VideoDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos2";
+            VideoDirectoryPath2 = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos2";
 
-            if (!Directory.Exists(VideoDirectoryPath))
+            if (!Directory.Exists(VideoDirectoryPath2))
             {
-                Directory.CreateDirectory(VideoDirectoryPath);
+                Directory.CreateDirectory(VideoDirectoryPath2);
             }
 
 
-            string OutputVideoFileName = string.Format(@"{0}\{1}.mp4", VideoDirectoryPath, DateTime.Now.ToString("dd-MM-yyyy HH_mm_ss_fff"));
+            string OutputVideoFileName = string.Format(@"{0}\{1}.mp4", VideoDirectoryPath2, DateTime.Now.ToString("dd-MM-yyyy HH_mm_ss_fff"));
 
             Last_file_name2 = OutputVideoFileName; // Save last video file path and name, to be used by StopRecoding()
 
             if (File.Exists(OutputVideoFileName))
             {
-                string NewOutputVideoFileName = string.Format(@"{0}\{1}.mp4", VideoDirectoryPath, DateTime.Now.ToString("dd-MM-yyyy HH_mm_ss_fff")); /// Arlindo OUT21
+                string NewOutputVideoFileName = string.Format(@"{0}\{1}.mp4", VideoDirectoryPath2, DateTime.Now.ToString("dd-MM-yyyy HH_mm_ss_fff")); /// Arlindo OUT21
                 File.Create(NewOutputVideoFileName);
             }
 
@@ -3523,7 +3545,7 @@ namespace PVSS.ViewModel
         /// </summary>
         public const string DepthPropertyName1 = "Depth1";
 
-        private float _depth1 = 0.0f;
+        private float _auxdepth1 = 0.0f;
 
         /// <summary>
         /// Sets and gets the Depth property.
@@ -3533,17 +3555,17 @@ namespace PVSS.ViewModel
         {
             get
             {
-                return _depth1;
+                return _auxdepth1;
             }
 
             set
             {
-                if (_depth1 == value)
+                if (_auxdepth1 == value)
                 {
                     return;
                 }
 
-                _depth1 = value;
+                _auxdepth1 = value;
 
                 DepthString1 = Depth1.ToString("0.0") + " m";
                 RaisePropertyChanged(DepthPropertyName1);
@@ -3554,7 +3576,7 @@ namespace PVSS.ViewModel
         /// </summary>
         public const string DepthPropertyName2 = "Depth2";
 
-        private float _depth2 = 0.0f;
+        private float _auxdepth2 = 0.0f;
 
         /// <summary>
         /// Sets and gets the Depth property.
@@ -3564,17 +3586,17 @@ namespace PVSS.ViewModel
         {
             get
             {
-                return _depth2;
+                return _auxdepth2;
             }
 
             set
             {
-                if (_depth2 == value)
+                if (_auxdepth2 == value)
                 {
                     return;
                 }
 
-                _depth2 = value;
+                _auxdepth2 = value;
 
                 DepthString2 = Depth2.ToString("0.0") + " m";
                 RaisePropertyChanged(DepthPropertyName2);
@@ -4404,7 +4426,6 @@ namespace PVSS.ViewModel
         #region Charting & Plotting
 
         #region MyPlotModel
-
         /// <summary>
         /// The <see cref="MyPlotModel" /> property's name.
         /// </summary>
@@ -5139,9 +5160,15 @@ namespace PVSS.ViewModel
         public override void Cleanup()
         {
             //Log("System Stopped and Internal Temperature was: " + TemperatureLevel + " ºC" + "\r\n");
-          
-            SaveChartImage(); // Arlindo 05/APR/2022
+
+            if (!_Chart2_saved || !_Chart1_saved) 
+            {
+                SaveChartImage(); // Arlindo 05/APR/2022
+            }
+
+           
             StopRecording();
+            StopRecording2();
 
             OSDLine1Submitted = ""; // Clear Styled text
             OSDLine12Submitted = ""; // Clear Styled text

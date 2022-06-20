@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Linq;
 
 namespace PVSS
 {
@@ -22,17 +23,19 @@ namespace PVSS
     {
         public string SnapshotsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots";
         public string ChartsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts";
+        public string SnapshotsDirectoryPath2 = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots2";
+        public string ChartsDirectoryPath2 = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts2";
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
         /// </summary>
         /// 
-              
+
         public MainWindow()
         {
             this.WindowState = System.Windows.WindowState.Maximized;
             try
             {
-                InitializeComponent();
+              InitializeComponent();
             }
             catch (Exception)
             {
@@ -48,18 +51,63 @@ namespace PVSS
 
         public void Window_KeyUp(object sender, KeyEventArgs e)
         {
-            if (e.Key == System.Windows.Input.Key.F8)
+            switch (e.Key == Key.System ? e.SystemKey : e.Key)
             {
-                MainWindow2 win2 = new MainWindow2();
-                win2.TakeSnapshot2();
-            }
-
-            if (e.Key == System.Windows.Input.Key.F7)
-            {
-                TakeSnapshot();
+                case Key.F7: // Photo 1
+                    TakeSnapshot();
+                    break;
+                case Key.F8: //  Photo 2
+                    TakeSnapshot2();
+                    break;
+                default:
+                    break;
             }
         }
-       
+        
+        public string LastTakenPhoto2;
+
+        public void TakeSnapshot2()
+        {
+            RenderTargetBitmap bmp = new RenderTargetBitmap(1450, 1053, 96, 96, PixelFormats.Pbgra32);
+
+            MainWindow2 win2 = Application.Current.Windows.OfType<MainWindow2>().FirstOrDefault();
+            if (win2 != null)
+            {
+                bmp.Render(win2.video1Element);
+            }          
+           
+            PngBitmapEncoder encoder = new PngBitmapEncoder();
+
+            encoder.Frames.Add(BitmapFrame.Create(bmp));
+            SnapshotsDirectoryPath2 = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots2";
+
+            if (!Directory.Exists(SnapshotsDirectoryPath2))
+            {
+                Directory.CreateDirectory(SnapshotsDirectoryPath2);
+            }
+
+
+
+            string OutputVideoFileName = string.Format(@"{0}\{1}.bmp", SnapshotsDirectoryPath2, DateTime.Now.ToString("dd-MM-yyyy HH_mm_ss_fff")); // was dd-MM-yyyy hh_mm_ss_fff due to PM/AM format
+            try
+            {
+                using (FileStream s = new FileStream(OutputVideoFileName, FileMode.CreateNew, FileAccess.Write))
+                {
+                    encoder.Save(s);
+                    LastTakenPhoto2 = OutputVideoFileName;
+                }
+            }
+            catch (IOException)
+            {
+
+            }
+
+
+            string fullPathToSound = Path.GetFullPath(@"Photo.wav");
+            SoundPlayer simpleSound = new SoundPlayer(fullPathToSound);
+            simpleSound.Play();
+
+        }
         public void TakeSnapshot()
         {
             RenderTargetBitmap bmp = new RenderTargetBitmap(1450, 1053, 96, 96, PixelFormats.Pbgra32);
@@ -89,6 +137,7 @@ namespace PVSS
             {
 
             }
+
             string fullPathToSound = Path.GetFullPath(@"Photo.wav");
             SoundPlayer simpleSound = new SoundPlayer(fullPathToSound);
             simpleSound.Play();
@@ -109,6 +158,11 @@ namespace PVSS
             if (!Directory.Exists(ChartsDirectoryPath))
             {
                 Directory.CreateDirectory(ChartsDirectoryPath);
+            }
+
+            if (!Directory.Exists(ChartsDirectoryPath2))
+            {
+                Directory.CreateDirectory(ChartsDirectoryPath2);
             }
 
             var dlg = new SaveFileDialog
