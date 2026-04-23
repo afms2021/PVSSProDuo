@@ -97,6 +97,15 @@ namespace PVSS
             // Maximize after position is defined in constructor
             this.WindowState = WindowState.Maximized;
 
+            // Reset the open flag when this window is closed for any reason
+            this.Closed += (s, args) =>
+            {
+                _Diver2Window_Open = false;
+                // Sync toggle back to OFF in case window was closed externally
+                var vm = DataContext as ViewModel.MainViewModel;
+                if (vm != null) vm.Diver2IsEnabled = false;
+            };
+
             // Return focus to Monitor 1 after Monitor 2 window opens
             Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Input, new Action(() =>
             {
@@ -131,25 +140,33 @@ namespace PVSS
 
         public static void PerformDiver2IsEnabled_Checked(bool Diver2IsEnabled)
         {
-
             if (Diver2IsEnabled)
             {
-                PVSS.MainWindow2 _Diver2Window = new PVSS.MainWindow2
+                if (!_Diver2Window_Open)
                 {
-                    Topmost = true,
-                };
-                                             
-                if (!_Diver2Window.IsActive && !_Diver2Window_Open)
-                {
+                    PVSS.MainWindow2 _Diver2Window = new PVSS.MainWindow2
+                    {
+                        Topmost = true,
+                    };
                     _Diver2Window.Show();
-                    _Diver2Window_Open = true;                    
+                    _Diver2Window_Open = true;
                 }
+            }
+            else
+            {
+                var existing = System.Windows.Application.Current.Windows
+                    .OfType<MainWindow2>()
+                    .FirstOrDefault();
 
-                //else
-                //{
-                    // _Diver2Window.Hide();
-                    //_Diver2Window_Open = false;
-                //}
+                if (existing != null)
+                {
+                    existing.Close();
+                }
+                _Diver2Window_Open = false;
+
+                // Return focus to Monitor 1
+                var mainWin = System.Windows.Application.Current.MainWindow as MainWindow;
+                mainWin?.Activate();
             }
         }
                 

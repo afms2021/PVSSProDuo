@@ -799,8 +799,8 @@ namespace PVSS.ViewModel
 
                 DepthString1 = "32,4 m";
                 DepthString2 = "22,4 m";
-                Longitude = "41�11'14,2139''N";
-                Latitude = "008�42'12,269''W";
+                Longitude = "41º11'14,2139''N";
+                Latitude = "08º42'12,269''W";
                 return;
             }
 
@@ -4901,14 +4901,14 @@ namespace PVSS.ViewModel
 
             set
             {
-                _Diver2IsEnabled = value;
-
-                MainWindow2.PerformDiver2IsEnabled_Checked(Diver2IsEnabled);
-
                 if (_Diver2IsEnabled == value)
                 {
                     return;
                 }
+
+                _Diver2IsEnabled = value;
+
+                MainWindow2.PerformDiver2IsEnabled_Checked(Diver2IsEnabled);
 
                 RaisePropertyChanged(Diver2IsEnabledPropertyName);
             }
