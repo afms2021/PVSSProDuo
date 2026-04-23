@@ -82,6 +82,30 @@ namespace PVSS
 
             }
             Closing += (s, e) => ViewModelLocator.Cleanup();
+            Loaded += MainWindow_Loaded;
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is System.ComponentModel.INotifyPropertyChanged notifyVm)
+            {
+                notifyVm.PropertyChanged += (s, args) =>
+                {
+                    if (args.PropertyName == "OSDPopupVisibility")
+                    {
+                        var vm = DataContext as ViewModel.MainViewModel;
+                        if (vm != null && vm.OSDPopupVisibility)
+                        {
+                            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Input, new Action(() =>
+                            {
+                                this.Activate();
+                                OSDLine1.Focus();
+                                OSDLine1.SelectAll();
+                            }));
+                        }
+                    }
+                };
+            }
         }
 
         public void Image_MouseUp(object sender, MouseButtonEventArgs e)

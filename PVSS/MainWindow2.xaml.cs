@@ -56,11 +56,32 @@ namespace PVSS
                     (System.Windows.Application.Current.MainWindow as MainWindow).TakeSnapshot2();
                     break;
                 case Key.Enter:
-                    //TO DO
+                    var vm = DataContext as ViewModel.MainViewModel;
+                    if (vm != null && vm.OSDPopupVisibility2)
+                    {
+                        vm.OSDLine12Submitted = vm.OSDLine12;
+                        vm.OSDPopupVisibility2 = false;
+                        var mainWin = System.Windows.Application.Current.MainWindow as MainWindow;
+                        if (mainWin != null)
+                        {
+                            System.Threading.Thread.Sleep(150);
+                            mainWin.TakeSnapshot2();
+                            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Input, new Action(() =>
+                            {
+                                mainWin.Activate();
+                            }));
+                        }
+                    }
                     break;
                 default:
                     break;
             }           
+        }
+
+        public void FocusOSDInput()
+        {
+            OSDLine122.Focus();
+            OSDLine122.SelectAll();
         }
 
         private void Image_MouseLeftButtonUp2(object sender, MouseButtonEventArgs e)
