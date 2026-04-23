@@ -10,7 +10,7 @@
     xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf"
     xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
     xmlns:Controls="clr-namespace:WPFMediaKit.DirectShow.Controls;assembly=WPFMediaKit"
-    
+         
     mc:Ignorable="d"
     Title="ISPTEL - PVSS DUO PRO Diver 2"
     Background="Gray" WindowStyle="None" d:DesignWidth="1920" d:DesignHeight="1080" KeyUp="Window_KeyUp2"  Width="Auto" Height="Auto" WindowStartupLocation="Manual" AllowsTransparency="False">
@@ -150,8 +150,7 @@
                                     <Condition Binding="{Binding OSDPopupVisibility2}" Value="True" />
                                     <Condition Binding="{Binding Path=Visibility, ElementName=grid}" Value="Visible" />
                                 </MultiDataTrigger.Conditions>
-                                <Setter Property="FocusManager.FocusedElement" Value="{Binding RelativeSource={RelativeSource Mode=Self}}"/>
-                                <Setter Property="FocusManager.FocusedElement" Value="{Binding ElementName=OSDLine2}"/>
+                                <Setter Property="FocusManager.FocusedElement" Value="{Binding ElementName=OSDLine122}"/>
                             </MultiDataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -161,7 +160,7 @@
                 </i:Interaction.Behaviors>
                 <TextBlock TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="18" Margin="19,19,0,0" HorizontalAlignment="Left" ><Run Language="en-us" Text="Text:"/></TextBlock>
                 <TextBlock TextWrapping="Wrap" Foreground="White" FontFamily="Segoe UI Light" FontSize="18" Margin="0,0,0,8" VerticalAlignment="Bottom" d:LayoutOverrides="Width" HorizontalAlignment="Center" ><Run Language="en-us" Text="Press ENTER to submit, F6 to cancel"/></TextBlock>
-                <TextBox x:Name="OSDLine2" TextWrapping="Wrap" Text="{Binding OSDLine12, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Margin="68,19,22,0" MaxLength="40" FontSize="18" />
+                <TextBox x:Name="OSDLine122" TextWrapping="Wrap" Text="{Binding OSDLine12, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Margin="68,19,22,0" MaxLength="40" FontSize="18" />
             </Grid>
         </Grid>
 
@@ -208,12 +207,12 @@
         <TabControl Height="303" VerticalAlignment="Bottom" Background="Gray" BorderBrush="#008C8E94" Margin="4,0,1579,0">
             <TabItem Header="Snapshot" BorderBrush="#00005E93" Background="Gray" Margin="0" Foreground="White" IsSelected="True" FocusVisualStyle="{DynamicResource SimpleButtonFocusVisual}" FontSize="14" Template="{DynamicResource TabItemControlTemplate1}">
                 <Grid Background="#FF333333">
-                    <Grid Background="#FF333333" Height="260" Margin="1,1,1,1">
+                    <Grid Background="#FF333333" Height="267" Margin="1,1,1,1">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="325"/>
+                            <ColumnDefinition Width="365"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Text=" Take a snapshot (F8) to see the preview here." VerticalAlignment="Top" HorizontalAlignment="Center" Background="#FF333333" Foreground="White" Margin="8,122,0,0" Width="296" Height="26"/>
-                        <Image Source="{Binding LastSnapshotImage2}" MouseLeftButtonUp="Image_MouseLeftButtonUp2" Cursor="Hand" Width="324" HorizontalAlignment="Left" Margin="3,3,3,3"/>
+                        <TextBlock Text=" Take a snapshot (F8) to see the preview here." VerticalAlignment="Top" HorizontalAlignment="Left" Background="#FF333333" Foreground="White" Margin="18,122,0,0" Width="284" Height="26"/>
+                        <Image Source="{Binding LastSnapshotImage2}" MouseLeftButtonUp="Image_MouseLeftButtonUp2" Cursor="Hand" Width="348" HorizontalAlignment="Left" Margin="-20,0,0,0" Stretch="Fill" VerticalAlignment="Center"/>
                     </Grid>
                 </Grid>
             </TabItem>

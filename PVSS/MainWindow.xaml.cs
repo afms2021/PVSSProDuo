@@ -21,10 +21,19 @@ namespace PVSS
     [ComVisible(false)]
     public partial class MainWindow : Window
     {
-        public string SnapshotsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots";
-        public string ChartsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts";
-        public string SnapshotsDirectoryPath2 = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots2";
-        public string ChartsDirectoryPath2 = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts2";
+        public string JobNameDiretory1 = "D:\\PVSS DUO PRO 1";
+        public string JobNameDiretory2 = "F:\\PVSS DUO PRO 2";
+        public string VideoDirectoryPath1 = "D:\\PVSS DUO PRO 1" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos1";
+        public string VideoDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos2";
+        public string SnapshotsDirectoryPath1 = "D:\\PVSS DUO PRO 1" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots1";
+        public string SnapshotsDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots2";
+        public string ChartsDirectoryPath1 = "D:\\PVSS DUO PRO 1" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts1";
+        public string ChartsDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts2";
+        public string LogPath = "D:\\PVSS DUO PRO 1" + "\\" + Properties.Settings.Default.JobNameText + "\\log.txt";
+
+
+
+
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
         /// </summary>
@@ -34,8 +43,39 @@ namespace PVSS
         {
             this.WindowState = System.Windows.WindowState.Maximized;
             try
-            {
-              InitializeComponent();
+            {   
+                if (!Directory.Exists(VideoDirectoryPath1))
+                {
+                    Directory.CreateDirectory(VideoDirectoryPath1);
+                }
+                if (!Directory.Exists(VideoDirectoryPath2))
+                {
+                    Directory.CreateDirectory(VideoDirectoryPath2);
+                }
+
+                if (!Directory.Exists(SnapshotsDirectoryPath1))
+                {
+                    Directory.CreateDirectory(SnapshotsDirectoryPath1);
+                }
+                if (!Directory.Exists(SnapshotsDirectoryPath2))
+                {
+                    Directory.CreateDirectory(SnapshotsDirectoryPath2);
+                }
+
+                if (!Directory.Exists(ChartsDirectoryPath1))
+                {
+                    Directory.CreateDirectory(ChartsDirectoryPath1);
+                }
+                if (!Directory.Exists(ChartsDirectoryPath2))
+                {
+                    Directory.CreateDirectory(ChartsDirectoryPath2);
+                }
+
+                if (!File.Exists(LogPath))
+                {
+                    File.Create(LogPath);
+                }
+                InitializeComponent();
             }
             catch (Exception)
             {
@@ -65,7 +105,6 @@ namespace PVSS
         }
         
         public string LastTakenPhoto2;
-
         public void TakeSnapshot2()
         {
             RenderTargetBitmap bmp = new RenderTargetBitmap(1450, 1053, 96, 96, PixelFormats.Pbgra32);
@@ -79,22 +118,21 @@ namespace PVSS
             PngBitmapEncoder encoder = new PngBitmapEncoder();
 
             encoder.Frames.Add(BitmapFrame.Create(bmp));
-            SnapshotsDirectoryPath2 = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots2";
+
+            SnapshotsDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots2";
 
             if (!Directory.Exists(SnapshotsDirectoryPath2))
             {
                 Directory.CreateDirectory(SnapshotsDirectoryPath2);
             }
-
-
-
-            string OutputVideoFileName = string.Format(@"{0}\{1}.bmp", SnapshotsDirectoryPath2, DateTime.Now.ToString("dd-MM-yyyy HH_mm_ss_fff")); // was dd-MM-yyyy hh_mm_ss_fff due to PM/AM format
+            
+            string OutputPhotoFileName2 = string.Format(@"{0}\{1}.bmp", SnapshotsDirectoryPath2, DateTime.Now.ToString("dd-MM-yyyy HH_mm_ss_fff")); // was dd-MM-yyyy hh_mm_ss_fff due to PM/AM format
             try
             {
-                using (FileStream s = new FileStream(OutputVideoFileName, FileMode.CreateNew, FileAccess.Write))
+                using (FileStream s = new FileStream(OutputPhotoFileName2, FileMode.CreateNew, FileAccess.Write))
                 {
                     encoder.Save(s);
-                    LastTakenPhoto2 = OutputVideoFileName;
+                    LastTakenPhoto2 = OutputPhotoFileName2;
                 }
             }
             catch (IOException)
@@ -108,6 +146,7 @@ namespace PVSS
             simpleSound.Play();
 
         }
+        public string LastTakenPhoto1;
         public void TakeSnapshot()
         {
             RenderTargetBitmap bmp = new RenderTargetBitmap(1450, 1053, 96, 96, PixelFormats.Pbgra32);
@@ -117,20 +156,20 @@ namespace PVSS
 
             encoder.Frames.Add(BitmapFrame.Create(bmp));
 
-            if (!Directory.Exists(SnapshotsDirectoryPath))
+            SnapshotsDirectoryPath1 = "D:\\PVSS DUO PRO 1" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots1";
+
+            if (!Directory.Exists(SnapshotsDirectoryPath1))
             {
-                Directory.CreateDirectory(SnapshotsDirectoryPath);
+                Directory.CreateDirectory(SnapshotsDirectoryPath1);
             }
 
-            SnapshotsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots";
-
-            string OutputVideoFileName = string.Format(@"{0}\{1}.bmp", SnapshotsDirectoryPath, DateTime.Now.ToString("dd-MM-yyyy HH_mm_ss_fff")); // was dd-MM-yyyy hh_mm_ss_fff due to PM/AM format
+            string OutputPhotoFileName1 = string.Format(@"{0}\{1}.bmp", SnapshotsDirectoryPath1, DateTime.Now.ToString("dd-MM-yyyy HH_mm_ss_fff")); // was dd-MM-yyyy hh_mm_ss_fff due to PM/AM format
             try
             {
-                using (FileStream s = new FileStream(OutputVideoFileName, FileMode.CreateNew, FileAccess.Write))
+                using (FileStream s = new FileStream(OutputPhotoFileName1, FileMode.CreateNew, FileAccess.Write))
                 {
                     encoder.Save(s);
-                    LastTakenPhoto = OutputVideoFileName;
+                    LastTakenPhoto1 = OutputPhotoFileName1;
                 }
             }
             catch (IOException)
@@ -141,23 +180,20 @@ namespace PVSS
             string fullPathToSound = Path.GetFullPath(@"Photo.wav");
             SoundPlayer simpleSound = new SoundPlayer(fullPathToSound);
             simpleSound.Play();
-
         }
 
-        public string LastTakenPhoto;
-               
         private void Image_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            var psi = new ProcessStartInfo("Explorer.exe", "/select," + LastTakenPhoto);
+            var psi = new ProcessStartInfo("Explorer.exe", "/select," + LastTakenPhoto1);
             Process.Start(psi);
             //Process.Start(LastTakenPhoto);  // Some times crash to be done by Arlindo Dez.2015. Solved 27.Abr.2019 Manuel ALberto
         }
 
         private void Image_MouseLeftButtonUp_1(object sender, MouseButtonEventArgs e)
         {
-            if (!Directory.Exists(ChartsDirectoryPath))
+            if (!Directory.Exists(ChartsDirectoryPath1))
             {
-                Directory.CreateDirectory(ChartsDirectoryPath);
+                Directory.CreateDirectory(ChartsDirectoryPath1);
             }
 
             if (!Directory.Exists(ChartsDirectoryPath2))
@@ -169,7 +205,7 @@ namespace PVSS
             {
                 Filter = ".png files|*.png|.svg files|*.svg|.pdf files|*.pdf|.xaml files|*.xaml",
                 DefaultExt = ".png",
-                InitialDirectory = ChartsDirectoryPath,
+                InitialDirectory = ChartsDirectoryPath1,
                 FileName = string.Format(@"{0}", DateTime.Now.ToString("dd-mm-yyyy HH_mm_ss_fff"))
             };
             if (dlg.ShowDialog(this).Value)

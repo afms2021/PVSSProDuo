@@ -50,7 +50,7 @@
 // | Arlindo Silva                   | 04/JAN/2022 | Added DLL 1.2.45.0 with Log,  corrected error on Styldedtxt enumeration.Time is flicking .id = 4 is duplicated | 
 // | Arlindo Silva                   | 14/FEB/2022 | Added Cleanup on Close and updated to Sensoray 1.2.46.0 DLL solved issues with 32bit running on 64bits machine | 
 // | Arlindo Silva                   | 05/APR/2022 | Added Directory Create based on JobName, if not exist.                                                         | 
-// | Arlindo Silva                   | 05/APR/2022 | Save Chart when batery level is critical and Stop/Start Recoding every minute                                  | 
+// | Arlindo Silva                   | 05/APR/2022 | Save Chart when batery level is critical and Stop/Start Recording every minute                                 | 
 // | Arlindo Silva                   | 20/APR/2022 | PVSS PRO DUO Initial Version                                                                                   | 
 // +---------------------------------+-------------+----------------------------------------------------------------------------------------------------------------+
 
@@ -69,7 +69,6 @@ using System.Windows;
 using Sensoray;
 using PCComm;
 using System.Text.RegularExpressions;
-using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Media;
 using System.Windows.Media;
@@ -97,15 +96,16 @@ namespace PVSS.ViewModel
     [ComVisible(false)]
     public sealed class MainViewModel : ViewModelBase, ICleanup, IDisposable
     {
-
-        private string VideoDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos";
-        private string VideoDirectoryPath2 = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos2";
-        private string SnapshotsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots";
-        private string ChartsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts";
-        private string ChartsDirectoryPath2 = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts2";
-        private string LogPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\log.txt";
-        private string JobNameDiretory = Directory.GetCurrentDirectory() + "\\My Dives";
-
+        public string JobNameDiretory1 = "D:\\PVSS DUO PRO 1";
+        public string JobNameDiretory2 = "F:\\PVSS DUO PRO 2";
+        public string VideoDirectoryPath1 = "D:\\PVSS DUO PRO 1" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos1";
+        public string VideoDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos2";
+        public string SnapshotsDirectoryPath1 = "D:\\PVSS DUO PRO 1" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots1";
+        public string SnapshotsDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots2";
+        public string ChartsDirectoryPath1 = "D:\\PVSS DUO PRO 1" +  "\\" + Properties.Settings.Default.JobNameText + "\\Charts1";
+        public string ChartsDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts2";
+        public string LogPath = "D:\\PVSS DUO PRO 1" + "\\" + Properties.Settings.Default.JobNameText + "\\log.txt";
+        
         private FileSystemWatcher fileSystemWatcher;
 
         private const int BUFFER_SIZE = 1327104;
@@ -122,7 +122,7 @@ namespace PVSS.ViewModel
 
 
         private DispatcherTimer TelemetryTimer = new DispatcherTimer();
-        private DispatcherTimer LowBatErrorTimer = new DispatcherTimer();
+        //private DispatcherTimer LowBatErrorTimer = new DispatcherTimer();
         private DispatcherTimer DiskMonitorTimer = new DispatcherTimer();
         private DispatcherTimer DisplayLineTimer = new DispatcherTimer();
 
@@ -158,7 +158,8 @@ namespace PVSS.ViewModel
         private static string BATTERY_CHARGER_STATUS_OFF = "off";
 
         private bool Sensoray_codec = false;
-        private string Last_file_name = "noname";
+        private string Last_file_name1 = "noname1";
+        private string Last_file_name2 = "noname2";
         //private string TemperatureLevel;
 
 #if PVSS_PRO
@@ -172,6 +173,7 @@ namespace PVSS.ViewModel
         private bool _Chart2_saved = false;
 
         // Change Baudrate in settings to 19200 / PVSS use 115200
+                
 
 #endif
 
@@ -297,6 +299,7 @@ namespace PVSS.ViewModel
                 }
 
                 _isRecording = value;
+
                 RaisePropertyChanged(IsRecordingPropertyName);
             }
         }
@@ -330,20 +333,15 @@ namespace PVSS.ViewModel
                 startDateTime1 = DateTime.Now;
                 StartRecording();
 
-                _Chart1_saved = false;
-                StatusMessage = "Recording - F3 STOP"; //Was F3 now toggle START/STOP Arlindo 02.MAR.2017
-                
                 SuppressEditing = true;
 
-                if (IsRecording2)
-                {
-                    SuppressEditing2 = true;
-                }
+                _Chart1_saved = false;
+                StatusMessage = "Recording - F3 STOP"; //Was F3 now toggle START/STOP Arlindo 02.MAR.2017
                 
                 DivingTimer1.Start();
 
                 //Log("System Started and Internal Temperature was:" + TemperatureLevel + " ºC");
-                Log("Start Recording");
+                Log("Start Recording 1");
                 Log("Start Diving Depth was: " + Depth1 + " m");
 
                 MaxDepthValue1 = 0f;
@@ -356,30 +354,34 @@ namespace PVSS.ViewModel
                 MyPlotModel.Series.Clear();
                 MyPlotModel2.Series.Clear();
                 SetupCharting();
-                Log("Start Dive Profile Chart");
+                Log("Start Dive Profile Chart 1");
             }
             else
             {
                 SetOSDStyledRECSTOP(STREAM_A);
 
-
                 StopRecording();
-                SaveChartImage(); //Arlindo OUT21
-                _Chart1_saved = true;
 
-                Log("Stop Recording");
-                Log("Maximum Depht was: " + MaxDepthValue1 + " m");
-                Log("Ended Dive Depth was: " + Depth1 + " m");
-                Log("Save Dive Profile Chart" + "\r\n");
-                StatusMessage = "Stopped - F3 REC";
-
-                SuppressEditing = false;
-
-                if (IsRecording2)
+                if(IsRecording2)
                 {
+                    SuppressEditing = true;
+                }
+
+                if (!IsRecording && !IsRecording2)
+                {
+                    SuppressEditing = false;
                     SuppressEditing2 = false;
                 }
-                
+
+                SaveChartImage1();
+                _Chart1_saved = true;
+
+                Log("Stop Recording 1");
+                Log("Maximum Depht was: " + MaxDepthValue1 + " m");
+                Log("Ended Dive Depth was: " + Depth1 + " m");
+                Log("Save Dive Profile Chart 1" + "\r\n");
+                StatusMessage = "Stopped - F3 REC";
+
                 DivingTimer1.Stop();
                 startDateTime1 = DateTime.Now;
                 string fullPathToSound = Path.GetFullPath(@"Stop_Rec.wav");
@@ -413,6 +415,7 @@ namespace PVSS.ViewModel
                 }
 
                 _isRecording2 = value;
+
                 RaisePropertyChanged(IsRecordingPropertyName2);
             }
         }
@@ -444,20 +447,21 @@ namespace PVSS.ViewModel
                 DiveTime2 = TimeSpan.Zero;
                 startDateTime2 = DateTime.Now;
                 StartRecording2();
-                StatusMessage2 = "Recording - F4 STOP"; // F4 now toggle START/STOP Arlindo 02.MAR.2017
-                _Chart2_saved = false;
 
-                if (IsRecording)
+                SuppressEditing2 = true;
+                
+                if (!IsRecording)
                 {
                     SuppressEditing = true;
                 }
-
-                SuppressEditing2 = true;
+                
+                StatusMessage2 = "Recording - F4 STOP"; // F4 now toggle START/STOP Arlindo 02.MAR.2017
+                _Chart2_saved = false;
 
                 DivingTimer2.Start();
 
                 //Log("System Started and Internal Temperature was:" + TemperatureLevel + " ºC");
-                Log("Start Recording");
+                Log("Start Recording 2");
                 Log("Start Diving Depth was: " + Depth2 + " m");
 
                 MaxDepthValue2 = 0f;
@@ -470,7 +474,7 @@ namespace PVSS.ViewModel
                 MyPlotModel21.Series.Clear();
                 MyPlotModel22.Series.Clear();
                 SetupCharting2();
-                Log("Start Dive Profile Chart");
+                Log("Start Dive Profile Chart 2");
             }
             else
             {
@@ -478,21 +482,29 @@ namespace PVSS.ViewModel
 
 
                 StopRecording2();
-                SaveChartImage(); //Arlindo OUT21
-                _Chart2_saved = true;
 
-                Log("Stop Recording");
-                Log("Maximum Depht was: " + MaxDepthValue2 + " m");
-                Log("Ended Dive Depth was: " + Depth2 + " m");
-                Log("Save Dive Profile Chart" + "\r\n");
-                StatusMessage2 = "Stopped - F4 REC";
-
-                if (IsRecording)
+                if(IsRecording)
+                {
+                    SuppressEditing = true;
+                }
+                
+                if (!IsRecording && !IsRecording2)
                 {
                     SuppressEditing = false;
+                    SuppressEditing2 = false;
                 }
-                SuppressEditing2 = false;
-                
+               
+
+
+                SaveChartImage2(); //Arlindo OUT21
+                _Chart2_saved = true;
+
+                Log("Stop Recording 2");
+                Log("Maximum Depht was: " + MaxDepthValue2 + " m");
+                Log("Ended Dive Depth was: " + Depth2 + " m");
+                Log("Save Dive Profile Chart 2" + "\r\n");
+                StatusMessage2 = "Stopped - F4 REC";
+
                 DivingTimer2.Stop();
                 startDateTime2 = DateTime.Now;
                 string fullPathToSound = Path.GetFullPath(@"Stop_Rec.wav");
@@ -502,27 +514,31 @@ namespace PVSS.ViewModel
 
         }
         #region Log File 
-        //public static void Log(string logMessage, TextWriter w)
         public void Log(string logMessage)
-
         {
+            LogPath = "D:\\PVSS DUO PRO 1" + "\\" + Properties.Settings.Default.JobNameText + "\\log.txt";
+           
             using (StreamWriter w = File.AppendText(LogPath))
-                w.WriteLine($"{DateTime.Now.ToShortDateString()} {DateTime.Now.ToLongTimeString()} {"- " + logMessage}");
+            w.WriteLine($"{DateTime.Now.ToShortDateString()} {DateTime.Now.ToLongTimeString()} {"- " + logMessage}");
+            
         }
         #endregion
 
-        private void SaveChartImage()
+        private void SaveChartImage1()
         {
-            ChartsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts";
-            if (!Directory.Exists(ChartsDirectoryPath))
+            ChartsDirectoryPath1 = "D:\\PVSS DUO PRO 1" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts1";
+            if (!Directory.Exists(ChartsDirectoryPath1))
             {
-                Directory.CreateDirectory(ChartsDirectoryPath);
+                Directory.CreateDirectory(ChartsDirectoryPath1);
             }
             // Changed to PDF due to Win 10 photo viwer black background, no axes visible by Arlindo Dez-2015
-            string fileName = string.Format(@"{0}\{1}.pdf", ChartsDirectoryPath, DateTime.Now.ToString("dd-MM-yyyy HH_mm_ss_fff"));
+            string fileName = string.Format(@"{0}\{1}.pdf", ChartsDirectoryPath1, DateTime.Now.ToString("dd-MM-yyyy HH_mm_ss_fff"));
             OxyPlot.Pdf.PdfExporter.Export(MyPlotModel2, fileName, MyPlotModel2.Width, MyPlotModel2.Height); // was Width - 50
-            
-            ChartsDirectoryPath2 = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts2";
+           
+        }
+        private void SaveChartImage2()
+        {
+            ChartsDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts2";
             if (!Directory.Exists(ChartsDirectoryPath2))
             {
                 Directory.CreateDirectory(ChartsDirectoryPath2);
@@ -747,12 +763,12 @@ namespace PVSS.ViewModel
             var runExplorer = new ProcessStartInfo();
             if (Properties.Settings.Default.JobNameText == (""))
             {
-                VideoDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives";
+                VideoDirectoryPath1 = "D:\\PVSS DUO PRO 1";
             }
             else
-                VideoDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos";
+            //VideoDirectoryPath1 = Directory.GetCurrentDirectory() + "\\My Dives1" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos";
             runExplorer.FileName = "explorer.exe";
-            runExplorer.Arguments = VideoDirectoryPath;
+            runExplorer.Arguments = VideoDirectoryPath1;
             Process.Start(runExplorer);
         }
 
@@ -789,11 +805,9 @@ namespace PVSS.ViewModel
             }
 
             FileVersionInfo myFileVersionInfo = FileVersionInfo.GetVersionInfo(@"mid2253.dll");
-
             DLLVersion = myFileVersionInfo.FileVersion;
 
             //Just used to get all the COM Ports available
-
             Thread.Sleep(2000); // Arlindo NOV 2021 Wait till all COM ports come up
 
             CommunicationManager c = new CommunicationManager();
@@ -818,8 +832,8 @@ namespace PVSS.ViewModel
             TelemetryTimer.Start();
 
             //Clear Low Battery  Message flag
-            LowBatErrorTimer.Interval = TimeSpan.FromMinutes(1);
-            LowBatErrorTimer.Tick += new EventHandler(One_Minute_Timer_tick);
+            //LowBatErrorTimer.Interval = TimeSpan.FromMinutes(1);
+            //LowBatErrorTimer.Tick += new EventHandler(One_Minute_Timer_tick);
 
             // Update disk space available every 15 seconds
             DiskMonitorTimer.Interval = TimeSpan.FromSeconds(15);
@@ -832,58 +846,52 @@ namespace PVSS.ViewModel
             DisplayLineTimer.Tick += new EventHandler(DisplayLineTimer_tick);
 
             System.Windows.Application.Current.MainWindow.KeyUp += new System.Windows.Input.KeyEventHandler(MainWindow_KeyUp);
-            
-            VideoDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos";
-            SnapshotsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots";
-            ChartsDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts";
-            ChartsDirectoryPath2 = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts2";
-            LogPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\log.txt";
-            JobNameDiretory = Directory.GetCurrentDirectory() + "\\My Dives";
-
-            if (!Directory.Exists(ChartsDirectoryPath))
-            {
-                Directory.CreateDirectory(ChartsDirectoryPath);
-            }
-
-            if (!Directory.Exists(SnapshotsDirectoryPath))
-            {
-                Directory.CreateDirectory(SnapshotsDirectoryPath);
-            }
-
-            if (!Directory.Exists(VideoDirectoryPath))
-            {
-                Directory.CreateDirectory(VideoDirectoryPath);
-            }
-
-            if (!Directory.Exists(VideoDirectoryPath2))
-            {
-                Directory.CreateDirectory(VideoDirectoryPath2);
-            }
-
-
-            if (!File.Exists(LogPath))
-            {
-                File.Create(LogPath);
-            }
-
+           
             // Instruct the file system watcher to call the FileCreated method
             // when there are files created at the folder.
-            fileSystemWatcher = new FileSystemWatcher(JobNameDiretory)
+            fileSystemWatcher = new FileSystemWatcher(JobNameDiretory1)
             {
                 IncludeSubdirectories = true,
                 //fileSystemWatcher.Filter = "*.*";
                 NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.FileName | NotifyFilters.LastAccess | NotifyFilters.DirectoryName
             };
+
             fileSystemWatcher.Created += new FileSystemEventHandler(FileSystemWatcher_Created);
             fileSystemWatcher.EnableRaisingEvents = true;
 
-            if (!Directory.Exists(ChartsDirectoryPath))
+            void FileSystemWatcher_Created(object sender, FileSystemEventArgs e) // Solved Exception by Manuel Alberto 27.Abri.2019
             {
-                Directory.CreateDirectory(ChartsDirectoryPath);
+                string filepath1 = new Uri(e.FullPath).ToString();
+                string extension = Path.GetExtension(filepath1);
+                if (extension == ".bmp")
+                {
+                    LastSnapshotImage1 = new Uri(e.FullPath);                   
+                }
+
             }
-            if (!Directory.Exists(ChartsDirectoryPath2))
+
+            // Instruct the file system watcher to call the FileCreated method
+            // when there are files created at the folder.
+            fileSystemWatcher = new FileSystemWatcher(JobNameDiretory2)
             {
-                Directory.CreateDirectory(ChartsDirectoryPath2);
+                IncludeSubdirectories = true,
+                //fileSystemWatcher.Filter = "*.*";
+                NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.FileName | NotifyFilters.LastAccess | NotifyFilters.DirectoryName
+            };
+
+            fileSystemWatcher.Created += new FileSystemEventHandler(FileSystemWatcher_Created2);
+            fileSystemWatcher.EnableRaisingEvents = true;
+
+
+            void FileSystemWatcher_Created2(object sender, FileSystemEventArgs e) 
+            {
+                string filepath2 = new Uri(e.FullPath).ToString();
+                string extension = Path.GetExtension(filepath2);
+                if (extension == ".bmp")
+                {
+                    LastSnapshotImage2 = new Uri(e.FullPath);
+                }
+
             }
 
             SetupCharting();
@@ -909,9 +917,9 @@ namespace PVSS.ViewModel
             }
             foreach (DirectShowLib.DsDevice device in WPFMediaKit.DirectShow.Controls.MultimediaUtil.VideoInputDevices)
             {
-
+                //Logitech Webcam C160
+                //if (device.Name == "Logitech Webcam C160")  //Arlindo 2022  PVSS Duo                
                 if (device.Name == "Sensoray 2253 Capture A #3")  //Arlindo 2022  PVSS Duo                
-
                 {
                     Video1 = device;  // Connect to this device
                     Sensoray_codec = true;
@@ -966,19 +974,8 @@ namespace PVSS.ViewModel
             DisplayLineTimer.Stop();
         }
 
-        void FileSystemWatcher_Created(object sender, FileSystemEventArgs e) // Solved Exception by Manuel Alberto 27.Abri.2019
-        {
-            string filepath = new Uri(e.FullPath).ToString();
-            string extension = Path.GetExtension(filepath);
-            if (extension == ".bmp")
-            {
-                LastSnapshotImage = new Uri(e.FullPath);
-                LastSnapshotImage2 = new Uri(e.FullPath);
-            }
-
-        }
-
-        void MainWindow_KeyUp(object sender, System.Windows.Input.KeyEventArgs e) // due to use of "F10" a special system key
+            
+        void MainWindow_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
         {
            
             switch (e.Key == Key.System ? e.SystemKey : e.Key) // due to use of "F10" a special system key
@@ -1009,7 +1006,6 @@ namespace PVSS.ViewModel
                     e.Handled = true;
                     break;
                 case Key.Enter:
-
                     if (OSDPopupVisibility)
                     {
                         OSDLine1Submitted = OSDLine1;
@@ -1040,6 +1036,7 @@ namespace PVSS.ViewModel
             }
         }
 
+       
         // Just because we are using PRODIVING telemetry
         private bool AlreadyShownWarningChargerOn = false; // Power Line Warning Always on
 
@@ -1060,8 +1057,7 @@ namespace PVSS.ViewModel
 
         private void IOPort_DataReceived(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
         {     
-#if PVSS_PRO
-            //Console.WriteLine("Before: " + MyCommunicationManager.LastMsg); //Arlindo 2021
+#if PVSS_PRO            
             try
             {
                 if ((!string.IsNullOrEmpty(MyCommunicationManager.LastMsg)) && (MyCommunicationManager.LastMsg.StartsWith("#DVA")))
@@ -1270,7 +1266,11 @@ namespace PVSS.ViewModel
 
 #if PVSS_PRO
             //MyCommunicationManager.WriteData("$RID,*73\r\n");
-            MyCommunicationManager.WriteData("$DVA,*7F\r\n"); // Get depth string
+            if(COMPortIsEnabled)
+            {
+                MyCommunicationManager.WriteData("$DVA,*7F\r\n"); // Get depth string
+            }
+           
             //MyCommunicationManager.WriteData("$RLY,0,0,0,0,*6A\r\n");
 #endif
             SetOSDStyled_DiveTime(STREAM_A);
@@ -1450,13 +1450,13 @@ namespace PVSS.ViewModel
         }
 
         #region Clear Low Bat Alarm
-        private void One_Minute_Timer_tick(object sender, EventArgs e) //by ARLINDO Clear Error Message and restart REC STOP/START every minute
-        {
-            LowBatErrorTimer.Stop();
-            SendKeys.SendWait("{ESC}");
-           // AlreadyShownWarningBatteryLevelCritical = false;
-            LowBatErrorTimer.Start();
-        }
+        //private void One_Minute_Timer_tick(object sender, EventArgs e) //by ARLINDO Clear Error Message and restart REC STOP/START every minute
+        //{
+        //    LowBatErrorTimer.Stop();
+        //    SendKeys.SendWait("{ESC}");
+        //   // AlreadyShownWarningBatteryLevelCritical = false;
+        //    LowBatErrorTimer.Start();            
+        //}
         #endregion
 
         // Setup Sensoray Boxes
@@ -1531,14 +1531,11 @@ namespace PVSS.ViewModel
             IsNTSCChecked = false;
 
             IsSDCameraChecked = true;
-            //IsSDCameraChecked = Properties.Settings.Default.IsSDCameraChecked;
-
+         
             IsHDCameraChecked = false;
-            //IsHDCameraChecked = Properties.Settings.Default.IsHDCameraChecked;
-
+            
             IsInterpolatedChecked = true;
-            //IsInterpolatedChecked = Properties.Settings.Default.IsInterpolatedChecked;
-
+            
             //Set Sensor and Water Type defaults
             Is_10_BarG = true;
             Is_25_BarG = false;
@@ -1570,13 +1567,6 @@ namespace PVSS.ViewModel
 
             S2253.SetImageSize(640, 480, 1, STREAM_A);
             S2253.SetImageSize(640, 480, 1, STREAM_B);
-
-            //S2253.SetImageSize(720, 576, 0, STREAM_A);
-            //S2253.SetImageSize(720, 576, 0, STREAM_B);
-
-            //S2253.SetInputCrop(10, 0, 704, 576, 0);   // Added new function to mid2253.cs, due wrong PAL aspect ratio by Arlindo 9.Dez.2015
-            //S2253.SetInputCrop(0, 0, 554, 576, 0);   // Added for new 1080p camera by Arlindo 9.Abr.2019 now is GUI external settings
-            //S2253.SetInterpolateMode(1, 0);
 
             S2253.SetIDR(1, 0, STREAM_B); //new at 10.SET.2013 by Arlindo (speed-up seek in play mode)
             S2253.SetIDR(1, 1, STREAM_B); 
@@ -1618,21 +1608,21 @@ namespace PVSS.ViewModel
 
         private void StartRecording()
         {
-            VideoDirectoryPath = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos";
-
-            if (!Directory.Exists(VideoDirectoryPath))
+            VideoDirectoryPath1 = "D:\\PVSS DUO PRO 1" + "\\"  + Properties.Settings.Default.JobNameText + "\\Videos1";
+        
+            if (!Directory.Exists(VideoDirectoryPath1))
             {
-                Directory.CreateDirectory(VideoDirectoryPath);
+                Directory.CreateDirectory(VideoDirectoryPath1);
             }
 
 
-            string OutputVideoFileName = string.Format(@"{0}\{1}.mp4", VideoDirectoryPath, DateTime.Now.ToString("dd-MM-yyyy HH_mm_ss_fff"));
+            string OutputVideoFileName1 = string.Format(@"{0}\{1}.mp4", VideoDirectoryPath1, DateTime.Now.ToString("dd-MM-yyyy HH_mm_ss_fff"));
 
-            Last_file_name = OutputVideoFileName; // Save last video file path and name, to be used by StopRecoding()
+            Last_file_name1 = OutputVideoFileName1; // Save last video file path and name, to be used by StopRecoding()
 
-            if (File.Exists(OutputVideoFileName))
+            if (File.Exists(OutputVideoFileName1))
             {
-                string NewOutputVideoFileName = string.Format(@"{0}\{1}.mp4", VideoDirectoryPath, DateTime.Now.ToString("dd-MM-yyyy HH_mm_ss_fff")); /// Arlindo OUT21
+                string NewOutputVideoFileName = string.Format(@"{0}\{1}.mp4", VideoDirectoryPath1, DateTime.Now.ToString("dd-MM-yyyy HH_mm_ss_fff")); /// Arlindo OUT21
                 File.Create(NewOutputVideoFileName);
             }
 
@@ -1642,7 +1632,7 @@ namespace PVSS.ViewModel
            
             try
             {
-                S2253.StartRecord(OutputVideoFileName, 0, STREAM_B);
+                S2253.StartRecord(OutputVideoFileName1, 0, STREAM_B);
             }
             catch (Exception)
             {
@@ -1652,7 +1642,7 @@ namespace PVSS.ViewModel
         }
         private void StartRecording2()
         {
-            VideoDirectoryPath2 = Directory.GetCurrentDirectory() + "\\My Dives" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos2";
+            VideoDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos2";
 
             if (!Directory.Exists(VideoDirectoryPath2))
             {
@@ -1660,11 +1650,11 @@ namespace PVSS.ViewModel
             }
 
 
-            string OutputVideoFileName = string.Format(@"{0}\{1}.mp4", VideoDirectoryPath2, DateTime.Now.ToString("dd-MM-yyyy HH_mm_ss_fff"));
+            string OutputVideoFileName2 = string.Format(@"{0}\{1}.mp4", VideoDirectoryPath2, DateTime.Now.ToString("dd-MM-yyyy HH_mm_ss_fff"));
 
-            Last_file_name2 = OutputVideoFileName; // Save last video file path and name, to be used by StopRecoding()
+            Last_file_name2 = OutputVideoFileName2; // Save last video file path and name, to be used by StopRecoding()
 
-            if (File.Exists(OutputVideoFileName))
+            if (File.Exists(OutputVideoFileName2))
             {
                 string NewOutputVideoFileName = string.Format(@"{0}\{1}.mp4", VideoDirectoryPath2, DateTime.Now.ToString("dd-MM-yyyy HH_mm_ss_fff")); /// Arlindo OUT21
                 File.Create(NewOutputVideoFileName);
@@ -1675,7 +1665,7 @@ namespace PVSS.ViewModel
 
             try
             {
-                S2253.StartRecord(OutputVideoFileName, 1, STREAM_B);
+                S2253.StartRecord(OutputVideoFileName2, 1, STREAM_B);
             }
             catch (Exception)
             {
@@ -1688,7 +1678,7 @@ namespace PVSS.ViewModel
         {
             S2253.StopStream(0, STREAM_B);
 
-            FileInfo info = new FileInfo(Last_file_name);
+            FileInfo info = new FileInfo(Last_file_name1);
             if (info.Exists && info.Length == 0)
             {
                 System.Windows.MessageBox.Show("Video File is Empty or Severe Corruted !!!",
@@ -2616,11 +2606,6 @@ namespace PVSS.ViewModel
                 {
                     return;
                 }
-                /*
-                Regex illegalInFileName = new Regex(@"[()§;:,´#$+%!`&«»{}@\\/:*?""<>|]´");
-                value = illegalInFileName.Replace(value, "");
-                value = value.Trim();
-                */
 
                 _JobName = MakeValidFileName(value);
                 Properties.Settings.Default.JobNameText = _JobName;
@@ -2629,7 +2614,6 @@ namespace PVSS.ViewModel
                 SetOSDStyledJobName(STREAM_A);
                 SetOSDStyledJobName(STREAM_B);
                 //SetOSDStyledJobName(VIDEO_OUT);
-
                 RaisePropertyChanged(JobNamePropertyName);
 
             }
@@ -2864,6 +2848,8 @@ namespace PVSS.ViewModel
                 RaisePropertyChanged(OSDPopupVisibilityPropertyName);
             }
         }
+
+
 
         /// <summary>
         /// The <see cref="OSDPopupVisibility2" /> property's name.
@@ -3770,6 +3756,8 @@ namespace PVSS.ViewModel
                 {
                     S2253.SetInputCrop(10, 0, 704, 576, 0);   // Added new function to mid2253.cs, due wrong PAL aspect ratio by Arlindo 9.Dez.2015
                     S2253.SetInterpolateMode(1, 0);
+                    S2253.SetInputCrop(10, 0, 704, 576, 1);   // Added new function to mid2253.cs, due wrong PAL aspect ratio by Arlindo 9.Dez.2015
+                    S2253.SetInterpolateMode(1, 1);
                     return;
                 }
 
@@ -3806,6 +3794,9 @@ namespace PVSS.ViewModel
                 {
                     S2253.SetInputCrop(10, 0, 560, 576, 0);   // Added for new 1080p camera by Arlindo 9.Abr.2016 TODO  external settings Adjust lett from 0 to 10 15-MAy-2019
                     S2253.SetInterpolateMode(0, 0);
+                    S2253.SetInputCrop(10, 0, 560, 576, 1);   // Added for new 1080p camera by Arlindo 9.Abr.2016 TODO  external settings Adjust lett from 0 to 10 15-MAy-2019
+                    S2253.SetInterpolateMode(0, 1);
+
                     return;
                 }
 
@@ -3837,10 +3828,12 @@ namespace PVSS.ViewModel
             set
             {
                 S2253.SetInterpolateMode(0, 0);
+                S2253.SetInterpolateMode(0, 1);
                 _IsInterpolated = value;
                 if (value == true)
                 {
                     S2253.SetInterpolateMode(1, 0);
+                    S2253.SetInterpolateMode(1, 1);
                     return;
                 }
 
@@ -4364,43 +4357,44 @@ namespace PVSS.ViewModel
 
         #region LastSnapshotImage
         /// <summary>
-        /// The <see cref="LastSnapshotImage" /> property's name.
+        /// The <see cref="LastSnapshotImage1" /> property's name.
         /// </summary>
-        public const string LastSnapshotImagePropertyName = "LastSnapshotImage";
+        public const string LastSnapshotImagePropertyName1 = "LastSnapshotImage1";
 
-        private Uri _lastSnapshotImage;
+        private Uri _lastSnapshotImage1;
 
         /// <summary>
-        /// Sets and gets the LastSnapshotImage property.
+        /// Sets and gets the LastSnapshotImage1 property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public Uri LastSnapshotImage
+        public Uri LastSnapshotImage1
         {
             get
             {
-                return _lastSnapshotImage;
+                return _lastSnapshotImage1;
             }
 
             set
             {
-                if (_lastSnapshotImage == value)
+                if (_lastSnapshotImage1 == value)
                 {
                     return;
                 }
-                _lastSnapshotImage = value;
+                _lastSnapshotImage1 = value;
 
-                RaisePropertyChanged(LastSnapshotImagePropertyName);
+                RaisePropertyChanged(LastSnapshotImagePropertyName1);
             }
         }
+
         /// <summary>
         /// The <see cref="LastSnapshotImage2" /> property's name.
         /// </summary>
         public const string LastSnapshotImagePropertyName2 = "LastSnapshotImage2";
 
-        public Uri _lastSnapshotImage2;
+        private Uri _lastSnapshotImage2;
 
         /// <summary>
-        /// Sets and gets the LastSnapshotImage property.
+        /// Sets and gets the LastSnapshotImage1 property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
         public Uri LastSnapshotImage2
@@ -4421,6 +4415,10 @@ namespace PVSS.ViewModel
                 RaisePropertyChanged(LastSnapshotImagePropertyName2);
             }
         }
+
+
+
+
         #endregion
 
         #region Charting & Plotting
@@ -4598,7 +4596,7 @@ namespace PVSS.ViewModel
 
             });
 
-            MyPlotModel2.Title = "Dive Profile";
+            MyPlotModel2.Title = "DIVER 1 DEPTH PROFILE";
 
             MyPlotModel2.Axes.Add(new TimeSpanAxis(AxisPosition.Bottom, "Time (hh:mm:ss)", "hh:mm:ss"));
             MyPlotModel2.Axes.Add(new LinearAxis(AxisPosition.Left, "Depth (m)"));
@@ -4660,7 +4658,7 @@ namespace PVSS.ViewModel
 
             });
 
-            MyPlotModel22.Title = "Dive Profile";
+            MyPlotModel22.Title = "DIVER 2 DEPTH PROFILE";
 
             MyPlotModel22.Axes.Add(new TimeSpanAxis(AxisPosition.Bottom, "Time (hh:mm:ss)", "hh:mm:ss"));
             MyPlotModel22.Axes.Add(new LinearAxis(AxisPosition.Left, "Depth (m)"));
@@ -4860,7 +4858,7 @@ namespace PVSS.ViewModel
                     System.Windows.MessageBox.Show("COM port error: " + e.Message,
                     "Change Settings",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Exclamation);
+                    MessageBoxImage.Warning); 
                     COMPortIsEnabled = false;
                     Log("Openning COM port error");
                 }
@@ -5130,7 +5128,6 @@ namespace PVSS.ViewModel
         /// </summary>
         public const string LongitudePropertyName = "Longitude";
         private string _longitude = "";
-        private string Last_file_name2;
         /// <summary>
         /// Sets and gets the Longitude property.
         /// Changes to that property's value raise the PropertyChanged event. 
@@ -5163,12 +5160,13 @@ namespace PVSS.ViewModel
 
             if (!_Chart2_saved || !_Chart1_saved) 
             {
-                SaveChartImage(); // Arlindo 05/APR/2022
+                SaveChartImage1(); // Arlindo 05/APR/2022
+                SaveChartImage2(); // Arlindo 05/APR/2022
             }
 
-           
-            StopRecording();
             StopRecording2();
+            StopRecording();
+            
 
             OSDLine1Submitted = ""; // Clear Styled text
             OSDLine12Submitted = ""; // Clear Styled text
