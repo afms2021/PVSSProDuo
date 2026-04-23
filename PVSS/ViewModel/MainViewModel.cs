@@ -1,4 +1,4 @@
-// +---------------------------------+-------------+----------------------------------------------------------------------------------------------------------------+ 
+﻿// +---------------------------------+-------------+----------------------------------------------------------------------------------------------------------------+ 
 // |    Developer                    |    Date     |                             Comments                                                                           |
 // |---------------------------------+-------------+----------------------------------------------------------------------------------------------------------------+
 // | Manuel Parente                  | 15/JUN/2012 | First Version CodeName DIVER-II                                                                                |
@@ -5153,6 +5153,58 @@ namespace PVSS.ViewModel
 
         #endregion
         #endregion
+        #region CleanupDiver1
+        public void CleanupDiver1()
+        {
+            // Stop recording if active (mirrors stop branch of ExecuteExecuteStartOrStopRecording)
+            if (IsRecording)
+            {
+                SetOSDStyledRECSTOP(STREAM_A);
+                StopRecording();
+
+                if (!IsRecording2)
+                {
+                    SuppressEditing = false;
+                    SuppressEditing2 = false;
+                }
+
+                if (!_Chart1_saved)
+                {
+                    SaveChartImage1();
+                    _Chart1_saved = true;
+                }
+
+                Log("Stop Recording 1 (shutdown)");
+                Log("Maximum Depth was: " + MaxDepthValue1 + " m");
+                StatusMessage = "Stopped - F3 REC";
+                DivingTimer1.Stop();
+
+                // Update property so UI reflects stopped state
+                _isRecording = false;
+                RaisePropertyChanged(IsRecordingPropertyName);
+            }
+
+            // Turn off camera 1
+            MyCommunicationManager.WriteData(IO_COMMAND_TURN_CAMERA_OFF_1);
+
+            // Turn off light 1 if on
+            if (IsLightOn)
+            {
+                IsLightOn = false;
+            }
+
+            // Close OSD popup if open
+            if (OSDPopupVisibility)
+            {
+                OSDPopupVisibility = false;
+            }
+
+            // Clear OSD text overlays on stream A
+            OSDLine1Submitted = "";
+            SetOSDStyled1(STREAM_A);
+        }
+        #endregion
+
         #region CleanupDiver2
         public void CleanupDiver2()
         {
@@ -5208,29 +5260,9 @@ namespace PVSS.ViewModel
         #region Cleanup
         public override void Cleanup()
         {
-            //Log("System Stopped and Internal Temperature was: " + TemperatureLevel + " �C" + "\r\n");
-
-            if (!_Chart2_saved || !_Chart1_saved) 
-            {
-                SaveChartImage1(); // Arlindo 05/APR/2022
-                SaveChartImage2(); // Arlindo 05/APR/2022
-            }
-
-            StopRecording2();
-            StopRecording();
-            
-
-            OSDLine1Submitted = ""; // Clear Styled text
-            OSDLine12Submitted = ""; // Clear Styled text
-
-            SetOSDStyled1(STREAM_A);
-            SetOSDStyled1(STREAM_B);
-            SetOSDStyled12(STREAM_A);
-            SetOSDStyled12(STREAM_B);
-
-
-            SetOSDStyledRECSTOP(STREAM_A);
-            SetOSDStyledRECSTOP2(STREAM_A);
+            // Stop all Diver 1 and Diver 2 tasks cleanly before shutdown
+            CleanupDiver1();
+            CleanupDiver2();
 
             MyCommunicationManager.WriteData(IO_COMMAND_TURN_CAMERA_OFF_1_2); // by ARLINDO 14-Jan-2015
             MyCommunicationManager.WriteData(IO_COMMAND_TURN_LIGHT_OFF_1_2); // by ARLINDO 14-Jan-2015
