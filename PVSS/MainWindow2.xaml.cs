@@ -97,13 +97,16 @@ namespace PVSS
             // Maximize after position is defined in constructor
             this.WindowState = WindowState.Maximized;
 
-            // Reset the open flag when this window is closed for any reason
+            // Stop all Diver 2 tasks and sync toggle when this window is closed
             this.Closed += (s, args) =>
             {
                 _Diver2Window_Open = false;
-                // Sync toggle back to OFF in case window was closed externally
                 var vm = DataContext as ViewModel.MainViewModel;
-                if (vm != null) vm.Diver2IsEnabled = false;
+                if (vm != null)
+                {
+                    vm.CleanupDiver2();
+                    vm.Diver2IsEnabled = false; // sync toggle switch to OFF
+                }
             };
 
             // Return focus to Monitor 1 after Monitor 2 window opens

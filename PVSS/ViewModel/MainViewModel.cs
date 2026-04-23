@@ -5153,6 +5153,58 @@ namespace PVSS.ViewModel
 
         #endregion
         #endregion
+        #region CleanupDiver2
+        public void CleanupDiver2()
+        {
+            // Stop recording if active (mirrors stop branch of ExecuteExecuteStartOrStopRecording2)
+            if (IsRecording2)
+            {
+                SetOSDStyledRECSTOP2(STREAM_A);
+                StopRecording2();
+
+                if (!IsRecording)
+                {
+                    SuppressEditing = false;
+                    SuppressEditing2 = false;
+                }
+
+                if (!_Chart2_saved)
+                {
+                    SaveChartImage2();
+                    _Chart2_saved = true;
+                }
+
+                Log("Stop Recording 2 (Diver2 window closed)");
+                Log("Maximum Depth was: " + MaxDepthValue2 + " m");
+                StatusMessage2 = "Stopped - F4 REC";
+                DivingTimer2.Stop();
+
+                // Update property so UI toggle reflects stopped state
+                _isRecording2 = false;
+                RaisePropertyChanged(IsRecordingPropertyName2);
+            }
+
+            // Turn off camera 2
+            MyCommunicationManager.WriteData(IO_COMMAND_TURN_CAMERA_OFF_2);
+
+            // Turn off light 2 if on
+            if (IsLightOn2)
+            {
+                IsLightOn2 = false;
+            }
+
+            // Close OSD popup if open
+            if (OSDPopupVisibility2)
+            {
+                OSDPopupVisibility2 = false;
+            }
+
+            // Clear OSD text overlays on stream B
+            OSDLine12Submitted = "";
+            SetOSDStyled12(STREAM_B);
+        }
+        #endregion
+
         #region Cleanup
         public override void Cleanup()
         {
