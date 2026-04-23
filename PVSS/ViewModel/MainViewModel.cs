@@ -4970,29 +4970,38 @@ namespace PVSS.ViewModel
         {
             if (GPSIsEnabled)
             {
-                //start port
-                //GPS TESTS
-                Devices.AllowBluetoothConnections = false;
-                Devices.AllowExhaustiveSerialPortScanning = true;
-
-                Devices.BeginDetection();
-
-                Devices.DeviceDetectionAttempted += new EventHandler<DeviceEventArgs>(Devices_DeviceDetectionAttempted);
-
-                Devices.DeviceDetectionAttemptFailed += new EventHandler<DeviceDetectionExceptionEventArgs>(Devices_DeviceDetectionAttemptFailed);
-
-                Devices.DeviceDetectionStarted += new EventHandler(Devices_DeviceDetectionStarted);
-
-                if (Devices.IsOnlyFirstDeviceDetected == true)
+                try
                 {
-                    Devices.DeviceDetectionCompleted += new EventHandler(Devices_DeviceDetectionCompleted);
-                }
-                else
-                {
-                    Devices.DeviceDetected += new EventHandler<DeviceEventArgs>(Devices_DeviceDetected);
-                    Devices.DeviceDetectionCanceled += new EventHandler(Devices_DeviceDetectionCanceled);
-                }
+                    //start port
+                    Devices.AllowBluetoothConnections = false;
+                    Devices.AllowExhaustiveSerialPortScanning = true;
 
+                    Devices.BeginDetection();
+
+                    Devices.DeviceDetectionAttempted += new EventHandler<DeviceEventArgs>(Devices_DeviceDetectionAttempted);
+
+                    Devices.DeviceDetectionAttemptFailed += new EventHandler<DeviceDetectionExceptionEventArgs>(Devices_DeviceDetectionAttemptFailed);
+
+                    Devices.DeviceDetectionStarted += new EventHandler(Devices_DeviceDetectionStarted);
+
+                    if (Devices.IsOnlyFirstDeviceDetected == true)
+                    {
+                        Devices.DeviceDetectionCompleted += new EventHandler(Devices_DeviceDetectionCompleted);
+                    }
+                    else
+                    {
+                        Devices.DeviceDetected += new EventHandler<DeviceEventArgs>(Devices_DeviceDetected);
+                        Devices.DeviceDetectionCanceled += new EventHandler(Devices_DeviceDetectionCanceled);
+                    }
+                }
+                catch (Exception)
+                {
+                    // DotSpatial.Positioning may throw NullReferenceException internally
+                    // when no GPS device is present — silently ignore
+                    Latitude = "";
+                    Longitude = "! GPS Error";
+                    GPSIsEnabled = false;
+                }
             }
             else
             {

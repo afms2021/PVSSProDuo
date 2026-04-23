@@ -16,10 +16,33 @@ namespace PVSS
             CheckUSBSerial();
             DispatcherHelper.Initialize();
         }
-        //protected override void OnExit(ExitEventArgs e)
-        //{
-        //   base.OnExit(e);
-        //}
+
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            base.OnStartup(e);
+
+            // Catch unhandled exceptions on background threads (e.g. DotSpatial.Positioning)
+            AppDomain.CurrentDomain.UnhandledException += (s, args) =>
+            {
+                var ex = args.ExceptionObject as Exception;
+                // Suppress known DotSpatial NullReferenceException from DetectionThreadProc
+                if (ex is NullReferenceException && ex.StackTrace != null &&
+                    ex.StackTrace.Contains("DotSpatial.Positioning"))
+                    return;
+                // Log or show other unhandled exceptions as needed
+            };
+
+            // Catch unhandled exceptions on the UI dispatcher
+            Current.DispatcherUnhandledException += (s, args) =>
+            {
+                if (args.Exception is NullReferenceException &&
+                    args.Exception.StackTrace != null &&
+                    args.Exception.StackTrace.Contains("DotSpatial.Positioning"))
+                {
+                    args.Handled = true;
+                }
+            };
+        }
         private static void CheckUSBSerial()
         {
             int numDevices = 0, LocID = 0, ChipIDMy = 0;
