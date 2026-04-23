@@ -37,7 +37,7 @@
 // | Arlindo Silva                   | 24/APR/2019 | Added Suppress Editing Company, Job Name and Diver Name while recording.                                       |  
 // | Manuel Parente                  | 27/APR/2019 | Solved LastSnapShot Exception and Photo Viewer                                                                 |                           
 // | Arlindo Silva                   | 07/MAY/2019 | Added exception handling whem Telemetry COM port is missing.                                                   |
-// | Arlindo Silva                   | 07/MAY/2019 | Added Internal PCB Over Temperature Warning @ > 52 ºC.                                                         |
+// | Arlindo Silva                   | 07/MAY/2019 | Added Internal PCB Over Temperature Warning @ > 52 ï¿½C.                                                         |
 // | Arlindo Silva                   | 24/APR/2021 | Update to Sensoray DLL 1.2.38.1 .                                                                              |
 // | Arlindo Silva                   | 12/MAY/2021 | Added Compiler options to use serial COM port dialogue with PRODIVING Telemetry Unit change baudrate to 19200  |
 // | Arlindo Silva                   | 11/JUN/2021 | Ver 5.6 - Update to Sensoray DLL 1.2.39.1 .                                                                    |
@@ -57,30 +57,30 @@
 
 #define PVSS_PRO  // PVSS or PVSS_PRO  *** PVSS 115200 baudrate / Prodving 19200 baudrate ***
 
+using DotSpatial.Positioning;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
-using System.IO;
-using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Threading;
-using System.Windows.Threading;
-using System.Windows;
-using Sensoray;
-using PCComm;
-using System.Text.RegularExpressions;
-using System.Runtime.InteropServices;
-using System.Media;
-using System.Windows.Media;
-using OxyPlot;
-using OxyPlot.Series;
-using OxyPlot.Axes;
-using DotSpatial.Positioning;
-using System.Windows.Forms;
-using System.Windows.Controls;
 using GalaSoft.MvvmLight.Messaging;
-using System.Windows.Input;
+using OxyPlot;
+using OxyPlot.Axes;
+using OxyPlot.Series;
+using PCComm;
+using Sensoray;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Media;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Forms;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace PVSS.ViewModel
 {
@@ -97,13 +97,13 @@ namespace PVSS.ViewModel
     public sealed class MainViewModel : ViewModelBase, ICleanup, IDisposable
     {
         public string JobNameDiretory1 = "D:\\PVSS DUO PRO 1";
-        public string JobNameDiretory2 = "F:\\PVSS DUO PRO 2";
+        public string JobNameDiretory2 = "E:\\PVSS DUO PRO 2";
         public string VideoDirectoryPath1 = "D:\\PVSS DUO PRO 1" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos1";
-        public string VideoDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos2";
+        public string VideoDirectoryPath2 = "E:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos2";
         public string SnapshotsDirectoryPath1 = "D:\\PVSS DUO PRO 1" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots1";
-        public string SnapshotsDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots2";
+        public string SnapshotsDirectoryPath2 = "E:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots2";
         public string ChartsDirectoryPath1 = "D:\\PVSS DUO PRO 1" +  "\\" + Properties.Settings.Default.JobNameText + "\\Charts1";
-        public string ChartsDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts2";
+        public string ChartsDirectoryPath2 = "E:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts2";
         public string LogPath = "D:\\PVSS DUO PRO 1" + "\\" + Properties.Settings.Default.JobNameText + "\\log.txt";
         
         private FileSystemWatcher fileSystemWatcher;
@@ -340,7 +340,7 @@ namespace PVSS.ViewModel
                 
                 DivingTimer1.Start();
 
-                //Log("System Started and Internal Temperature was:" + TemperatureLevel + " ºC");
+                //Log("System Started and Internal Temperature was:" + TemperatureLevel + " ï¿½C");
                 Log("Start Recording 1");
                 Log("Start Diving Depth was: " + Depth1 + " m");
 
@@ -460,7 +460,7 @@ namespace PVSS.ViewModel
 
                 DivingTimer2.Start();
 
-                //Log("System Started and Internal Temperature was:" + TemperatureLevel + " ºC");
+                //Log("System Started and Internal Temperature was:" + TemperatureLevel + " ï¿½C");
                 Log("Start Recording 2");
                 Log("Start Diving Depth was: " + Depth2 + " m");
 
@@ -538,7 +538,7 @@ namespace PVSS.ViewModel
         }
         private void SaveChartImage2()
         {
-            ChartsDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts2";
+            ChartsDirectoryPath2 = "E:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts2";
             if (!Directory.Exists(ChartsDirectoryPath2))
             {
                 Directory.CreateDirectory(ChartsDirectoryPath2);
@@ -799,8 +799,8 @@ namespace PVSS.ViewModel
 
                 DepthString1 = "32,4 m";
                 DepthString2 = "22,4 m";
-                Longitude = "41°11'14,2139''N";
-                Latitude = "008°42'12,269''W";
+                Longitude = "41ï¿½11'14,2139''N";
+                Latitude = "008ï¿½42'12,269''W";
                 return;
             }
 
@@ -917,9 +917,9 @@ namespace PVSS.ViewModel
             }
             foreach (DirectShowLib.DsDevice device in WPFMediaKit.DirectShow.Controls.MultimediaUtil.VideoInputDevices)
             {
-                //Logitech Webcam C160
-                //if (device.Name == "Logitech Webcam C160")  //Arlindo 2022  PVSS Duo                
-                if (device.Name == "Sensoray 2253 Capture A #3")  //Arlindo 2022  PVSS Duo                
+               if (device.Name == "Trust 1080p Full HD Webcam")  //Arlindo 2022  PVSS Duo                
+               //if (device.Name == "Logitech Webcam C160")  //Arlindo 2022  PVSS Duo                
+               // if (device.Name == "Sensoray 2253 Capture A #3")  //Arlindo 2022  PVSS Duo                
                 {
                     Video1 = device;  // Connect to this device
                     Sensoray_codec = true;
@@ -1642,7 +1642,7 @@ namespace PVSS.ViewModel
         }
         private void StartRecording2()
         {
-            VideoDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos2";
+            VideoDirectoryPath2 = "E:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos2";
 
             if (!Directory.Exists(VideoDirectoryPath2))
             {
@@ -5156,7 +5156,7 @@ namespace PVSS.ViewModel
         #region Cleanup
         public override void Cleanup()
         {
-            //Log("System Stopped and Internal Temperature was: " + TemperatureLevel + " ºC" + "\r\n");
+            //Log("System Stopped and Internal Temperature was: " + TemperatureLevel + " ï¿½C" + "\r\n");
 
             if (!_Chart2_saved || !_Chart1_saved) 
             {
