@@ -14,13 +14,38 @@ namespace PVSS
     {
         static App()
         {
-            CheckUSBSerial();
             DispatcherHelper.Initialize();
         }
 
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+
+            // Run license check here so DllNotFoundException can be caught gracefully
+            try
+            {
+                CheckUSBSerial();
+            }
+            catch (DllNotFoundException ex)
+            {
+                MessageBox.Show(
+                    "Hardware lock driver not found.\n\n" + ex.Message,
+                    "License Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                Shutdown();
+                return;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "License check failed.\n\n" + ex.Message,
+                    "License Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                Shutdown();
+                return;
+            }
 
             // Catch unhandled exceptions on background threads (e.g. DotSpatial.Positioning)
             AppDomain.CurrentDomain.UnhandledException += (s, args) =>
