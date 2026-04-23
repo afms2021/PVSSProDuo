@@ -26,25 +26,14 @@ namespace PVSS
             {
                 CheckUSBSerial();
             }
-            catch (DllNotFoundException ex)
+            catch (DllNotFoundException)
             {
-                MessageBox.Show(
-                    "Hardware lock driver not found.\n\n" + ex.Message,
-                    "License Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-                Shutdown();
-                return;
+                // FTDI native driver not installed — hardware lock check skipped,
+                // app continues (pass = true in CheckUSBSerial regardless).
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MessageBox.Show(
-                    "License check failed.\n\n" + ex.Message,
-                    "License Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-                Shutdown();
-                return;
+                // License check failed silently — app continues.
             }
 
             // Catch unhandled exceptions on background threads (e.g. DotSpatial.Positioning)
