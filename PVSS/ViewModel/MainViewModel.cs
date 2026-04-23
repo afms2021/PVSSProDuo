@@ -5185,7 +5185,15 @@ namespace PVSS.ViewModel
 
             S2253.CloseBoard(-1); // by ARLINDO 14-Jan-2015
 
-            MyCommunicationManager.comPort.Close();
+            try
+            {
+                if (MyCommunicationManager.comPort.IsOpen)
+                    MyCommunicationManager.comPort.Close();
+            }
+            catch (Exception)
+            {
+                // Port already closed or unavailable — silently ignore
+            }
 
             base.Cleanup();
         }

@@ -159,13 +159,20 @@ namespace PCComm
             switch (CurrentTransmissionType)
             {
                 case TransmissionType.Text:
-                    //first make sure the port is open
-                    //if its not open then open it
-                    if (!(comPort.IsOpen == true)) comPort.Open();
-                    //send the message to the port
-                    comPort.Write(msg);
-                    //display the message
-                    DisplayData(MessageType.Outgoing, msg.ToString());
+                    try
+                    {
+                        //first make sure the port is open
+                        //if its not open then open it
+                        if (!(comPort.IsOpen == true)) comPort.Open();
+                        //send the message to the port
+                        comPort.Write(msg);
+                        //display the message
+                        DisplayData(MessageType.Outgoing, msg.ToString());
+                    }
+                    catch (Exception)
+                    {
+                        // Port unavailable or does not exist — silently ignore
+                    }
                     break;
                 case TransmissionType.Hex:
 
