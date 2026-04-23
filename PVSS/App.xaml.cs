@@ -21,20 +21,9 @@ namespace PVSS
         {
             base.OnStartup(e);
 
-            // Run license check here so DllNotFoundException can be caught gracefully
-            try
-            {
-                CheckUSBSerial();
-            }
-            catch (DllNotFoundException)
-            {
-                // FTDI native driver not installed — hardware lock check skipped,
-                // app continues (pass = true in CheckUSBSerial regardless).
-            }
-            catch (Exception)
-            {
-                // License check failed silently — app continues.
-            }
+            // FTDI hardware lock check disabled — pass = true regardless in CheckUSBSerial,
+            // and FTD2XX.dll may not be present causing TypeInitializationException.
+            // CheckUSBSerial();
 
             // Catch unhandled exceptions on background threads (e.g. DotSpatial.Positioning)
             AppDomain.CurrentDomain.UnhandledException += (s, args) =>
