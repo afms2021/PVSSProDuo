@@ -1,5 +1,6 @@
 ﻿using FTChipID;
 using GalaSoft.MvvmLight.Threading;
+using System;
 using System.Runtime.InteropServices;
 using System.Windows;
 
