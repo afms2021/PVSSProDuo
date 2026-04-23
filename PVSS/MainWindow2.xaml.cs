@@ -97,6 +97,13 @@ namespace PVSS
             // Maximize after position is defined in constructor
             this.WindowState = WindowState.Maximized;
 
+            // Return focus to Monitor 1 after Monitor 2 window opens
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Input, new Action(() =>
+            {
+                var mainWin = System.Windows.Application.Current.MainWindow as MainWindow;
+                mainWin?.Activate();
+            }));
+
             // Subscribe to ViewModel property changes to activate window and focus
             // the OSD text input when OSDPopupVisibility2 becomes true.
             if (DataContext is System.ComponentModel.INotifyPropertyChanged notifyVm)

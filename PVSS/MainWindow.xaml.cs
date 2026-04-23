@@ -22,13 +22,13 @@ namespace PVSS
     public partial class MainWindow : Window
     {
         public string JobNameDiretory1 = "D:\\PVSS DUO PRO 1";
-        public string JobNameDiretory2 = "F:\\PVSS DUO PRO 2";
+        public string JobNameDiretory2 = "E:\\PVSS DUO PRO 2";
         public string VideoDirectoryPath1 = "D:\\PVSS DUO PRO 1" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos1";
-        public string VideoDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos2";
+        public string VideoDirectoryPath2 = "E:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos2";
         public string SnapshotsDirectoryPath1 = "D:\\PVSS DUO PRO 1" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots1";
-        public string SnapshotsDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots2";
+        public string SnapshotsDirectoryPath2 = "E:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots2";
         public string ChartsDirectoryPath1 = "D:\\PVSS DUO PRO 1" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts1";
-        public string ChartsDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts2";
+        public string ChartsDirectoryPath2 = "E:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts2";
         public string LogPath = "D:\\PVSS DUO PRO 1" + "\\" + Properties.Settings.Default.JobNameText + "\\log.txt";
 
 
@@ -87,6 +87,8 @@ namespace PVSS
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            this.Activate(); // Ensure Monitor 1 has OS-level focus on startup
+
             if (DataContext is System.ComponentModel.INotifyPropertyChanged notifyVm)
             {
                 notifyVm.PropertyChanged += (s, args) =>
@@ -143,7 +145,7 @@ namespace PVSS
 
             encoder.Frames.Add(BitmapFrame.Create(bmp));
 
-            SnapshotsDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots2";
+            SnapshotsDirectoryPath2 = "E:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots2";
 
             if (!Directory.Exists(SnapshotsDirectoryPath2))
             {
