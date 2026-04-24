@@ -124,6 +124,9 @@ namespace PVSS.ViewModel
 #if DEPTH_SIMULATOR
         private int _simTick = 0; // increments every TelemetryTimer tick (1 second)
 #endif
+        // Previous depth values for ascending detection (auto light-off)
+        private float _prevDepth1 = 0f;
+        private float _prevDepth2 = 0f;
 
 
         private DispatcherTimer TelemetryTimer = new DispatcherTimer();
@@ -1307,6 +1310,23 @@ namespace PVSS.ViewModel
             Depth1 = (float)Math.Round(20.0 + 20.0 * Math.Sin(2.0 * Math.PI * _simTick / 120.0), 1);
             Depth2 = (float)Math.Round(20.0 + 20.0 * Math.Sin(2.0 * Math.PI * (_simTick + 30) / 120.0), 1);
 #endif
+
+            // Auto light-off: turn off light when diver is ascending (depth decreasing) and still below surface (> 1m)
+            if (IsLightOn && Depth1 > 1f && Depth1 < _prevDepth1)
+            {
+                IsLightOn = false;
+                ExecuteChangeLightState();
+                Log("Light 1 auto-off: ascending at " + Depth1 + " m");
+            }
+            _prevDepth1 = Depth1;
+
+            if (IsLightOn2 && Depth2 > 1f && Depth2 < _prevDepth2)
+            {
+                IsLightOn2 = false;
+                ExecuteChangeLightState2();
+                Log("Light 2 auto-off: ascending at " + Depth2 + " m");
+            }
+            _prevDepth2 = Depth2;
 
 #if PVSS_PRO
             //MyCommunicationManager.WriteData("$RID,*73\r\n");
