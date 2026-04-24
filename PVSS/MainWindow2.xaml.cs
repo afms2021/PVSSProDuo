@@ -148,12 +148,20 @@ namespace PVSS
             {
                 if (!_Diver2Window_Open)
                 {
+                    var vm = ServiceLocator.Current.GetInstance<ViewModel.MainViewModel>();
                     PVSS.MainWindow2 _Diver2Window = new PVSS.MainWindow2
                     {
                         Topmost = true,
-                        DataContext = ServiceLocator.Current.GetInstance<ViewModel.MainViewModel>()
+                        DataContext = vm
                     };
                     _Diver2Window.Show();
+
+                    // Explicitly assign the capture device after Show() to ensure
+                    // WPFMediaKit opens the capture graph even if the binding fired
+                    // before the element was fully loaded.
+                    if (vm.Video1 != null)
+                        _Diver2Window.video1Element.VideoCaptureDevice = vm.Video1;
+
                     _Diver2Window_Open = true;
                 }
             }
