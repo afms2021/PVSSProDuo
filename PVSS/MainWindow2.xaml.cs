@@ -159,12 +159,12 @@ namespace PVSS
                     {
                         if (vm.Video1 != null)
                         {
-                            // Set device from code after IsLoaded=true AND HasInitialized=true
-                            // (XAML binding fires during BeginInit when HasInitialized=false
-                            // and is silently ignored by WPFMediaKit)
-                            _Diver2Window.video1Element.VideoCaptureDevice = vm.Video1;
+                            // Use VideoCaptureSource (name string / AddFilterByName) instead of
+                            // VideoCaptureDevice (DsDevice / AddFilterByDevicePath) — the Trust
+                            // webcam's DevicePath causes AddFilterByDevicePath to silently fail.
+                            _Diver2Window.video1Element.VideoCaptureSource = vm.Video1.Name;
                             _Diver2Window.video1Element.Play();
-                            vm.Log("Diver2 camera assigned at Loaded: " + vm.Video1.Name);
+                            vm.Log("Diver2 camera source set at Loaded: " + vm.Video1.Name);
                         }
                         else
                         {
