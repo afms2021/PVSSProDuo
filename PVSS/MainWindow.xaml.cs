@@ -264,17 +264,5 @@ namespace PVSS
             var psi = new ProcessStartInfo("Explorer.exe", "/select," + fileName);
             Process.Start(psi);
         }
-
-        private void MySD_Camera_Checked(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void MyHD_Camera_Checked(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        
     }
 }
