@@ -1229,16 +1229,14 @@ namespace PVSS.ViewModel
       
             try
             {
-#if PVSS_PRO
 #if DEPTH_SIMULATOR
                 // Simulator: sine wave 0–40 m, 120-second period. Diver 2 offset by 30 sec.
                 _simTick++;
                 Depth1 = (float)Math.Round(20.0 + 20.0 * Math.Sin(2.0 * Math.PI * _simTick / 120.0), 1);
                 Depth2 = (float)Math.Round(20.0 + 20.0 * Math.Sin(2.0 * Math.PI * (_simTick + 30) / 120.0), 1);
-#else
+#elif PVSS_PRO
                 Depth1 = (float)Math.Round((DepthSensorReading1 * SensorFactor / WaterFactor) / 1024.0f, 1) + Convert.ToSingle(Sensor1_Offset); //ARLINDO 27.FEV.2017 Ver 5.0
                 Depth2 = (float)Math.Round((DepthSensorReading2 * SensorFactor / WaterFactor) / 1024.0f, 1) + Convert.ToSingle(Sensor2_Offset);
-#endif
 #else
                 int DepthSensorReading = int.Parse(m_pattern_depth.Groups["depth"].Value);
 #endif
