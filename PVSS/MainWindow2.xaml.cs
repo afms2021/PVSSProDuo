@@ -155,6 +155,22 @@ namespace PVSS
                         DataContext = vm
                     };
 
+                    _Diver2Window.Loaded += (s, args) =>
+                    {
+                        if (vm.Video1 != null)
+                        {
+                            // Set device from code after IsLoaded=true AND HasInitialized=true
+                            // (XAML binding fires during BeginInit when HasInitialized=false
+                            // and is silently ignored by WPFMediaKit)
+                            _Diver2Window.video1Element.VideoCaptureDevice = vm.Video1;
+                            vm.Log("Diver2 camera assigned at Loaded: " + vm.Video1.Name);
+                        }
+                        else
+                        {
+                            vm.Log("Diver2 camera: Video1 is null at Loaded");
+                        }
+                    };
+
                     _Diver2Window.Show();
                     _Diver2Window_Open = true;
                 }
