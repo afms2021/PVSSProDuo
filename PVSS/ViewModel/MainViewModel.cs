@@ -1311,20 +1311,20 @@ namespace PVSS.ViewModel
             Depth2 = (float)Math.Round(20.0 + 20.0 * Math.Sin(2.0 * Math.PI * (_simTick + 30) / 120.0), 1);
 #endif
 
-            // Auto light-off: turn off light when diver is ascending (depth decreasing) and still below surface (> 1m)
-            if (IsLightOn && Depth1 > 1f && Depth1 < _prevDepth1)
+            // Auto light-off: turn off light when diver is ascending (depth decreasing) and near surface (< 1m)
+            if (IsLightOn && Depth1 < 1f && Depth1 < _prevDepth1)
             {
                 IsLightOn = false;
                 ExecuteChangeLightState();
-                Log("Light 1 auto-off: ascending at " + Depth1 + " m");
+                Log("Light 1 auto-off: ascending near surface at " + Depth1 + " m");
             }
             _prevDepth1 = Depth1;
 
-            if (IsLightOn2 && Depth2 > 1f && Depth2 < _prevDepth2)
+            if (IsLightOn2 && Depth2 < 1f && Depth2 < _prevDepth2)
             {
                 IsLightOn2 = false;
                 ExecuteChangeLightState2();
-                Log("Light 2 auto-off: ascending at " + Depth2 + " m");
+                Log("Light 2 auto-off: ascending near surface at " + Depth2 + " m");
             }
             _prevDepth2 = Depth2;
 
