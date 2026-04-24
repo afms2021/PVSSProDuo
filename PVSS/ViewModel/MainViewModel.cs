@@ -158,6 +158,7 @@ namespace PVSS.ViewModel
         private static string BATTERY_CHARGER_STATUS_OFF = "off";
 
         private bool Sensoray_codec = false;
+        private bool _startupCompleted = false;
         private string Last_file_name1 = "noname1";
         private string Last_file_name2 = "noname2";
         //private string TemperatureLevel;
@@ -813,6 +814,12 @@ namespace PVSS.ViewModel
             CommunicationManager c = new CommunicationManager();
             COMPortsList = c.GetPortNames();
 
+            // If the saved COM port is not in the available list, auto-select the first available one
+            if (COMPortsList.Count > 0 && !COMPortsList.Contains(COMPortListSelectedItem))
+            {
+                _COMPortListSelectedItem = COMPortsList[0]; // set backing field directly, no save/PropertyChanged yet
+            }
+
             //Used to start the application with telemetry already on
             COMPortIsEnabled = true;
             ExecuteStartOrStopCOMPortMethod();
@@ -849,15 +856,20 @@ namespace PVSS.ViewModel
            
             // Instruct the file system watcher to call the FileCreated method
             // when there are files created at the folder.
-            fileSystemWatcher = new FileSystemWatcher(JobNameDiretory1)
+            if (!Directory.Exists(JobNameDiretory1))
+                Directory.CreateDirectory(JobNameDiretory1);
+            try
             {
-                IncludeSubdirectories = true,
-                //fileSystemWatcher.Filter = "*.*";
-                NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.FileName | NotifyFilters.LastAccess | NotifyFilters.DirectoryName
-            };
-
-            fileSystemWatcher.Created += new FileSystemEventHandler(FileSystemWatcher_Created);
-            fileSystemWatcher.EnableRaisingEvents = true;
+                fileSystemWatcher = new FileSystemWatcher(JobNameDiretory1)
+                {
+                    IncludeSubdirectories = true,
+                    //fileSystemWatcher.Filter = "*.*";
+                    NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.FileName | NotifyFilters.LastAccess | NotifyFilters.DirectoryName
+                };
+                fileSystemWatcher.Created += new FileSystemEventHandler(FileSystemWatcher_Created);
+                fileSystemWatcher.EnableRaisingEvents = true;
+            }
+            catch (Exception) { /* Drive not ready — snapshots won't update live */ }
 
             void FileSystemWatcher_Created(object sender, FileSystemEventArgs e) // Solved Exception by Manuel Alberto 27.Abri.2019
             {
@@ -872,15 +884,23 @@ namespace PVSS.ViewModel
 
             // Instruct the file system watcher to call the FileCreated method
             // when there are files created at the folder.
-            fileSystemWatcher = new FileSystemWatcher(JobNameDiretory2)
+            if (Directory.Exists(Path.GetPathRoot(JobNameDiretory2)))
             {
-                IncludeSubdirectories = true,
-                //fileSystemWatcher.Filter = "*.*";
-                NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.FileName | NotifyFilters.LastAccess | NotifyFilters.DirectoryName
-            };
-
-            fileSystemWatcher.Created += new FileSystemEventHandler(FileSystemWatcher_Created2);
-            fileSystemWatcher.EnableRaisingEvents = true;
+                if (!Directory.Exists(JobNameDiretory2))
+                    Directory.CreateDirectory(JobNameDiretory2);
+                try
+                {
+                    fileSystemWatcher = new FileSystemWatcher(JobNameDiretory2)
+                    {
+                        IncludeSubdirectories = true,
+                        //fileSystemWatcher.Filter = "*.*";
+                        NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.FileName | NotifyFilters.LastAccess | NotifyFilters.DirectoryName
+                    };
+                    fileSystemWatcher.Created += new FileSystemEventHandler(FileSystemWatcher_Created2);
+                    fileSystemWatcher.EnableRaisingEvents = true;
+                }
+                catch (Exception) { /* Drive not ready — snapshots won't update live */ }
+            }
 
 
             void FileSystemWatcher_Created2(object sender, FileSystemEventArgs e) 
@@ -941,6 +961,8 @@ namespace PVSS.ViewModel
                 thread.Start();
                 System.Windows.Application.Current.Shutdown();
             }
+
+            _startupCompleted = true;
         }
         private void CallCleanUp(string obj)
         {
@@ -4855,12 +4877,16 @@ namespace PVSS.ViewModel
                 }
                 catch (Exception e)
                 {
-                    System.Windows.MessageBox.Show("COM port error: " + e.Message,
-                    "Change Settings",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning); 
                     COMPortIsEnabled = false;
-                    Log("Openning COM port error");
+                    Log("COM port error: " + e.Message);
+                    // Show error only if triggered by user action (not auto-connect at startup)
+                    if (_startupCompleted)
+                    {
+                        System.Windows.MessageBox.Show("COM port error: " + e.Message,
+                        "Change Settings",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    }
                 }
                 finally
                 {

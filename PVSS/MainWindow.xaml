@@ -24,7 +24,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Skins/MainSkin.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <DateTime:NotifyingDateTime x:Key="NotifyingDateTimeDataSource" d:IsDataSource="True"/>
+            <DateTime:NotifyingDateTime x:Key="NotifyingDateTimeDataSource"/>
             <SolidColorBrush x:Key="TabControlNormalBorderBrush" Color="#8C8E94"/>
             <ControlTemplate x:Key="TabItemControlTemplate1" TargetType="{x:Type TabItem}">
                 <Grid SnapsToDevicePixels="True">

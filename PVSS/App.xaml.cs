@@ -1,5 +1,6 @@
 ﻿using FTChipID;
 using GalaSoft.MvvmLight.Threading;
+using System;
 using System.Runtime.InteropServices;
 using System.Windows;
 
@@ -13,7 +14,6 @@ namespace PVSS
     {
         static App()
         {
-            CheckUSBSerial();
             DispatcherHelper.Initialize();
         }
 
