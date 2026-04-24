@@ -925,8 +925,8 @@ namespace PVSS.ViewModel
             Sensoray_codec = false;
             foreach (DirectShowLib.DsDevice device in allVideoDevices)
             {
-                if (device.Name == "Logitech Webcam C160"             // dev/test camera
-                 || device.Name == "Sensoray 2253 Capture A")         // production Sensoray
+                if (device.Name == "Trust 1080p Full HD Webcam"       // dev/test camera Diver 1
+                 || device.Name == "Sensoray 2253 Capture A")         // production Sensoray Diver 1
                 {
                     Video = device;  // Diver 1
                     Sensoray_codec = true;
@@ -935,8 +935,8 @@ namespace PVSS.ViewModel
             }
             foreach (DirectShowLib.DsDevice device in allVideoDevices)
             {
-                if (device.Name == "Trust 1080p Full HD Webcam"       // dev/test camera
-                 || device.Name == "Sensoray 2253 Capture A #3")      // production Sensoray
+                if (device.Name == "Logitech Webcam C160"             // dev/test camera Diver 2
+                 || device.Name == "Sensoray 2253 Capture A #3")      // production Sensoray Diver 2
                 {
                     Video1 = device;  // Diver 2
                     Sensoray_codec = true;
