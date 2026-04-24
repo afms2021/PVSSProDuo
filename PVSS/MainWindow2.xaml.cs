@@ -170,7 +170,8 @@ namespace PVSS
                                 new Action(() =>
                                 {
                                     _Diver2Window.video1Element.VideoCaptureDevice = vm.Video1;
-                                    vm.Log("Diver2 camera assigned: " + vm.Video1.Name);
+                                    _Diver2Window.video1Element.Play();
+                                    vm.Log("Diver2 camera assigned + Play(): " + vm.Video1.Name);
                                 }));
                         }
                         else
