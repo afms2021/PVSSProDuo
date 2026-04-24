@@ -139,7 +139,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="1060"/>
             </Grid.RowDefinitions>
-            <Controls:VideoCaptureElement x:Name="video1Element" x:FieldModifier="public" DesiredPixelWidth="640" DesiredPixelHeight="480" Volume="100" FPS="25" RenderTransformOrigin="0,0" IsManipulationEnabled="True" Margin="10,10,10,10" ScrollViewer.VerticalScrollBarVisibility="Disabled"/>
+            <Controls:VideoCaptureElement x:Name="video1Element" x:FieldModifier="public" VideoCaptureDevice="{Binding Video1, Mode=OneWay}" DesiredPixelWidth="640" DesiredPixelHeight="480" Volume="100" FPS="25" RenderTransformOrigin="0,0" IsManipulationEnabled="True" Margin="10,10,10,10" ScrollViewer.VerticalScrollBarVisibility="Disabled"/>
             <oxy:Plot x:Name="plot22" Model="{Binding MyPlotModel22}" Height="Auto" Margin="50,50,25,25" Width="Auto" Background="{x:Null}" Foreground="{x:Null}" Visibility="Hidden"/>
             <Grid x:Name="grid" Height="83" VerticalAlignment="Top" Margin="104,425,131,0" Background="#80333333" Visibility="Hidden">
                 <Grid.Style>

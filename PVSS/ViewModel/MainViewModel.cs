@@ -326,10 +326,7 @@ namespace PVSS.ViewModel
 
                 SetOSDStyledREC(STREAM_A);
                 string fullPathToSound = Path.GetFullPath(@"Start_Rec.wav");
-                SoundPlayer soundPlayer = new SoundPlayer();
-                SoundPlayer simpleSound = soundPlayer;
-                simpleSound.SoundLocation = fullPathToSound;
-                simpleSound.Play();
+                try { var simpleSound = new SoundPlayer(fullPathToSound); simpleSound.Play(); } catch { }
                 DiveTime1 = TimeSpan.Zero;
                 startDateTime1 = DateTime.Now;
                 StartRecording();
@@ -386,8 +383,7 @@ namespace PVSS.ViewModel
                 DivingTimer1.Stop();
                 startDateTime1 = DateTime.Now;
                 string fullPathToSound = Path.GetFullPath(@"Stop_Rec.wav");
-                SoundPlayer simpleSound = new SoundPlayer(fullPathToSound);
-                simpleSound.Play();
+                try { var simpleSound = new SoundPlayer(fullPathToSound); simpleSound.Play(); } catch { }
             }
 
         }
@@ -441,10 +437,7 @@ namespace PVSS.ViewModel
             {
                 SetOSDStyledREC2(STREAM_A);
                 string fullPathToSound = Path.GetFullPath(@"Start_Rec.wav");
-                SoundPlayer soundPlayer = new SoundPlayer();
-                SoundPlayer simpleSound = soundPlayer;
-                simpleSound.SoundLocation = fullPathToSound;
-                simpleSound.Play();
+                try { var simpleSound = new SoundPlayer(fullPathToSound); simpleSound.Play(); } catch { }
                 DiveTime2 = TimeSpan.Zero;
                 startDateTime2 = DateTime.Now;
                 StartRecording2();
@@ -509,8 +502,7 @@ namespace PVSS.ViewModel
                 DivingTimer2.Stop();
                 startDateTime2 = DateTime.Now;
                 string fullPathToSound = Path.GetFullPath(@"Stop_Rec.wav");
-                SoundPlayer simpleSound = new SoundPlayer(fullPathToSound);
-                simpleSound.Play();
+                try { var simpleSound = new SoundPlayer(fullPathToSound); simpleSound.Play(); } catch { }
             }
 
         }

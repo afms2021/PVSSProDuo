@@ -250,7 +250,7 @@
                             <Image HorizontalAlignment="Left" Margin="2.319,11,0,36.529" Source="Design/Contrast.png" Stretch="Fill" Width="20" Height="20"/>
                         </Grid>
                         <TextBlock HorizontalAlignment="Left" Margin="3,0,0,104" TextWrapping="Wrap" VerticalAlignment="Bottom" Foreground="White" FontSize="10" FontWeight="Bold" Width="41" RenderTransformOrigin="0.195,0.248"><Run Language="pt-pt" Text="Levels:"/></TextBlock>
-                        <Grid Height="36" Margin="0,0,76,62" VerticalAlignment="Bottom" Background="#FF333333" HorizontalAlignment="Right" Width="80">
+                        <Grid Height="36" Margin="0,0,74,57" VerticalAlignment="Bottom" Background="#FF333333" HorizontalAlignment="Right" Width="80">
                             <RadioButton Content="  PAL" Margin="8,2,0,0" IsEnabled="{Binding SuppressEditing}" Style="{DynamicResource SimpleRadioButton}" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="10" GroupName="VideoSystem" IsChecked="{Binding IsPALChecked}" HorizontalAlignment="Left"/>
                             <RadioButton Content="  NTSC" Margin="8,20,0,0" IsEnabled="{Binding SuppressEditing}" Style="{DynamicResource SimpleRadioButton}" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="10" GroupName="VideoSystem" HorizontalAlignment="Left" IsChecked="{Binding IsNTSCChecked}"/>
                         </Grid>
@@ -327,12 +327,12 @@
                             </Image>
                         </Grid>
                         <Grid Height="36" Margin="0,0,76,8" VerticalAlignment="Bottom" Background="#FF333333"  HorizontalAlignment="Right" Width="80">
-                            <RadioButton x:Name="mySD_Camera" Content=" 4:3 Camera" IsEnabled="{Binding SuppressEditing}" HorizontalAlignment="Left" Margin="8,2,-1,0"  Style="{DynamicResource SimpleRadioButton}" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="10" GroupName="CameraType" IsChecked="{Binding IsSDCameraChecked}" Height="13" Width="73" Checked="MySD_Camera_Checked"  />
-                            <RadioButton x:Name="myHD_Camera" Content=" 16:9 Camera" IsEnabled="{Binding SuppressEditing}" HorizontalAlignment="Left" Margin="8,20,-1,0"  Style="{DynamicResource SimpleRadioButton}" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="10" GroupName="CameraType" IsChecked="{Binding IsHDCameraChecked}" Height="16" Width="73" Checked="MyHD_Camera_Checked"  />
+                            <RadioButton x:Name="mySD_Camera" Content=" 4:3 Camera" IsEnabled="{Binding SuppressEditing}" HorizontalAlignment="Left" Margin="8,2,-1,0"  Style="{DynamicResource SimpleRadioButton}" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="10" GroupName="CameraType" IsChecked="{Binding IsSDCameraChecked}" Height="13" Width="73" Checked="MySD_Camera_Checked" Visibility="Hidden"  />
+                            <RadioButton x:Name="myHD_Camera" Content=" 16:9 Camera" IsEnabled="{Binding SuppressEditing}" HorizontalAlignment="Left" Margin="8,20,-1,0"  Style="{DynamicResource SimpleRadioButton}" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="10" GroupName="CameraType" IsChecked="{Binding IsHDCameraChecked}" Height="16" Width="73" Checked="MyHD_Camera_Checked" Visibility="Hidden"  />
                         </Grid>
                     </Grid>
                     <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" HorizontalAlignment="Left" Height="132" Margin="4,20,0,0" VerticalAlignment="Top" Width="207"/>
-                    <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" HorizontalAlignment="Left" Height="98" Margin="173,166,0,0" VerticalAlignment="Top" Width="154"/>
+                    <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" HorizontalAlignment="Left" Height="61" Margin="173,166,0,0" VerticalAlignment="Top" Width="154"/>
                     <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" Margin="216,94,4,135">
                         <TextBlock Margin="0,7,19,9" TextWrapping="Wrap" Foreground="White" FontFamily="Segoe UI Light" Text="{Binding TemperatureStatus, StringFormat=\{0:F1\} ºC}" HorizontalAlignment="Right" Width="53" TextAlignment="Center"/>
                     </Border>
@@ -382,7 +382,7 @@
                     <TextBlock TextWrapping="Wrap" Foreground="White" FontFamily="Segoe UI Light" FontSize="18.667" Margin="154,138,17,0" Text="{Binding Longitude}" VerticalAlignment="Top" Height="25" />
                     <TextBlock HorizontalAlignment="Left" Margin="13,189,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontFamily="Segoe UI Light" Foreground="White" FontSize="10" Visibility="Hidden" Height="13" Width="94"><Run Language="pt-pt" Text="Depth Sensor Settings:"/></TextBlock>
                     <TextBlock HorizontalAlignment="Left" Margin="231,189,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontFamily="Segoe UI Light" Foreground="White" FontSize="10" Visibility="Hidden" Height="13" Width="58"><Run Language="pt-pt" Text="Sensor Offset:"/></TextBlock>
-                    <RadioButton Name="mySeaWater" Content=" Sea Water" HorizontalAlignment="Left" Margin="13,215,0,0"  Style="{DynamicResource SimpleRadioButton}" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="10" GroupName="WaterType" IsChecked="{Binding IsSeaWaterChecked}" Height="13" Width="58"  />
+                    <RadioButton Name="mySeaWater" Content=" Sea Water" HorizontalAlignment="Left" Margin="16,215,0,0"  Style="{DynamicResource SimpleRadioButton}" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="10" GroupName="WaterType" IsChecked="{Binding IsSeaWaterChecked}" Height="13" Width="58"  />
                     <RadioButton Name="myFreshWater" Content=" Fresh Water" HorizontalAlignment="Left" Margin="16,233,0,0"  Style="{DynamicResource SimpleRadioButton}" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="10" GroupName="WaterType" IsChecked="{Binding IsFreshWaterChecked}" Height="13" Width="65"  />
                     <RadioButton Name="my10BarG" Content=" 10 BarG 100msw" HorizontalAlignment="Center" Margin="0,215,0,0"  Style="{DynamicResource SimpleRadioButton}" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="10" GroupName="SensorType" IsChecked="{ Binding Is_10_BarG}" Height="13" Width="83"  />
                     <RadioButton Name="my25BarG" Content=" 25 BarG 250msw" HorizontalAlignment="Left" Margin="124,233,0,0"  Style="{DynamicResource SimpleRadioButton}" VerticalAlignment="Top" Foreground="Red" FontFamily="Segoe UI Light" FontSize="10" GroupName="SensorType" IsChecked="{Binding Is_25_BarG}" ToolTip="!! WARNING !! to be use only with a special sensor." Height="13" Width="86"/>
@@ -390,7 +390,7 @@
                     <Label Content="Depth Sensor Offset" HorizontalAlignment="Left" Margin="217,188,0,0" VerticalAlignment="Top" FontSize="10" Foreground="White" RenderTransformOrigin="0.047,0.636" Width="104" Height="22"/>
                     <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" HorizontalAlignment="Center" Height="46" Margin="0,210,0,0" VerticalAlignment="Top" Width="98" RenderTransformOrigin="0.5,0.5"/>
                     <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" HorizontalAlignment="Left" Height="46" Margin="224,210,0,0" VerticalAlignment="Top" Width="86" RenderTransformOrigin="0.5,0.5"/>
-                    <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" HorizontalAlignment="Left" Height="46" Margin="8,210,0,0" VerticalAlignment="Top" Width="94" RenderTransformOrigin="0.5,0.5"/>
+                    <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" HorizontalAlignment="Left" Height="46" Margin="10,210,0,0" VerticalAlignment="Top" Width="94" RenderTransformOrigin="0.5,0.5"/>
 
                     <Label Content="Sensor Type" HorizontalAlignment="Left" Margin="121,188,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.128,0.379" Width="82" Height="26" FontSize="10" Foreground="White"/>
                     <Label Content="Water Type" HorizontalAlignment="Left" Margin="8,189,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.128,0.379" Width="83" Height="26" FontSize="10" Foreground="White"/>
