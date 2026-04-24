@@ -163,6 +163,7 @@ namespace PVSS
                             // (XAML binding fires during BeginInit when HasInitialized=false
                             // and is silently ignored by WPFMediaKit)
                             _Diver2Window.video1Element.VideoCaptureDevice = vm.Video1;
+                            _Diver2Window.video1Element.Play();
                             vm.Log("Diver2 camera assigned at Loaded: " + vm.Video1.Name);
                         }
                         else
