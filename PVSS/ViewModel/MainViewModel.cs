@@ -924,26 +924,47 @@ namespace PVSS.ViewModel
             //Sensoray 2253 Capture B
             //Sensoray 2253 Decode
             //Decklink Video Capture
+
+            // Log all available DirectShow video devices for diagnostics
+            var allVideoDevices = WPFMediaKit.DirectShow.Controls.MultimediaUtil.VideoInputDevices;
+            foreach (DirectShowLib.DsDevice d in allVideoDevices)
+                Log("DirectShow device found: " + d.Name);
+
             Sensoray_codec = false;
-            foreach (DirectShowLib.DsDevice device in WPFMediaKit.DirectShow.Controls.MultimediaUtil.VideoInputDevices)
+            foreach (DirectShowLib.DsDevice device in allVideoDevices)
             {
-                if (device.Name == "Logitech Webcam C160")  //Arlindo 2022  PVSS Duo   
-                //if (device.Name == "Sensoray 2253 Capture A")  //Arlindo 2021                
+                if (device.Name == "Logitech Webcam C160"       // dev/test camera
+                 || device.Name == "Sensoray 2253 Capture A")   // production Sensoray
                 {
-                    Video = device;  // Connect to this device
+                    Video = device;  // Diver 1
                     Sensoray_codec = true;
                     break;
                 }
             }
-            foreach (DirectShowLib.DsDevice device in WPFMediaKit.DirectShow.Controls.MultimediaUtil.VideoInputDevices)
+            foreach (DirectShowLib.DsDevice device in allVideoDevices)
             {
-               if (device.Name == "Trust 1080p Full HD Webcam")  //Arlindo 2022  PVSS Duo                
-               //if (device.Name == "Logitech Webcam C160")  //Arlindo 2022  PVSS Duo                
-               // if (device.Name == "Sensoray 2253 Capture A #3")  //Arlindo 2022  PVSS Duo                
+                if (device.Name == "Trust 1080p Full HD Webcam"   // dev/test camera
+                 || device.Name == "Sensoray 2253 Capture A #3")  // production Sensoray
                 {
-                    Video1 = device;  // Connect to this device
+                    Video1 = device;  // Diver 2
                     Sensoray_codec = true;
                     break;
+                }
+            }
+
+            // Fallback: if Video1 still null but more than one device exists,
+            // assign the first device not already used by Video.
+            if (Video1 == null && allVideoDevices.Length > 1)
+            {
+                foreach (DirectShowLib.DsDevice device in allVideoDevices)
+                {
+                    if (device != Video)
+                    {
+                        Video1 = device;
+                        Sensoray_codec = true;
+                        Log("Video1 fallback assigned: " + device.Name);
+                        break;
+                    }
                 }
             }
 
