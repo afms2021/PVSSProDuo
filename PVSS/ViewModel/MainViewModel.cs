@@ -927,8 +927,8 @@ namespace PVSS.ViewModel
             Sensoray_codec = false;
             foreach (DirectShowLib.DsDevice device in WPFMediaKit.DirectShow.Controls.MultimediaUtil.VideoInputDevices)
             {
-
-                if (device.Name == "Sensoray 2253 Capture A")  //Arlindo 2021                
+                if (device.Name == "Logitech Webcam C160")  //Arlindo 2022  PVSS Duo   
+                //if (device.Name == "Sensoray 2253 Capture A")  //Arlindo 2021                
                 {
                     Video = device;  // Connect to this device
                     Sensoray_codec = true;
