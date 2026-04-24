@@ -128,6 +128,21 @@ namespace PVSS.ViewModel
         private float _prevDepth1 = 0f;
         private float _prevDepth2 = 0f;
 
+        public const string AutoLightOffPropertyName = "AutoLightOff";
+        private bool _autoLightOff = Properties.Settings.Default.AutoLightOff;
+        public bool AutoLightOff
+        {
+            get { return _autoLightOff; }
+            set
+            {
+                if (_autoLightOff == value) return;
+                _autoLightOff = value;
+                Properties.Settings.Default.AutoLightOff = value;
+                Properties.Settings.Default.Save();
+                RaisePropertyChanged(AutoLightOffPropertyName);
+            }
+        }
+
 
         private DispatcherTimer TelemetryTimer = new DispatcherTimer();
         //private DispatcherTimer LowBatErrorTimer = new DispatcherTimer();
@@ -1312,7 +1327,7 @@ namespace PVSS.ViewModel
 #endif
 
             // Auto light-off: turn off light when diver is ascending (depth decreasing) and near surface (< 1m)
-            if (IsLightOn && Depth1 < 1f && Depth1 < _prevDepth1)
+            if (AutoLightOff && IsLightOn && Depth1 < 1f && Depth1 < _prevDepth1)
             {
                 IsLightOn = false;
                 ExecuteChangeLightState();
@@ -1320,7 +1335,7 @@ namespace PVSS.ViewModel
             }
             _prevDepth1 = Depth1;
 
-            if (IsLightOn2 && Depth2 < 1f && Depth2 < _prevDepth2)
+            if (AutoLightOff && IsLightOn2 && Depth2 < 1f && Depth2 < _prevDepth2)
             {
                 IsLightOn2 = false;
                 ExecuteChangeLightState2();

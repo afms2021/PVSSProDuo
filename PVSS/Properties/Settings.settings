@@ -29,5 +29,8 @@
     <Setting Name="Diver2NameText" Type="System.String" Scope="User">
       <Value Profile="(Default)">Diver 2 Name</Value>
     </Setting>
+    <Setting Name="AutoLightOff" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

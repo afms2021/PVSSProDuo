@@ -130,5 +130,17 @@ namespace PVSS.Properties {
                 this["Diver2NameText"] = value;
             }
         }
+        
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool AutoLightOff {
+            get {
+                return ((bool)(this["AutoLightOff"]));
+            }
+            set {
+                this["AutoLightOff"] = value;
+            }
+        }
     }
 }
