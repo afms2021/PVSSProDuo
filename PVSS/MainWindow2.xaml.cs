@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Linq;
 using System.Windows.Forms;
 using GalaSoft.MvvmLight.Messaging;
+using CommonServiceLocator;
 
 namespace PVSS
 {
@@ -150,6 +151,7 @@ namespace PVSS
                     PVSS.MainWindow2 _Diver2Window = new PVSS.MainWindow2
                     {
                         Topmost = true,
+                        DataContext = ServiceLocator.Current.GetInstance<ViewModel.MainViewModel>()
                     };
                     _Diver2Window.Show();
                     _Diver2Window_Open = true;
