@@ -154,14 +154,32 @@ namespace PVSS
                         Topmost = true,
                         DataContext = vm
                     };
+
+                    // Defer the explicit capture device assignment until after the window
+                    // is fully loaded and rendered — WPFMediaKit requires the element to
+                    // be in the visual tree before it will open the DirectShow capture graph.
+                    _Diver2Window.Loaded += (s, args) =>
+                    {
+                        if (vm.Video1 != null)
+                        {
+                            // Set on Loaded + deferred to Render priority so WPFMediaKit
+                            // finds the element fully in the visual tree and opens the
+                            // DirectShow capture graph.
+                            _Diver2Window.video1Element.Dispatcher.BeginInvoke(
+                                System.Windows.Threading.DispatcherPriority.Render,
+                                new Action(() =>
+                                {
+                                    _Diver2Window.video1Element.VideoCaptureDevice = vm.Video1;
+                                    vm.Log("Diver2 camera assigned: " + vm.Video1.Name);
+                                }));
+                        }
+                        else
+                        {
+                            vm.Log("Diver2 camera: Video1 is null at Loaded");
+                        }
+                    };
+
                     _Diver2Window.Show();
-
-                    // Explicitly assign the capture device after Show() to ensure
-                    // WPFMediaKit opens the capture graph even if the binding fired
-                    // before the element was fully loaded.
-                    if (vm.Video1 != null)
-                        _Diver2Window.video1Element.VideoCaptureDevice = vm.Video1;
-
                     _Diver2Window_Open = true;
                 }
             }
