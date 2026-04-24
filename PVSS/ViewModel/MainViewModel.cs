@@ -5287,6 +5287,12 @@ namespace PVSS.ViewModel
             // Turn off camera 2
             MyCommunicationManager.WriteData(IO_COMMAND_TURN_CAMERA_OFF_2);
 
+            // Reset camera toggle so it opens in OFF state next time
+            if (IsCameraOn2)
+            {
+                IsCameraOn2 = false;
+            }
+
             // Turn off light 2 if on
             if (IsLightOn2)
             {
