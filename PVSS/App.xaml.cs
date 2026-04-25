@@ -4,6 +4,7 @@
 
 using FTChipID;
 using GalaSoft.MvvmLight.Threading;
+using PVSS.Helpers;
 using System;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -72,6 +73,12 @@ namespace PVSS
                 Shutdown();
 #endif
             }
+        }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            Temperature.Close(); // Unload OpenHardwareMonitor kernel driver
+            base.OnExit(e);
         }
 
         private static void CheckUSBSerial()
