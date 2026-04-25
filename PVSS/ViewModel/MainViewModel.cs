@@ -60,6 +60,7 @@
 #define PVSS_PRO  // PVSS or PVSS_PRO  *** PVSS 115200 baudrate / Prodving 19200 baudrate ***
 
 using DotSpatial.Positioning;
+using PVSS.Helpers;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Messaging;
@@ -940,10 +941,7 @@ namespace PVSS.ViewModel
             //Sensoray 2253 Decode
             //Decklink Video Capture
 
-            // Log all available DirectShow video devices for diagnostics
             var allVideoDevices = WPFMediaKit.DirectShow.Controls.MultimediaUtil.VideoInputDevices;
-            foreach (DirectShowLib.DsDevice d in allVideoDevices)
-                Log("DirectShow device found: " + d.Name);
 
             Sensoray_codec = false;
             foreach (DirectShowLib.DsDevice device in allVideoDevices)
@@ -977,7 +975,6 @@ namespace PVSS.ViewModel
                     {
                         Video1 = device;
                         Sensoray_codec = true;
-                        Log("Video1 fallback assigned: " + device.Name);
                         break;
                     }
                 }
@@ -1009,7 +1006,7 @@ namespace PVSS.ViewModel
         {
             foreach (DriveInfo drive in DriveInfo.GetDrives())  // Cames from onesecondtick loop due to Preview Image freezing by ARLINDO 26.MAR.2015
             {
-                if (drive.IsReady && drive.Name == "C:\\")
+                if (drive.IsReady && drive.Name == "D:\\")
                 {
                     FreeDiskSpace_GB = Math.Round(Convert.ToDouble(drive.AvailableFreeSpace) / 1024 / 1024 / 1024, 2);
                     TimeSpan t = TimeSpan.FromHours(_freeDiskSpace_GB / 1.34);
@@ -1017,6 +1014,17 @@ namespace PVSS.ViewModel
                 }
             }
 
+            // Read CPU/Motherboard temperature via WMI MSAcpi_ThermalZoneTemperature
+            try
+            {
+                var temps = Temperature.Temperatures;
+                if (temps != null && temps.Count > 0)
+                    TemperatureStatus = (float)temps[0].CurrentValue;
+            }
+            catch
+            {
+                // WMI thermal zone not available on this hardware
+            }
         }
 
         void DisplayLineTimer_tick(object sender, EventArgs e)

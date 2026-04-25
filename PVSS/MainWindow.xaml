@@ -255,7 +255,7 @@
                             <RadioButton Content="  NTSC" Margin="8,20,0,0" IsEnabled="{Binding SuppressEditing}" Style="{DynamicResource SimpleRadioButton}" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="10" GroupName="VideoSystem" HorizontalAlignment="Left" IsChecked="{Binding IsNTSCChecked}"/>
                         </Grid>
                         <TextBlock Margin="0,0,78,101" TextWrapping="Wrap" VerticalAlignment="Bottom" Foreground="White" Text="Video System:" HorizontalAlignment="Right" Width="78" Height="16" FontSize="10" FontWeight="Bold" RenderTransformOrigin="0.128,0.438"/>
-                        <TextBlock Margin="0,0,235,29" TextWrapping="Wrap" VerticalAlignment="Bottom" Foreground="White" HorizontalAlignment="Right" Width="72" FontSize="10" FontWeight="Bold" RenderTransformOrigin="0.514,2.729"><Run Language="pt-pt" Text="Audio Gain:"/></TextBlock>
+                        <TextBlock Margin="0,0,253,29" TextWrapping="Wrap" VerticalAlignment="Bottom" Foreground="White" HorizontalAlignment="Right" Width="72" FontSize="10" FontWeight="Bold" RenderTransformOrigin="0.514,2.729"><Run Language="pt-pt" Text="Audio Gain:"/></TextBlock>
                         <Grid Height="24" Margin="0,0,162,0" VerticalAlignment="Bottom" Background="#FF333333" HorizontalAlignment="Right" Width="145">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
@@ -263,7 +263,7 @@
                             <Slider Style="{DynamicResource SimpleSlider}" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Left" Width="90" Margin="0,1,0,0" VerticalAlignment="Top" LargeChange="5" Maximum="127" SmallChange="1" Value="{Binding AudioGainValue}" Height="14"/>
                             <CheckBox Content="AGC" HorizontalAlignment="Left"  VerticalAlignment="Top" Background="#FFF4F4F4" Foreground="White" FontFamily="Segoe UI Light" FontSize="10" IsChecked="{Binding AGC, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" RenderTransformOrigin="1.078,0.533" Height="16" Width="42" Margin="95,0,0,0"/>
                         </Grid>
-                        <CheckBox Content="Auto Light Off" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,0,5" Width="110" Height="16" Style="{DynamicResource SimpleCheckBox}" Foreground="White" FontFamily="Segoe UI Light" FontSize="10" IsChecked="{Binding AutoLightOff, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <CheckBox Content="Auto Light Off" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,34,8" Width="110" Height="16" Style="{DynamicResource SimpleCheckBox}" Foreground="White" FontFamily="Segoe UI Light" FontSize="10" IsChecked="{Binding AutoLightOff, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                         <Grid Margin="3,20,76,117" Background="#FF333333">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
@@ -327,6 +327,7 @@
                                 </i:Interaction.Triggers>
                             </Image>
                         </Grid>
+                        <TextBlock Margin="0,0,84,29" TextWrapping="Wrap" VerticalAlignment="Bottom" Foreground="White" HorizontalAlignment="Right" Width="72" FontSize="10" FontWeight="Bold" RenderTransformOrigin="0.514,2.729"><Run Language="pt-pt" Text="Lights Control :"/></TextBlock>
                     </Grid>
                     <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" HorizontalAlignment="Left" Height="132" Margin="4,20,0,0" VerticalAlignment="Top" Width="207"/>
                     <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" HorizontalAlignment="Left" Height="61" Margin="173,166,0,0" VerticalAlignment="Top" Width="154"/>
@@ -336,6 +337,7 @@
                     <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" Height="22" Margin="3,242,164,0" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5"/>
                     <CheckBox Content="Interpolated" IsEnabled="{Binding SuppressEditing}" HorizontalAlignment="Left" Margin="205,243,0,8" Foreground="White" FontFamily="Segoe UI Light" FontSize="12" IsChecked="{Binding IsInterpolatedChecked}" Width="95" Opacity="0.4" Visibility="Hidden"/>
                     <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" Margin="4,166,163,42" RenderTransformOrigin="0,0"/>
+                    <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" Height="22" Margin="173,242,4,0" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5"/>
                 </Grid>
             </TabItem>
             <TabItem Header="Info" BorderBrush="#00005E93" Background="Gray" Margin="0,0,0,0" Foreground="White" FontSize="14" Template="{DynamicResource TabItemControlTemplate1}" Height="26" VerticalAlignment="Top" HorizontalAlignment="Left" Width="38">
@@ -348,7 +350,7 @@
                     <TextBlock TextWrapping="Wrap" Foreground="White" Text="{Binding DLLVersion, StringFormat=DLL: \{0\}}" Margin="8,0,0,0" FontWeight="Bold" Height="85" HorizontalAlignment="Left" Width="320"/>
                     <TextBlock TextWrapping="Wrap" Foreground="White" Margin="8,0,81,0" FontWeight="Bold" Height="24" Width="254" ><Run Text="Created by Manuel Parente - 2012 "/></TextBlock>
                     <TextBlock TextWrapping="Wrap" Foreground="White" Margin="8,0,127,0" FontWeight="Bold" Height="24" VerticalAlignment="Bottom" ><Run Text="Copyright ISPTEL - 2022"/></TextBlock>
-                    <TextBlock TextWrapping="Wrap" Foreground="White" FontWeight="Bold" Height="24" Width="295" ><Run Text="PVSS PRO DUO Ver - 6.0.0 by Arlindo Silva "/></TextBlock>
+                    <TextBlock TextWrapping="Wrap" Foreground="White" FontWeight="Bold" Height="24" Width="315" ><Run Text="PVSS PRO DUO Ver - 6.0.0 by Arlindo Silva "/></TextBlock>
                 </StackPanel>
             </TabItem>
             <TabItem Header="Settings" BorderBrush="#008C8E94" Background="Gray" Margin="0,0,0,0" Foreground="White" FontSize="14" Template="{DynamicResource TabItemControlTemplate1}" HorizontalAlignment="Left" Width="80">

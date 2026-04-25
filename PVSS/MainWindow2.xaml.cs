@@ -164,11 +164,6 @@ namespace PVSS
                             // webcam's DevicePath causes AddFilterByDevicePath to silently fail.
                             _Diver2Window.video1Element.VideoCaptureSource = vm.Video1.Name;
                             _Diver2Window.video1Element.Play();
-                            vm.Log("Diver2 camera source set at Loaded: " + vm.Video1.Name);
-                        }
-                        else
-                        {
-                            vm.Log("Diver2 camera: Video1 is null at Loaded");
                         }
                     };
 
