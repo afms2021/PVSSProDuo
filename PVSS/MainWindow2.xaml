@@ -212,7 +212,7 @@
                             <ColumnDefinition Width="365"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Text=" Take a snapshot (F8) to see the preview here." VerticalAlignment="Top" HorizontalAlignment="Left" Background="#FF333333" Foreground="White" Margin="18,122,0,0" Width="284" Height="26"/>
-                        <Image Source="{Binding LastSnapshotImage2}" MouseLeftButtonUp="Image_MouseLeftButtonUp2" Cursor="Hand" Width="348" HorizontalAlignment="Left" Margin="-20,0,0,0" Stretch="Fill" VerticalAlignment="Center"/>
+                        <Image Source="{Binding LastSnapshotImage2, Converter={StaticResource NullImageConverter}}" MouseLeftButtonUp="Image_MouseLeftButtonUp2" Cursor="Hand" Width="348" HorizontalAlignment="Left" Margin="-20,0,0,0" Stretch="Fill" VerticalAlignment="Center"/>
                     </Grid>
                 </Grid>
             </TabItem>

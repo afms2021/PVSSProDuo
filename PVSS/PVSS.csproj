@@ -233,6 +233,7 @@
     <Compile Include="Design\DesignDataService.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Helpers\NotifyDateTime.cs" />
+    <Compile Include="Helpers\NullImageConverter.cs" />
     <Compile Include="Helpers\SystemTemperature.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

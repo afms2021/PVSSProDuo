@@ -1,8 +1,6 @@
 ﻿// +---------------------------------+-------------+----------------------------------------------------------------------------------------------------------------+ 
 // |    Developer                    |    Date     |                             Comments                                                                           |
 // |---------------------------------+-------------+----------------------------------------------------------------------------------------------------------------+
-// DEPTH_SIMULATOR: comment out the line below to use real sensor data
-#define DEPTH_SIMULATOR
 // | Manuel Parente                  | 15/JUN/2012 | First Version CodeName DIVER-II                                                                                |
 // | Arlindo Silva                   | 03/DEC/2012 | SetBitrate to 3000, improve recorded video quality.                                                            |
 // | Arlindo Silva                   | 09/DEC/2012 | Set MP4 Mode.                                                                                                  |
@@ -57,10 +55,12 @@
 // +---------------------------------+-------------+----------------------------------------------------------------------------------------------------------------+
 
 
+#define DEPTH_SIMULATOR // DEPTH_SIMULATOR: comment out the line to use real sensor data
 #define PVSS_PRO  // PVSS or PVSS_PRO  *** PVSS 115200 baudrate / Prodving 19200 baudrate ***
 
 using DotSpatial.Positioning;
 using PVSS.Helpers;
+using System.Globalization;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Messaging;
@@ -202,7 +202,7 @@ namespace PVSS.ViewModel
 
 #endif
 
-        #region IO COMMANDS
+#region IO COMMANDS
 #if PVSS_PRO
 
         private const string IO_COMMAND_TURN_CAMERA_ON_1_2 = "$RLY,1,1,0,0,*6B\r\n";
@@ -362,7 +362,7 @@ namespace PVSS.ViewModel
                 
                 DivingTimer1.Start();
 
-                //Log("System Started and Internal Temperature was:" + TemperatureLevel + " �C");
+                //Log("System Started and Internal Temperature was:" + TemperatureLevel + " ºC");
                 Log("Start Recording 1");
                 Log("Start Diving Depth was: " + Depth1 + " m");
 
@@ -808,7 +808,7 @@ namespace PVSS.ViewModel
                 BoardInfoString = "Board Info: N/A";
                 BatteryPercentage = 50;
                 FreeDiskSpace_GB = 90.01;
-                AvailableVideoTime_Hours = "12341234.34:23:123";
+                AvailableVideoTime_Hours = "12.50";
                 DepthSensorStatusText1 = "Depth sensor malfunction. (short)";
                 DepthSensorMessageColor1 = RedBrush;
                 DepthSensorStatusText2 = "Depth sensor malfunction. (short)";
@@ -1010,20 +1010,65 @@ namespace PVSS.ViewModel
                 {
                     FreeDiskSpace_GB = Math.Round(Convert.ToDouble(drive.AvailableFreeSpace) / 1024 / 1024 / 1024, 2);
                     TimeSpan t = TimeSpan.FromHours(_freeDiskSpace_GB / 1.34);
-                    AvailableVideoTime_Hours = string.Format("{0:N2}", t.TotalHours);
+                    AvailableVideoTime_Hours = t.TotalHours.ToString("F2", CultureInfo.InvariantCulture);
                 }
             }
 
-            // Read CPU/Motherboard temperature via WMI MSAcpi_ThermalZoneTemperature
+            // Read CPU/Motherboard temperature via OpenHardwareMonitorLib
             try
             {
                 var temps = Temperature.Temperatures;
                 if (temps != null && temps.Count > 0)
+                {
                     TemperatureStatus = (float)temps[0].CurrentValue;
+                    string tempStr = TemperatureStatus.ToString("00");
+
+                    // Critical: > 85 ºC
+                    if (TemperatureStatus > 85 && !AlreadyShownCriticalOverTemperature)
+                    {
+                        AlreadyShownCriticalOverTemperature = true;
+                        Log("CRITICAL CPU Over Temperature at: " + tempStr + " ºC");
+                        Thread tcrit = new Thread(() =>
+                        {
+                            System.Windows.MessageBox.Show(
+                                "  CPU CRITICAL Temperature at " + tempStr + " ºC !!!\n" +
+                                " !! Thermal throttling may occur - Check cooling immediately !! ",
+                                "* CRITICAL * CPU Temperature",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Error);
+                        });
+                        tcrit.Start();
+                    }
+                    else if (TemperatureStatus <= 80)
+                    {
+                        AlreadyShownCriticalOverTemperature = false; // re-arm once cooled
+                    }
+
+                    // Warning: > 70 ºC
+                    if (TemperatureStatus > 70 && !AlreadyShownWarningOverTemperature)
+                    {
+                        AlreadyShownWarningOverTemperature = true;
+                        Log("Warning CPU Over Temperature at: " + tempStr + " ºC");
+                        Thread twarn = new Thread(() =>
+                        {
+                            System.Windows.MessageBox.Show(
+                                "  CPU Over Temperature at " + tempStr + " ºC, too High\n" +
+                                " !! Check system cooling !! ",
+                                "* WARNING * CPU Temperature",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning);
+                        });
+                        twarn.Start();
+                    }
+                    else if (TemperatureStatus <= 65)
+                    {
+                        AlreadyShownWarningOverTemperature = false; // re-arm once cooled down
+                    }
+                }
             }
             catch
             {
-                // WMI thermal zone not available on this hardware
+                // Sensor not available on this hardware
             }
         }
 
@@ -1105,6 +1150,8 @@ namespace PVSS.ViewModel
        
         // Just because we are using PRODIVING telemetry
         private bool AlreadyShownWarningChargerOn = false; // Power Line Warning Always on
+        private bool AlreadyShownWarningOverTemperature = false;   // CPU Warning  > 70 ºC
+        private bool AlreadyShownCriticalOverTemperature = false;   // CPU Critical > 85 ºC
 
         // Calculate Checksum of incoming string to check if is valid
         public static string GetChecksum(string sentence)
@@ -1332,6 +1379,8 @@ namespace PVSS.ViewModel
             _simTick++;
             Depth1 = (float)Math.Round(20.0 + 20.0 * Math.Sin(2.0 * Math.PI * _simTick / 120.0), 1);
             Depth2 = (float)Math.Round(20.0 + 20.0 * Math.Sin(2.0 * Math.PI * (_simTick + 30) / 120.0), 1);
+            DepthSensorStatus1 = DEPTH_SENSOR1_STATUS_OK;
+            DepthSensorStatus2 = DEPTH_SENSOR2_STATUS_OK;
 #endif
 
             // Auto light-off: turn off light when diver is ascending (depth decreasing) and near surface (< 1m)

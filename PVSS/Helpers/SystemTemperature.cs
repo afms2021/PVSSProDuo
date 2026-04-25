@@ -13,24 +13,35 @@ namespace PVSS.Helpers
         private static Computer _computer;
         private static readonly object _lock = new object();
 
+        private static bool _computerFailed = false;
+
         private static Computer GetComputer()
         {
+            if (_computerFailed) return null;
             if (_computer == null)
             {
                 lock (_lock)
                 {
-                    if (_computer == null)
+                    if (_computer == null && !_computerFailed)
                     {
-                        _computer = new Computer
+                        try
                         {
-                            IsCpuEnabled = true,
-                            IsMotherboardEnabled = true,
-                            IsGpuEnabled = false,
-                            IsStorageEnabled = false,
-                            IsMemoryEnabled = false,
-                            IsNetworkEnabled = false
-                        };
-                        _computer.Open(false); // false = not portable, uses local machine
+                            var c = new Computer
+                            {
+                                IsCpuEnabled = true,
+                                IsMotherboardEnabled = true,
+                                IsGpuEnabled = false,
+                                IsStorageEnabled = false,
+                                IsMemoryEnabled = false,
+                                IsNetworkEnabled = false
+                            };
+                            c.Open(false);
+                            _computer = c;
+                        }
+                        catch
+                        {
+                            _computerFailed = true;
+                        }
                     }
                 }
             }
@@ -45,31 +56,38 @@ namespace PVSS.Helpers
                 try
                 {
                     var computer = GetComputer();
+                    if (computer == null) return result;
 
-                    // Update all hardware before reading
+                    // Update all hardware before reading — guard each individually
                     foreach (var hardware in computer.Hardware)
                     {
-                        hardware.Update();
+                        try { hardware.Update(); } catch { }
                         foreach (var sub in hardware.SubHardware)
-                            sub.Update();
+                        {
+                            try { sub.Update(); } catch { }
+                        }
                     }
 
                     // Prefer CPU Package temperature; fall back to any CPU temp; then any motherboard temp
                     ISensor best = null;
                     foreach (var hardware in computer.Hardware)
                     {
-                        foreach (var sub in hardware.SubHardware)
-                            foreach (var sensor in sub.Sensors)
+                        try
+                        {
+                            foreach (var sub in hardware.SubHardware)
+                                foreach (var sensor in sub.Sensors)
+                                    if (sensor.SensorType == SensorType.Temperature && sensor.Value.HasValue)
+                                        if (best == null ||
+                                            (sensor.Name.IndexOf("Package", StringComparison.OrdinalIgnoreCase) >= 0 && hardware.HardwareType == HardwareType.Cpu))
+                                            best = sensor;
+
+                            foreach (var sensor in hardware.Sensors)
                                 if (sensor.SensorType == SensorType.Temperature && sensor.Value.HasValue)
                                     if (best == null ||
                                         (sensor.Name.IndexOf("Package", StringComparison.OrdinalIgnoreCase) >= 0 && hardware.HardwareType == HardwareType.Cpu))
                                         best = sensor;
-
-                        foreach (var sensor in hardware.Sensors)
-                            if (sensor.SensorType == SensorType.Temperature && sensor.Value.HasValue)
-                                if (best == null ||
-                                    (sensor.Name.IndexOf("Package", StringComparison.OrdinalIgnoreCase) >= 0 && hardware.HardwareType == HardwareType.Cpu))
-                                    best = sensor;
+                        }
+                        catch { }
                     }
 
                     if (best != null)

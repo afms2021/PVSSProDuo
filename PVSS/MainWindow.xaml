@@ -218,7 +218,7 @@
                         <ColumnDefinition Width="365"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Text=" Take a snapshot (F7) to see the preview here." VerticalAlignment="Center" HorizontalAlignment="Left" Background="#FF333333" Foreground="White" Margin="18,0,0,0" Width="284" Height="26"/>
-                    <Image Source="{Binding LastSnapshotImage1}" MouseLeftButtonUp="Image_MouseLeftButtonUp" Cursor="Hand" Width="348" HorizontalAlignment="Left" Margin="-20,0,0,0" Stretch="Fill" VerticalAlignment="Center"/>
+                    <Image Source="{Binding LastSnapshotImage1, Converter={StaticResource NullImageConverter}}" MouseLeftButtonUp="Image_MouseLeftButtonUp" Cursor="Hand" Width="348" HorizontalAlignment="Left" Margin="-20,0,0,0" Stretch="Fill" VerticalAlignment="Center"/>
                 </Grid>
             </TabItem>
             <TabItem Header="Chart" BorderBrush="#00005E93" Background="Gray" Margin="0" Foreground="White" FontSize="14" Template="{DynamicResource TabItemControlTemplate1}">
@@ -349,8 +349,8 @@
                     <TextBlock TextWrapping="Wrap" Foreground="White" Text="{Binding BoardInfoString2}" Margin="8,0,10,0" FontWeight="Bold" />
                     <TextBlock TextWrapping="Wrap" Foreground="White" Text="{Binding DLLVersion, StringFormat=DLL: \{0\}}" Margin="8,0,0,0" FontWeight="Bold" Height="85" HorizontalAlignment="Left" Width="320"/>
                     <TextBlock TextWrapping="Wrap" Foreground="White" Margin="8,0,81,0" FontWeight="Bold" Height="24" Width="254" ><Run Text="Created by Manuel Parente - 2012 "/></TextBlock>
-                    <TextBlock TextWrapping="Wrap" Foreground="White" Margin="8,0,127,0" FontWeight="Bold" Height="24" VerticalAlignment="Bottom" ><Run Text="Copyright ISPTEL - 2022"/></TextBlock>
-                    <TextBlock TextWrapping="Wrap" Foreground="White" FontWeight="Bold" Height="24" Width="315" ><Run Text="PVSS PRO DUO Ver - 6.0.0 by Arlindo Silva "/></TextBlock>
+                    <TextBlock TextWrapping="Wrap" Foreground="White" Margin="8,0,127,0" FontWeight="Bold" Height="24" Width="230" ><Run Text="Copyright ISPTEL - 2022-2026"/></TextBlock>
+                    <TextBlock TextWrapping="Wrap" Foreground="White" FontWeight="Bold" Height="24" Width="315" ><Run Text="PVSS PRO DUO Ver - 6.1.0  by Arlindo Silva "/></TextBlock>
                 </StackPanel>
             </TabItem>
             <TabItem Header="Settings" BorderBrush="#008C8E94" Background="Gray" Margin="0,0,0,0" Foreground="White" FontSize="14" Template="{DynamicResource TabItemControlTemplate1}" HorizontalAlignment="Left" Width="80">
