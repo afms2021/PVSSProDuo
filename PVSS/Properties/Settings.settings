@@ -2,9 +2,6 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="PVSS.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="COMPort" Type="System.String" Scope="User">
-      <Value Profile="(Default)">COM4</Value>
-    </Setting>
     <Setting Name="BaudRate" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">19200</Value>
     </Setting>
@@ -31,6 +28,9 @@
     </Setting>
     <Setting Name="AutoLightOff" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="COMPort" Type="System.String" Scope="User">
+      <Value Profile="(Default)">COM2</Value>
     </Setting>
   </Settings>
 </SettingsFile>

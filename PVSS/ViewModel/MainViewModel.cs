@@ -37,7 +37,7 @@
 // | Arlindo Silva                   | 24/APR/2019 | Added Suppress Editing Company, Job Name and Diver Name while recording.                                       |  
 // | Manuel Parente                  | 27/APR/2019 | Solved LastSnapShot Exception and Photo Viewer                                                                 |                           
 // | Arlindo Silva                   | 07/MAY/2019 | Added exception handling whem Telemetry COM port is missing.                                                   |
-// | Arlindo Silva                   | 07/MAY/2019 | Added Internal PCB Over Temperature Warning @ > 52 �C.                                                         |
+// | Arlindo Silva                   | 07/MAY/2019 | Added Internal PCB Over Temperature Warning @ > 52 ºC.                                                         |
 // | Arlindo Silva                   | 24/APR/2021 | Update to Sensoray DLL 1.2.38.1 .                                                                              |
 // | Arlindo Silva                   | 12/MAY/2021 | Added Compiler options to use serial COM port dialogue with PRODIVING Telemetry Unit change baudrate to 19200  |
 // | Arlindo Silva                   | 11/JUN/2021 | Ver 5.6 - Update to Sensoray DLL 1.2.39.1 .                                                                    |
@@ -55,7 +55,7 @@
 // +---------------------------------+-------------+----------------------------------------------------------------------------------------------------------------+
 
 
-#define DEPTH_SIMULATOR // DEPTH_SIMULATOR: comment out the line to use real sensor data
+//#define DEPTH_SIMULATOR // DEPTH_SIMULATOR: comment out the line to use real sensor data
 #define PVSS_PRO  // PVSS or PVSS_PRO  *** PVSS 115200 baudrate / Prodving 19200 baudrate ***
 
 using DotSpatial.Positioning;
@@ -100,13 +100,13 @@ namespace PVSS.ViewModel
     public sealed class MainViewModel : ViewModelBase, ICleanup, IDisposable
     {
         public string JobNameDiretory1 = "D:\\PVSS DUO PRO 1";
-        public string JobNameDiretory2 = "E:\\PVSS DUO PRO 2";
+        public string JobNameDiretory2 = "F:\\PVSS DUO PRO 2";
         public string VideoDirectoryPath1 = "D:\\PVSS DUO PRO 1" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos1";
-        public string VideoDirectoryPath2 = "E:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos2";
+        public string VideoDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos2";
         public string SnapshotsDirectoryPath1 = "D:\\PVSS DUO PRO 1" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots1";
-        public string SnapshotsDirectoryPath2 = "E:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots2";
+        public string SnapshotsDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots2";
         public string ChartsDirectoryPath1 = "D:\\PVSS DUO PRO 1" +  "\\" + Properties.Settings.Default.JobNameText + "\\Charts1";
-        public string ChartsDirectoryPath2 = "E:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts2";
+        public string ChartsDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts2";
         public string LogPath = "D:\\PVSS DUO PRO 1" + "\\" + Properties.Settings.Default.JobNameText + "\\log.txt";
         
         private FileSystemWatcher fileSystemWatcher;
@@ -555,7 +555,7 @@ namespace PVSS.ViewModel
         }
         private void SaveChartImage2()
         {
-            ChartsDirectoryPath2 = "E:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts2";
+            ChartsDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Charts2";
             if (!Directory.Exists(ChartsDirectoryPath2))
             {
                 Directory.CreateDirectory(ChartsDirectoryPath2);
@@ -1014,7 +1014,7 @@ namespace PVSS.ViewModel
                 }
             }
 
-            // Read CPU/Motherboard temperature via OpenHardwareMonitorLib
+            // Read CPU/Motherboard temperature via WMI (MSAcpi_ThermalZoneTemperature)
             try
             {
                 var temps = Temperature.Temperatures;
@@ -1023,44 +1023,44 @@ namespace PVSS.ViewModel
                     TemperatureStatus = (float)temps[0].CurrentValue;
                     string tempStr = TemperatureStatus.ToString("00");
 
-                    // Critical: > 85 ºC
-                    if (TemperatureStatus > 85 && !AlreadyShownCriticalOverTemperature)
+                    // Critical: > 55 ºC  (ambient/chassis thermal zone — not CPU core)
+                    if (TemperatureStatus > 55 && !AlreadyShownCriticalOverTemperature)
                     {
                         AlreadyShownCriticalOverTemperature = true;
-                        Log("CRITICAL CPU Over Temperature at: " + tempStr + " ºC");
+                        Log("CRITICAL Ambient Over Temperature at: " + tempStr + " ºC");
                         Thread tcrit = new Thread(() =>
                         {
                             System.Windows.MessageBox.Show(
-                                "  CPU CRITICAL Temperature at " + tempStr + " ºC !!!\n" +
-                                " !! Thermal throttling may occur - Check cooling immediately !! ",
-                                "* CRITICAL * CPU Temperature",
+                                "  CRITICAL Ambient Temperature at " + tempStr + " ºC !!!\n" +
+                                " !! Check system ventilation and cooling immediately !! ",
+                                "* CRITICAL * Ambient Temperature",
                                 MessageBoxButton.OK,
                                 MessageBoxImage.Error);
                         });
                         tcrit.Start();
                     }
-                    else if (TemperatureStatus <= 80)
+                    else if (TemperatureStatus <= 50)
                     {
                         AlreadyShownCriticalOverTemperature = false; // re-arm once cooled
                     }
 
-                    // Warning: > 70 ºC
-                    if (TemperatureStatus > 70 && !AlreadyShownWarningOverTemperature)
+                    // Warning: > 45 ºC
+                    if (TemperatureStatus > 45 && !AlreadyShownWarningOverTemperature)
                     {
                         AlreadyShownWarningOverTemperature = true;
-                        Log("Warning CPU Over Temperature at: " + tempStr + " ºC");
+                        Log("Warning Ambient Over Temperature at: " + tempStr + " ºC");
                         Thread twarn = new Thread(() =>
                         {
                             System.Windows.MessageBox.Show(
-                                "  CPU Over Temperature at " + tempStr + " ºC, too High\n" +
-                                " !! Check system cooling !! ",
-                                "* WARNING * CPU Temperature",
+                                "  Ambient Temperature at " + tempStr + " ºC, too High\n" +
+                                " !! Check system ventilation !! ",
+                                "* WARNING * Ambient Temperature",
                                 MessageBoxButton.OK,
                                 MessageBoxImage.Warning);
                         });
                         twarn.Start();
                     }
-                    else if (TemperatureStatus <= 65)
+                    else if (TemperatureStatus <= 40)
                     {
                         AlreadyShownWarningOverTemperature = false; // re-arm once cooled down
                     }
@@ -1778,7 +1778,7 @@ namespace PVSS.ViewModel
         }
         private void StartRecording2()
         {
-            VideoDirectoryPath2 = "E:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos2";
+            VideoDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos2";
 
             if (!Directory.Exists(VideoDirectoryPath2))
             {
@@ -4978,42 +4978,73 @@ namespace PVSS.ViewModel
         {
             if (COMPortIsEnabled)
             {
+                // Close and detach any previously open port first
+                if (MyCommunicationManager != null)
+                {
+                    try
+                    {
+                        MyCommunicationManager.comPort.DataReceived -= new System.IO.Ports.SerialDataReceivedEventHandler(IOPort_DataReceived);
+                        if (MyCommunicationManager.comPort.IsOpen)
+                            MyCommunicationManager.comPort.Close();
+                    }
+                    catch { /* ignore cleanup errors */ }
+                }
+
                 //start port
                 MyCommunicationManager = new CommunicationManager(BaudRate.ToString(), "None", "1", "8", COMPortListSelectedItem)
                 {
                     CurrentTransmissionType = CommunicationManager.TransmissionType.Text
                 };
 
+                bool portOpened = false;
                 try
                 {
-                    MyCommunicationManager.OpenPort();
-                    SetupIOPorts();
+                    portOpened = MyCommunicationManager.OpenPort();
+                    if (portOpened)
+                    {
+                        MyCommunicationManager.comPort.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(IOPort_DataReceived);
+                        SetupIOPorts();
+                    }
+                    else
+                    {
+                        COMPortIsEnabled = false;
+                        Log("COM port could not be opened: " + COMPortListSelectedItem);
+                        if (_startupCompleted)
+                        {
+                            System.Windows.MessageBox.Show(
+                                "Could not open " + COMPortListSelectedItem + ".\nCheck that the device is connected and the port is not in use.",
+                                "COM Port Error",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning);
+                        }
+                    }
                 }
                 catch (Exception e)
                 {
                     COMPortIsEnabled = false;
                     Log("COM port error: " + e.Message);
-                    // Show error only if triggered by user action (not auto-connect at startup)
                     if (_startupCompleted)
                     {
-                        System.Windows.MessageBox.Show("COM port error: " + e.Message,
-                        "Change Settings",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
+                        System.Windows.MessageBox.Show(
+                            "COM port error on " + COMPortListSelectedItem + ":\n" + e.Message,
+                            "COM Port Error",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning);
                     }
                 }
-                finally
-                {
-
-                    MyCommunicationManager.comPort.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(IOPort_DataReceived);
-
-                }
-
             }
             else
             {
-                MyCommunicationManager.comPort.DataReceived -= new System.IO.Ports.SerialDataReceivedEventHandler(IOPort_DataReceived);
-                MyCommunicationManager.comPort.Close();
+                if (MyCommunicationManager != null)
+                {
+                    try
+                    {
+                        MyCommunicationManager.comPort.DataReceived -= new System.IO.Ports.SerialDataReceivedEventHandler(IOPort_DataReceived);
+                        if (MyCommunicationManager.comPort.IsOpen)
+                            MyCommunicationManager.comPort.Close();
+                    }
+                    catch { /* ignore cleanup errors */ }
+                }
             }
         }
 

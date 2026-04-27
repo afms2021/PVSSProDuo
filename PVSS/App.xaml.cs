@@ -62,6 +62,7 @@ namespace PVSS
                 MessageBox.Show("FTChipID.dll not found. USB Hardlock cannot be verified.",
                     "License Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 Shutdown();
+                return;
 #endif
             }
             catch (Exception ex)
@@ -71,13 +72,38 @@ namespace PVSS
                 MessageBox.Show("Hardlock check failed: " + ex.Message,
                     "License Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 Shutdown();
+                return;
 #endif
             }
+
+            // Keep the app alive while the splash is the only window open.
+            ShutdownMode = ShutdownMode.OnLastWindowClose;
+
+            // Show animated splash screen.  It runs hardware checks asynchronously;
+            // when everything is checked it raises LaunchReady and we open MainWindow.
+            var splash = new SplashScreenWindow();
+            splash.LaunchReady += (s, ea) =>
+            {
+                splash.Dispatcher.Invoke(() =>
+                {
+                    // Open main window
+                    var main = new MainWindow();
+                    MainWindow = main;
+                    main.Show();
+
+                    // Close splash with a short fade
+                    splash.Close();
+
+                    // Switch shutdown mode to normal
+                    ShutdownMode = ShutdownMode.OnMainWindowClose;
+                });
+            };
+            splash.Show();
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
-            Temperature.Close(); // Unload OpenHardwareMonitor kernel driver
+            Temperature.Close(); // No-op: WMI requires no driver unloading
             base.OnExit(e);
         }
 

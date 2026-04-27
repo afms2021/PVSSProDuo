@@ -115,9 +115,6 @@
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="OpenHardwareMonitorLib">
-      <HintPath>..\packages\OpenHardwareMonitorLib.1.0.9513\lib\net472\OpenHardwareMonitorLib.dll</HintPath>
-    </Reference>
     <Reference Include="CommonServiceLocator">
       <HintPath>..\packages\CommonServiceLocator.2.0.3\lib\net45\CommonServiceLocator.dll</HintPath>
     </Reference>
@@ -238,6 +235,9 @@
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="SplashScreenWindow.xaml.cs">
+      <DependentUpon>SplashScreenWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Model\DataItem.cs" />
     <Compile Include="Model\DataService.cs" />
     <Compile Include="Model\IDataService.cs" />
@@ -252,6 +252,10 @@
     <Compile Include="MainWindow2.xaml.cs">
       <DependentUpon>MainWindow2.xaml</DependentUpon>
     </Compile>
+    <Page Include="SplashScreenWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -314,6 +318,7 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Design\Brightness.png" />
+    <Resource Include="Design\isptel_logo.JPG" />
     <Resource Include="Design\Chrome.png" />
     <Resource Include="Design\Color Picker.png" />
     <Resource Include="Design\Contrast.png" />
@@ -357,7 +362,9 @@
     <Resource Include="PVSS.ico" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Old static splash screen replaced by SplashScreenWindow.xaml (animated)
     <SplashScreen Include="Design\splash-screen-600.png" />
+    -->
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
