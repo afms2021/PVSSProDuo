@@ -322,7 +322,7 @@
                 </TransformGroup>
             </Border.RenderTransform>
         </Border>
-        <TextBlock TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Semibold" FontSize="32" Margin="112,16,0,0" HorizontalAlignment="Left" Text="DIVER 2" Height="40" Width="122"/>
+        <TextBlock TextWrapping="Wrap" VerticalAlignment="Top" Foreground="#FFE21818" FontFamily="Segoe UI Semibold" FontSize="32" Margin="112,16,0,0" HorizontalAlignment="Left" Text="DIVER 2" Height="40" Width="122"/>
         <Border BorderBrush="#FFB1B12A" BorderThickness="2" CornerRadius="0" HorizontalAlignment="Left" Height="40" Margin="341,161,0,0" VerticalAlignment="Top" Width="2" RenderTransformOrigin="0.5,0.5">
             <Border.RenderTransform>
                 <TransformGroup>

@@ -54,11 +54,9 @@
 // | Arlindo Silva                   | 20/APR/2022 | PVSS PRO DUO Initial Version                                                                                   | 
 // +---------------------------------+-------------+----------------------------------------------------------------------------------------------------------------+
 
-
 //#define DEPTH_SIMULATOR // DEPTH_SIMULATOR: comment out the line to use real sensor data
 #define PVSS_PRO  // PVSS or PVSS_PRO  *** PVSS 115200 baudrate / Prodving 19200 baudrate ***
 
-using DotSpatial.Positioning;
 using PVSS.Helpers;
 using System.Globalization;
 using GalaSoft.MvvmLight;
@@ -196,6 +194,10 @@ namespace PVSS.ViewModel
         public bool _IsDepthStringValid = false;
         private bool _Chart1_saved = false;
         private bool _Chart2_saved = false;
+        private bool _dive1StartLogged = false;
+        private bool _dive1StopLogged = false;
+        private bool _dive2StartLogged = false;
+        private bool _dive2StopLogged = false;
 
         // Change Baudrate in settings to 19200 / PVSS use 115200
                 
@@ -363,8 +365,6 @@ namespace PVSS.ViewModel
                 DivingTimer1.Start();
 
                 //Log("System Started and Internal Temperature was:" + TemperatureLevel + " ºC");
-                Log("Start Recording 1");
-                Log("Start Diving Depth was: " + Depth1 + " m");
 
                 MaxDepthValue1 = 0f;
                 MaxDepthString1 = "0.0 m";
@@ -376,7 +376,16 @@ namespace PVSS.ViewModel
                 MyPlotModel.Series.Clear();
                 MyPlotModel2.Series.Clear();
                 SetupCharting();
-                Log("Start Dive Profile Chart 1");
+
+                if (!_dive1StartLogged)
+                {
+                    _dive1StartLogged = true;
+                    _dive1StopLogged = false;
+                    Log("Start Recording 1");
+                    Log("Start Dive - Internal Temperature: " + TemperatureStatus.ToString("00") + " ºC");
+                    Log("Start Diving Depth 1 was: " + Depth1 + " m");
+                    Log("Start Dive Profile Chart 1");
+                }
             }
             else
             {
@@ -398,10 +407,16 @@ namespace PVSS.ViewModel
                 SaveChartImage1();
                 _Chart1_saved = true;
 
-                Log("Stop Recording 1");
-                Log("Maximum Depht was: " + MaxDepthValue1 + " m");
-                Log("Ended Dive Depth was: " + Depth1 + " m");
-                Log("Save Dive Profile Chart 1" + "\r\n");
+                if (!_dive1StopLogged)
+                {
+                    _dive1StopLogged = true;
+                    _dive1StartLogged = false;
+                    Log("Stop Recording 1");
+                    Log("End Dive - Internal Temperature: " + TemperatureStatus.ToString("00") + " ºC");
+                    Log("Maximum Depth 1 was: " + MaxDepthValue1 + " m");
+                    Log("Ended Dive Depth 1 was: " + Depth1 + " m");
+                    Log("Save Dive Profile Chart 1" + "\r\n");
+                }
                 StatusMessage = "Stopped - F3 REC";
 
                 DivingTimer1.Stop();
@@ -479,9 +494,6 @@ namespace PVSS.ViewModel
                 DivingTimer2.Start();
 
                 //Log("System Started and Internal Temperature was:" + TemperatureLevel + " �C");
-                Log("Start Recording 2");
-                Log("Start Diving Depth was: " + Depth2 + " m");
-
                 MaxDepthValue2 = 0f;
                 MaxDepthString2 = "0.0 m";
 
@@ -492,7 +504,16 @@ namespace PVSS.ViewModel
                 MyPlotModel21.Series.Clear();
                 MyPlotModel22.Series.Clear();
                 SetupCharting2();
-                Log("Start Dive Profile Chart 2");
+
+                if (!_dive2StartLogged)
+                {
+                    _dive2StartLogged = true;
+                    _dive2StopLogged = false;
+                    Log("Start Recording 2");
+                    Log("Start Dive - Internal Temperature: " + TemperatureStatus.ToString("00") + " ºC");
+                    Log("Start Diving Depth 2 was: " + Depth2 + " m");
+                    Log("Start Dive Profile Chart 2");
+                }
             }
             else
             {
@@ -517,10 +538,16 @@ namespace PVSS.ViewModel
                 SaveChartImage2(); //Arlindo OUT21
                 _Chart2_saved = true;
 
-                Log("Stop Recording 2");
-                Log("Maximum Depht was: " + MaxDepthValue2 + " m");
-                Log("Ended Dive Depth was: " + Depth2 + " m");
-                Log("Save Dive Profile Chart 2" + "\r\n");
+                if (!_dive2StopLogged)
+                {
+                    _dive2StopLogged = true;
+                    _dive2StartLogged = false;
+                    Log("Stop Recording 2");
+                    Log("End Dive - Internal Temperature: " + TemperatureStatus.ToString("00") + " ºC");
+                    Log("Maximum Depth 2 was: " + MaxDepthValue2 + " m");
+                    Log("Ended Dive Depth 2 was: " + Depth2 + " m");
+                    Log("Save Dive Profile Chart 2" + "\r\n");
+                }
                 StatusMessage2 = "Stopped - F4 REC";
 
                 DivingTimer2.Stop();
@@ -814,7 +841,7 @@ namespace PVSS.ViewModel
                 DepthSensorStatusText2 = "Depth sensor malfunction. (short)";
                 DepthSensorMessageColor2 = RedBrush;
 
-                DepthString1 = "32,4 m";
+                DepthString1 = "12,3 m";
                 DepthString2 = "22,4 m";
                 Longitude = "41º11'14,2139''N";
                 Latitude = "08º42'12,269''W";
@@ -940,14 +967,15 @@ namespace PVSS.ViewModel
             //Sensoray 2253 Capture B
             //Sensoray 2253 Decode
             //Decklink Video Capture
+            //Trust 1080p Full HD Webcam
 
             var allVideoDevices = WPFMediaKit.DirectShow.Controls.MultimediaUtil.VideoInputDevices;
 
             Sensoray_codec = false;
             foreach (DirectShowLib.DsDevice device in allVideoDevices)
             {
-                if (device.Name == "Trust 1080p Full HD Webcam"       // dev/test camera Diver 1
-                 || device.Name == "Sensoray 2253 Capture A")         // production Sensoray Diver 1
+                //if (device.Name == "Trust 1080p Full HD Webcam"       // dev/test camera Diver 1
+                if (device.Name == "Sensoray 2253 Capture A")    // production Sensoray Diver 1
                 {
                     Video = device;  // Diver 1
                     Sensoray_codec = true;
@@ -956,27 +984,12 @@ namespace PVSS.ViewModel
             }
             foreach (DirectShowLib.DsDevice device in allVideoDevices)
             {
-                if (device.Name == "Logitech Webcam C160"             // dev/test camera Diver 2
-                 || device.Name == "Sensoray 2253 Capture A #3")      // production Sensoray Diver 2
+                //if (device.Name == "Logitech Webcam C160"             // dev/test camera Diver 2
+                if (device.Name == "Sensoray 2253 Capture A #3")       // production Sensoray Diver 2                                                                        
                 {
                     Video1 = device;  // Diver 2
                     Sensoray_codec = true;
                     break;
-                }
-            }
-
-            // Fallback: if Video1 still null but more than one device exists,
-            // assign the first device not already used by Video.
-            if (Video1 == null && allVideoDevices.Length > 1)
-            {
-                foreach (DirectShowLib.DsDevice device in allVideoDevices)
-                {
-                    if (device != Video)
-                    {
-                        Video1 = device;
-                        Sensoray_codec = true;
-                        break;
-                    }
                 }
             }
 
@@ -4885,6 +4898,46 @@ namespace PVSS.ViewModel
 
         #endregion
 
+        #region GPSCOMPortListSelectedItem
+
+        public const string GPSCOMPortListSelectedItemPropertyName = "GPSCOMPortListSelectedItem";
+
+        private string _GPSCOMPortListSelectedItem = "COM6";
+
+        /// <summary>
+        /// Sets and gets the GPS COM port selection property.
+        /// </summary>
+        public string GPSCOMPortListSelectedItem
+        {
+            get { return _GPSCOMPortListSelectedItem; }
+            set
+            {
+                if (_GPSCOMPortListSelectedItem == value) return;
+                _GPSCOMPortListSelectedItem = value;
+                RaisePropertyChanged(GPSCOMPortListSelectedItemPropertyName);
+            }
+        }
+
+        #endregion
+
+        #region GPSBaudRate
+
+        public List<int> GPSBaudRatesList { get; } = new List<int> { 4800, 9600, 19200, 38400, 57600, 115200 };
+
+        private int _GPSBaudRateSelected = 4800;
+        public int GPSBaudRateSelected
+        {
+            get { return _GPSBaudRateSelected; }
+            set
+            {
+                if (_GPSBaudRateSelected == value) return;
+                _GPSBaudRateSelected = value;
+                RaisePropertyChanged(nameof(GPSBaudRateSelected));
+            }
+        }
+
+        #endregion
+
         #region BaudRate
 
         /// <summary>
@@ -5136,137 +5189,185 @@ namespace PVSS.ViewModel
             }
         }
 
-        private NmeaInterpreter interpreter = new NmeaInterpreter();
+        private System.IO.Ports.SerialPort _gpsSerialPort;
+        private Thread _gpsReadThread;
+        private volatile bool _gpsReadThreadRunning = false;
+        private bool _gpsMethodRunning = false;
+
         private void ExecuteStartOrStopGPSPortMethod()
         {
+            if (_gpsMethodRunning) return;
+            _gpsMethodRunning = true;
+            try
+            {
             if (GPSIsEnabled)
             {
                 try
                 {
-                    //start port
-                    Devices.AllowBluetoothConnections = false;
-                    Devices.AllowExhaustiveSerialPortScanning = true;
+                    _gpsSerialPort = new System.IO.Ports.SerialPort(
+                        GPSCOMPortListSelectedItem, GPSBaudRateSelected,
+                        System.IO.Ports.Parity.None, 8,
+                        System.IO.Ports.StopBits.One);
+                    _gpsSerialPort.ReadTimeout = 5000;
+                    _gpsSerialPort.DtrEnable = true;
+                    _gpsSerialPort.RtsEnable = true;
+                    _gpsSerialPort.Open();
 
-                    Devices.BeginDetection();
+                    _gpsReadThreadRunning = true;
+                    _gpsReadThread = new Thread(GpsReadLoop) { IsBackground = true, Name = "GPS Read Thread" };
+                    _gpsReadThread.Start();
 
-                    Devices.DeviceDetectionAttempted += new EventHandler<DeviceEventArgs>(Devices_DeviceDetectionAttempted);
-
-                    Devices.DeviceDetectionAttemptFailed += new EventHandler<DeviceDetectionExceptionEventArgs>(Devices_DeviceDetectionAttemptFailed);
-
-                    Devices.DeviceDetectionStarted += new EventHandler(Devices_DeviceDetectionStarted);
-
-                    if (Devices.IsOnlyFirstDeviceDetected == true)
-                    {
-                        Devices.DeviceDetectionCompleted += new EventHandler(Devices_DeviceDetectionCompleted);
-                    }
-                    else
-                    {
-                        Devices.DeviceDetected += new EventHandler<DeviceEventArgs>(Devices_DeviceDetected);
-                        Devices.DeviceDetectionCanceled += new EventHandler(Devices_DeviceDetectionCanceled);
-                    }
-                }
-                catch (Exception)
-                {
-                    // DotSpatial.Positioning may throw NullReferenceException internally
-                    // when no GPS device is present — silently ignore
                     Latitude = "";
-                    Longitude = "! GPS Error";
-                    GPSIsEnabled = false;
+                    Longitude = "";
+                    GPSStatus = "Connected at " + GPSCOMPortListSelectedItem + " @ " + GPSBaudRateSelected;
+                    Log("GPS connected at port " + GPSCOMPortListSelectedItem + " @ " + GPSBaudRateSelected + " baud");
                 }
-            }
-            else
-            {
-
-                interpreter.PositionReceived -= Interpreter_PositionReceived;
-                interpreter.Stop();
-
-                Devices.CancelDetection(true);
-
-                var thread = new Thread(
-                    () =>
-                    {
-                        try
-                        {
-                            Devices.CancelDetection();
-                            Devices.Undetect();
-
-                            Latitude = "";
-                            Longitude = "! GPS Canceled";
-                        }
-                        catch { }
-                    });
-
-                thread.Start();
-
-                Latitude = "";
-                Longitude = "";
-            }
-        }
-
-        void Devices_DeviceDetectionCanceled(object sender, EventArgs e)
-        {
-            Latitude = ""; // Delete e
-            Longitude = "! Canceled";
-        }
-
-        void Devices_DeviceDetectionAttempted(object sender, DeviceEventArgs e)
-        {
-            Latitude = "" + e.Device;
-            Longitude = "! GPS Detection";
-        }
-
-        void Devices_DeviceDetectionAttemptFailed(object sender, DeviceDetectionExceptionEventArgs e)
-        {
-            Latitude = ""; //+ e.Device ;
-            Longitude = "! Searching GPS";
-        }
-
-        void Devices_DeviceDetectionStarted(object sender, EventArgs e)
-        {
-            Latitude = "" + e;
-            Longitude = "! Waiting for Data";
-        }
-
-        void Devices_DeviceDetectionCompleted(object sender, EventArgs e)
-        {
-            Latitude = "GPS Not Detected";
-            Longitude = "! Completed";
-        }
-
-
-        void Devices_DeviceDetected(object sender, DeviceEventArgs e)
-        {
-            //e.Device.Open();
-            //interpreter = new NmeaInterpreter();
-            interpreter.Start(e.Device);
-
-            Latitude = "" + e.Device;
-            Longitude = "! GPS detected at";
-            Log("GPS Detected at port " + e.Device);
-
-            interpreter.PositionReceived += new EventHandler<PositionEventArgs>(Interpreter_PositionReceived);
-        }
-
-        void Interpreter_PositionReceived(object sender, PositionEventArgs e)
-        {
-            if (!e.Position.IsInvalid)
-            {
-                if (e.Position.Longitude.ToString().Contains("NaN"))
+                catch (Exception ex)
                 {
                     Latitude = "";
                     Longitude = "";
-                }
-                else
-                {
-                    Latitude = e.Position.Latitude.ToString();
-                    Longitude = e.Position.Longitude.ToString();
+                    GPSStatus = "Error: " + ex.Message;
+                    Log("GPS Error: " + ex.Message);
+                    _gpsReadThreadRunning = false;
+                    try { _gpsSerialPort?.Close(); _gpsSerialPort?.Dispose(); _gpsSerialPort = null; } catch { }
+                    _GPSIsEnabled = false;
+                    RaisePropertyChanged(GPSIsEnabledPropertyName);
                 }
             }
             else
             {
+                    _gpsReadThreadRunning = false;
+
+                try
+                {
+                    if (_gpsSerialPort != null && _gpsSerialPort.IsOpen)
+                    {
+                        _gpsSerialPort.Close();
+                        _gpsSerialPort.Dispose();
+                        _gpsSerialPort = null;
+                    }
+                }
+                catch { }
+
                 Latitude = "";
-                Longitude = "! Waiting GPS Data";
+                Longitude = "";
+                GPSStatus = "Disconnected";
+                Log("GPS disconnected from port " + GPSCOMPortListSelectedItem);
             }
+            } finally { _gpsMethodRunning = false; }
+        }
+
+        private void GpsReadLoop()
+        {
+            while (_gpsReadThreadRunning)
+            {
+                try
+                {
+                    if (_gpsSerialPort == null || !_gpsSerialPort.IsOpen) break;
+
+                    string line = _gpsSerialPort.ReadLine();
+                    string sentence = line.Trim();
+                    if (sentence.StartsWith("$"))
+                    {
+                        ParseNmeaSentence(sentence);
+                    }
+                }
+                catch (TimeoutException)
+                {
+                    string msg = "No data on " + GPSCOMPortListSelectedItem + " @ " + GPSBaudRateSelected + " baud";
+                    System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        GPSStatus = msg;
+                    }));
+                }
+                catch (System.IO.IOException) { break; }
+                catch (InvalidOperationException) { break; }
+                catch { break; }
+            }
+        }
+
+        /// Converts decimal degrees to DMS string matching the app's display format: 41º11'14,2139''N
+        private static string ToNmeaDms(double decDeg, string direction)
+        {
+            int deg = (int)decDeg;
+            double minFull = (decDeg - deg) * 60.0;
+            int min = (int)minFull;
+            double sec = (minFull - min) * 60.0;
+            // Use comma as decimal separator for seconds, to match existing format
+            string secStr = sec.ToString("F4", System.Globalization.CultureInfo.InvariantCulture).Replace('.', ',');
+            return string.Format("{0}º{1}'{2}''{3}", deg, min, secStr, direction);
+        }
+
+        /// <summary>
+        /// Parses GPRMC or GPGGA sentences and updates Latitude/Longitude directly.
+        /// Format GPRMC: $GPRMC,hhmmss,A,DDMM.MMMM,N,DDDMM.MMMM,W,...
+        /// Format GPGGA: $GPGGA,hhmmss,DDMM.MMMM,N,DDDMM.MMMM,W,fix,...
+        /// </summary>
+        private void ParseNmeaSentence(string sentence)
+        {
+            try
+            {
+                // Strip checksum
+                int star = sentence.IndexOf('*');
+                string body = star >= 0 ? sentence.Substring(0, star) : sentence;
+                string[] f = body.Split(',');
+                if (f.Length < 1) return;
+
+                string type = f[0].TrimStart('$').ToUpperInvariant();
+                bool isRmc = type == "GPRMC" || type == "GNRMC";
+                bool isGga = type == "GPGGA" || type == "GNGGA";
+
+                if (!isRmc && !isGga) return;
+
+                // GPRMC fields: [0]type [1]time [2]status [3]lat [4]N/S [5]lon [6]E/W
+                // GPGGA fields: [0]type [1]time [2]lat   [3]N/S [4]lon [5]E/W [6]fix
+                int latIdx, nsIdx, lonIdx, ewIdx;
+                bool validFix;
+                if (isRmc)
+                {
+                    if (f.Length < 7) return;
+                    validFix = f[2].ToUpperInvariant() == "A";
+                    latIdx = 3; nsIdx = 4; lonIdx = 5; ewIdx = 6;
+                }
+                else  // GGA
+                {
+                    if (f.Length < 7) return;
+                    validFix = f[6] != "0" && f[6] != "";
+                    latIdx = 2; nsIdx = 3; lonIdx = 4; ewIdx = 5;
+                }
+
+                if (!validFix || string.IsNullOrEmpty(f[latIdx]) || string.IsNullOrEmpty(f[lonIdx]))
+                {
+                    System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        Latitude = "";
+                        Longitude = "";
+                        GPSStatus = "Waiting for GPS fix...";
+                    }));
+                    return;
+                }
+
+                double latRaw = double.Parse(f[latIdx], System.Globalization.CultureInfo.InvariantCulture);
+                double lonRaw = double.Parse(f[lonIdx], System.Globalization.CultureInfo.InvariantCulture);
+
+                // Convert DDMM.MMMM → decimal degrees
+                double latDeg = Math.Floor(latRaw / 100.0) + (latRaw % 100.0) / 60.0;
+                double lonDeg = Math.Floor(lonRaw / 100.0) + (lonRaw % 100.0) / 60.0;
+
+                if (f[nsIdx].ToUpperInvariant() == "S") latDeg = -latDeg;
+                if (f[ewIdx].ToUpperInvariant() == "W") lonDeg = -lonDeg;
+
+                string latStr = ToNmeaDms(Math.Abs(latDeg), latDeg >= 0 ? "N" : "S");
+                string lonStr = ToNmeaDms(Math.Abs(lonDeg), lonDeg >= 0 ? "E" : "W");
+
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    Latitude = latStr;
+                    Longitude = lonStr;
+                    GPSStatus = "";
+                }));
+            }
+            catch { }
         }
 
         #endregion
@@ -5330,6 +5431,21 @@ namespace PVSS.ViewModel
                 RaisePropertyChanged(LongitudePropertyName);
             }
         }
+
+        #region GPSStatus
+        public const string GPSStatusPropertyName = "GPSStatus";
+        private string _gpsStatus = "";
+        public string GPSStatus
+        {
+            get { return _gpsStatus; }
+            set
+            {
+                if (_gpsStatus == value) return;
+                _gpsStatus = value;
+                RaisePropertyChanged(GPSStatusPropertyName);
+            }
+        }
+        #endregion
 
         #endregion
         #endregion
@@ -5406,8 +5522,13 @@ namespace PVSS.ViewModel
                     _Chart2_saved = true;
                 }
 
-                Log("Stop Recording 2 (Diver2 window closed)");
-                Log("Maximum Depth was: " + MaxDepthValue2 + " m");
+                if (!_dive2StopLogged)
+                {
+                    _dive2StopLogged = true;
+                    _dive2StartLogged = false;
+                    Log("Stop Recording 2 (Diver2 window closed)");
+                    Log("Maximum Depth 2 was: " + MaxDepthValue2 + " m");
+                }
                 StatusMessage2 = "Stopped - F4 REC";
                 DivingTimer2.Stop();
 
@@ -5480,7 +5601,6 @@ namespace PVSS.ViewModel
             {
                 MyCommunicationManager.Dispose();
                 fileSystemWatcher.Dispose();
-                interpreter.Dispose();
             }
         }
         #endregion
