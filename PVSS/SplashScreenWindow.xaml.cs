@@ -106,7 +106,7 @@ namespace PVSS
             // ── 2. Sensoray S2253 Board ──────────────────────────────────── //
             SetProgress(++step, TOTAL_STEPS, "Waiting for Sensoray S2253 board…");
             bool sensorayOk = await Task.Run(() => CheckSensorayBoard());
-            UpdateItem(IDX_SENSORAY, sensorayOk ? CheckItem.OK("Sensoray S2253") : CheckItem.Warn("Sensoray S2253"));
+            UpdateItem(IDX_SENSORAY, sensorayOk ? CheckItem.OK("Sensoray S2253") : CheckItem.Fail("Sensoray S2253 — not detected"));
 
             // ── 3. Drive D: ──────────────────────────────────────────────── //
             SetProgress(++step, TOTAL_STEPS, "Checking Drive D:\\…");
@@ -168,7 +168,7 @@ namespace PVSS
             // ── Final ────────────────────────────────────────────────────── //
             bool anyDriveMissing = !driveDExists || !driveEExists;
             bool noComPorts      = comResult == ComPortResult.NoPorts;
-            bool canStart        = !anyDriveMissing && !noComPorts;
+            bool canStart        = sensorayOk && !anyDriveMissing && !noComPorts;
 
             SetProgress(TOTAL_STEPS, TOTAL_STEPS, canStart ? "Ready!" : "Cannot start — check warnings below.");
             await Task.Delay(600);
@@ -176,8 +176,13 @@ namespace PVSS
             if (!canStart)
             {
                 var sb = new System.Text.StringBuilder();
+                if (!sensorayOk)
+                {
+                    sb.Append("Sensoray S2253 not detected — check USB connection and restart.");
+                }
                 if (anyDriveMissing)
                 {
+                    if (sb.Length > 0) sb.AppendLine();
                     sb.Append("Missing drive(s): ");
                     if (!driveDExists) sb.Append("D:  ");
                     if (!driveEExists) sb.Append("F:  ");

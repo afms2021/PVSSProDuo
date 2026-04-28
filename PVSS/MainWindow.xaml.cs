@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Media;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;

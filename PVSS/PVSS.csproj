@@ -121,9 +121,7 @@
     <Reference Include="DirectShowLib, Version=2.1.0.1599, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\DirectShowLib.1.0.0\lib\DirectShowLib.dll</HintPath>
     </Reference>
-    <Reference Include="DotSpatial.Positioning, Version=1.9.0.0, Culture=neutral, PublicKeyToken=f6f66d1554473068, processorArchitecture=MSIL">
-      <HintPath>..\packages\DotSpatial.Positioning.1.9\lib\net40-Client\DotSpatial.Positioning.dll</HintPath>
-    </Reference>
+
     <Reference Include="FTChipIDNet">
       <HintPath>..\packages\FTChipIDNet.dll</HintPath>
     </Reference>

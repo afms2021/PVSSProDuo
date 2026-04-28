@@ -143,21 +143,14 @@
             <oxy:Plot x:Name="plot22" Model="{Binding MyPlotModel22}" Height="Auto" Margin="50,50,25,25" Width="Auto" Background="{x:Null}" Foreground="{x:Null}" Visibility="Hidden"/>
             <Grid x:Name="grid" Height="83" VerticalAlignment="Top" Margin="104,425,131,0" Background="#80333333" Visibility="Hidden">
                 <Grid.Style>
-                    <Style>
+                    <Style TargetType="Grid">
                         <Style.Triggers>
-                            <MultiDataTrigger>
-                                <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding OSDPopupVisibility2}" Value="True" />
-                                    <Condition Binding="{Binding Path=Visibility, ElementName=grid}" Value="Visible" />
-                                </MultiDataTrigger.Conditions>
-                                <Setter Property="FocusManager.FocusedElement" Value="{Binding ElementName=OSDLine122}"/>
-                            </MultiDataTrigger>
+                            <DataTrigger Binding="{Binding OSDPopupVisibility2}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
                         </Style.Triggers>
                     </Style>
                 </Grid.Style>
-                <i:Interaction.Behaviors>
-                    <ei:DataStateBehavior Binding="{Binding OSDPopupVisibility2}" Value="True" TrueState="Visible" FalseState="Invisible"/>
-                </i:Interaction.Behaviors>
                 <TextBlock TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="18" Margin="19,19,0,0" HorizontalAlignment="Left" ><Run Language="en-us" Text="Text:"/></TextBlock>
                 <TextBlock TextWrapping="Wrap" Foreground="White" FontFamily="Segoe UI Light" FontSize="18" Margin="0,0,0,8" VerticalAlignment="Bottom" d:LayoutOverrides="Width" HorizontalAlignment="Center" ><Run Language="en-us" Text="Press ENTER to submit, F6 to cancel"/></TextBlock>
                 <TextBox x:Name="OSDLine122" TextWrapping="Wrap" Text="{Binding OSDLine12, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Margin="68,19,22,0" MaxLength="40" FontSize="18" />

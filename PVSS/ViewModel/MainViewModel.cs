@@ -76,6 +76,7 @@ using System.Media;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
@@ -238,64 +239,46 @@ namespace PVSS.ViewModel
 
         #region Video
         /// <summary>
-        /// The <see cref="Video" /> property's name.
+        /// The <see cref="VideoName" /> property's name.
         /// </summary>
-        public const string VideoPropertyName = "Video";
+        public const string VideoNamePropertyName = "VideoName";
 
-        private DirectShowLib.DsDevice _Video;
+        private string _VideoName = "";
 
         /// <summary>
-        /// Sets and gets the Video property.
-        /// Changes to that property's value raise the PropertyChanged event. 
+        /// Diver 1 capture device name — used by VideoCaptureSource binding.
         /// </summary>
-        public DirectShowLib.DsDevice Video
+        public string VideoName
         {
-            get
-            {
-                return _Video;
-            }
-
+            get { return _VideoName; }
             set
             {
-                if (_Video == value)
-                {
-                    return;
-                }
-
-                _Video = value;
-                RaisePropertyChanged(VideoPropertyName);
+                if (_VideoName == value) return;
+                _VideoName = value;
+                RaisePropertyChanged(VideoNamePropertyName);
             }
         }
         #endregion Video
 
         #region Video1
         /// <summary>
-        /// The <see cref="Video1" /> property's name.
+        /// The <see cref="Video1Name" /> property's name.
         /// </summary>
-        public const string Video1PropertyName = "Video1";
+        public const string Video1NamePropertyName = "Video1Name";
 
-        private DirectShowLib.DsDevice _Video1;
+        private string _Video1Name = "";
 
         /// <summary>
-        /// Sets and gets the Video property.
-        /// Changes to that property's value raise the PropertyChanged event. 
+        /// Diver 2 capture device name — used by VideoCaptureSource in MainWindow2.
         /// </summary>
-        public DirectShowLib.DsDevice Video1
+        public string Video1Name
         {
-            get
-            {
-                return _Video1;
-            }
-
+            get { return _Video1Name; }
             set
             {
-                if (_Video1 == value)
-                {
-                    return;
-                }
-
-                _Video1 = value;
-                RaisePropertyChanged(Video1PropertyName);
+                if (_Video1Name == value) return;
+                _Video1Name = value;
+                RaisePropertyChanged(Video1NamePropertyName);
             }
         }
         #endregion Video1
@@ -558,6 +541,43 @@ namespace PVSS.ViewModel
 
         }
         #region Log File 
+        /// <summary>
+        /// Writes a timestamped entry to crash.log next to the exe.
+        /// Safe to call before D: drive / JobName are available.
+        /// </summary>
+        /// <summary>
+        /// Runs action on a background thread with a timeout. If it hangs or throws, logs and returns.
+        /// </summary>
+        private static void TryWithTimeout(Action action, string name, int timeoutMs)
+        {
+            try
+            {
+                var t = Task.Run(action);
+                if (!t.Wait(timeoutMs))
+                    DebugLog(name + ": TIMED OUT after " + timeoutMs + "ms — skipped");
+                else if (t.IsFaulted)
+                    DebugLog(name + ": EXCEPTION: " + t.Exception?.GetBaseException().Message);
+                else
+                    DebugLog(name + ": OK");
+            }
+            catch (Exception ex)
+            {
+                DebugLog(name + ": EXCEPTION: " + ex.Message);
+            }
+        }
+
+        public static void DebugLog(string message)
+        {
+            try
+            {
+                string path = System.IO.Path.Combine(
+                    AppDomain.CurrentDomain.BaseDirectory, "crash.log");
+                System.IO.File.AppendAllText(path,
+                    $"[{DateTime.Now:dd/MM/yyyy HH:mm:ss}] {message}{Environment.NewLine}");
+            }
+            catch { }
+        }
+
         public void Log(string logMessage)
         {
             LogPath = "D:\\PVSS DUO PRO 1" + "\\" + Properties.Settings.Default.JobNameText + "\\log.txt";
@@ -823,8 +843,8 @@ namespace PVSS.ViewModel
         /// Initializes a new instance of the MainViewModel class.
         /// </summary>
         public MainViewModel()
-
         {
+            DebugLog("--- MainViewModel() START ---");
             Messenger.Default.Register<string>(this, CallCleanUp);
 
             StatusMessage = "Stopped - F3 REC";
@@ -850,12 +870,15 @@ namespace PVSS.ViewModel
 
             FileVersionInfo myFileVersionInfo = FileVersionInfo.GetVersionInfo(@"mid2253.dll");
             DLLVersion = myFileVersionInfo.FileVersion;
+            DebugLog("DLL version: " + DLLVersion);
 
             //Just used to get all the COM Ports available
+            DebugLog("Waiting for COM ports...");
             Thread.Sleep(2000); // Arlindo NOV 2021 Wait till all COM ports come up
 
             CommunicationManager c = new CommunicationManager();
             COMPortsList = c.GetPortNames();
+            DebugLog("COM ports found: " + string.Join(", ", COMPortsList));
 
             // If the saved COM port is not in the available list, auto-select the first available one
             if (COMPortsList.Count > 0 && !COMPortsList.Contains(COMPortListSelectedItem))
@@ -864,10 +887,28 @@ namespace PVSS.ViewModel
             }
 
             //Used to start the application with telemetry already on
+            DebugLog("Starting COM port / telemetry...");
             COMPortIsEnabled = true;
             ExecuteStartOrStopCOMPortMethod();
-            
+            DebugLog("COM port started");
+
             SetupBoard();
+            DebugLog("SetupBoard() done");
+
+            if (!Sensoray_codec)   //Arlindo 2021
+            {
+                Thread thread = new Thread(
+                        () =>
+                        {
+                            Log("Error - No Video Encoder Detected");
+                            System.Windows.MessageBox.Show("Video Encoder Error, Please Reboot PVSS System!",
+                            "No Video Encoder Detected",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Exclamation);
+                        });
+                thread.Start();
+                System.Windows.Application.Current.Shutdown();
+            }
 
             // Updates Dive time
             DivingTimer1.Interval = TimeSpan.FromSeconds(1);
@@ -959,55 +1000,14 @@ namespace PVSS.ViewModel
 
             SetupCharting();
             SetupCharting2();
+            DebugLog("Charting setup done");
 
-            // List of devices at Developer Machine
-            //Blackmagic WDM Capture
-            //Logitech Webcam C160
-            //Sensoray 2253 Capture A
-            //Sensoray 2253 Capture B
-            //Sensoray 2253 Decode
-            //Decklink Video Capture
-            //Trust 1080p Full HD Webcam
+            // Board was already validated and opened in SetupBoard() — set device names directly.
+            VideoName  = "Sensoray 2253 Capture A";
+            Video1Name = "Sensoray 2253 Capture A #3";
+            DebugLog("Video device names set");
 
-            var allVideoDevices = WPFMediaKit.DirectShow.Controls.MultimediaUtil.VideoInputDevices;
-
-            Sensoray_codec = false;
-            foreach (DirectShowLib.DsDevice device in allVideoDevices)
-            {
-                //if (device.Name == "Trust 1080p Full HD Webcam"       // dev/test camera Diver 1
-                if (device.Name == "Sensoray 2253 Capture A")    // production Sensoray Diver 1
-                {
-                    Video = device;  // Diver 1
-                    Sensoray_codec = true;
-                    break;
-                }
-            }
-            foreach (DirectShowLib.DsDevice device in allVideoDevices)
-            {
-                //if (device.Name == "Logitech Webcam C160"             // dev/test camera Diver 2
-                if (device.Name == "Sensoray 2253 Capture A #3")       // production Sensoray Diver 2                                                                        
-                {
-                    Video1 = device;  // Diver 2
-                    Sensoray_codec = true;
-                    break;
-                }
-            }
-
-            if (!Sensoray_codec)   //Arlindo 2021
-            {
-                Thread thread = new Thread(
-                        () =>
-                        {
-                            Log("Error - No Video Encoder Detected");
-                            System.Windows.MessageBox.Show("Video Encoder Error, Please Reboot PVSS System!",
-                            "No Video Encoder Detected",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Exclamation);
-                        });
-                thread.Start();
-                System.Windows.Application.Current.Shutdown();
-            }
-
+            DebugLog("--- MainViewModel() END ---");
             _startupCompleted = true;
         }
         private void CallCleanUp(string obj)
@@ -1297,15 +1297,24 @@ namespace PVSS.ViewModel
             {
                 AlreadyShownWarningChargerOn = true;
                 Log("External Mains Power apllied to System");
-                var thread = new Thread(
-                    () =>
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    var owner = new System.Windows.Window
                     {
-                        System.Windows.MessageBox.Show("! CAUTION ! External Mains Power apllied to System." + "\n" + "      !!! Dot use when Diver is in Water !!!" + "\n" + "Use only if Grounding and RCD is present ",
-                            "* WARNING * Mains Power ON",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Exclamation);
-                    });
-                thread.Start();
+                        Topmost = true,
+                        ShowInTaskbar = false,
+                        WindowStyle = System.Windows.WindowStyle.None,
+                        Width = 0, Height = 0,
+                        Left = int.MinValue, Top = int.MinValue
+                    };
+                    owner.Show();
+                    System.Windows.MessageBox.Show(owner,
+                        "! CAUTION ! External Mains Power apllied to System." + "\n" + "      !!! Dot use when Diver is in Water !!!" + "\n" + "Use only if Grounding and RCD is present ",
+                        "* WARNING * Mains Power ON",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Exclamation);
+                    owner.Close();
+                }));
 
             }
             else if (ChargerStatus == BATTERY_CHARGER_STATUS_OFF)
@@ -1619,8 +1628,7 @@ namespace PVSS.ViewModel
             String deviceId1;
             String deviceId2;
 
-            S2253.OpenBoard(-1);
-
+            // Board was already opened by SplashScreenWindow.CheckSensorayBoard()
             // Get Board Info  try it 4 times, some MB USB ports are too slow by Arlindo 18-SET-2013
             int tries = 4;
             do
@@ -1633,10 +1641,9 @@ namespace PVSS.ViewModel
 
             S2253.GetSerialNumber(ref serial_number, 0);
             S2253.GetParam(S2253.MID2253_PARAM.MID2253_PARAM_FIRMWARE, ref param, 0, 0);
-
             S2253.GetSerialNumber(ref serial_number2, 1);
             S2253.GetParam(S2253.MID2253_PARAM.MID2253_PARAM_FIRMWARE, ref param2, 1, 0);
-            
+
             if (numDevices == 2)
             {
                 deviceId1 = "1";
@@ -1648,16 +1655,20 @@ namespace PVSS.ViewModel
                 deviceId2 = "None";
             }
 
-            BoardInfoString = String.Format("Board Info: ID:{0} SN:{1} FW:{2}", deviceId1, serial_number, param);
+            BoardInfoString  = String.Format("Board Info: ID:{0} SN:{1} FW:{2}", deviceId1, serial_number, param);
             BoardInfoString2 = String.Format("Board Info: ID:{0} SN:{1} FW:{2}", deviceId2, serial_number2, param2);
+
+            Sensoray_codec = numDevices > 0;
+
+            DebugLog(String.Format("Sensoray detected: {0} device(s)", numDevices));
+            DebugLog(String.Format("  Board 1 — ID:{0}  SN:{1}  FW:{2}", deviceId1, serial_number, param));
+            DebugLog(String.Format("  Board 2 — ID:{0}  SN:{1}  FW:{2}", deviceId2, serial_number2, param2));
 
             #region Set Board Clock
 
             DateTime startTime = new DateTime(1970, 1, 1);
             UInt32 time_t;
             S2253.MID2253CLOCK clk;
-
-            // Set the S2253 Clock
             time_t = Convert.ToUInt32((DateTime.Now - startTime).TotalSeconds);
             clk.sec = time_t;
             clk.usec = 0;
@@ -1676,83 +1687,65 @@ namespace PVSS.ViewModel
             S2253.SetLevel(Sensoray.S2253.MID2253_LEVEL_HUE, 0, 1);
 
             // Set default values for the streams
-            IsPALChecked = true;
-            IsNTSCChecked = false;
-
-            IsSDCameraChecked = true;
-         
-            IsHDCameraChecked = false;
-            
-            IsInterpolatedChecked = true;
-            
-            //Set Sensor and Water Type defaults
-            Is_10_BarG = true;
-            Is_25_BarG = false;
-            IsSeaWaterChecked = true;
-            IsFreshWaterChecked = false;
-
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                IsPALChecked = true;
+                IsNTSCChecked = false;
+                IsSDCameraChecked = true;
+                IsHDCameraChecked = false;
+                IsInterpolatedChecked = true;
+                Is_10_BarG = true;
+                Is_25_BarG = false;
+                IsSeaWaterChecked = true;
+                IsFreshWaterChecked = false;
+                AGC = true;
+                AudioGainValue = 50;
+            });
             S2253.SetVidSys(S2253.MID2253_VIDSYS.MID2253_VIDSYS_PAL, 0);
             S2253.SetPreviewType(S2253.MID2253_PREVIEWTYPE.MID2253_PREVIEWTYPE_VMR9, 0, STREAM_A);
-
             S2253.SetVidSys(S2253.MID2253_VIDSYS.MID2253_VIDSYS_PAL, 1);
             S2253.SetPreviewType(S2253.MID2253_PREVIEWTYPE.MID2253_PREVIEWTYPE_VMR9, 1, STREAM_A);
 
             S2253.SetStreamType((Int32)S2253.MID2253_STREAMTYPE.MID2253_STYPE_UYVY, 0, STREAM_A);
             S2253.SetStreamType((Int32)S2253.MID2253_STREAMTYPE.MID2253_STYPE_H264, 0, STREAM_B);
-            S2253.SetOutputMode(S2253.MID2253_OUTPUT_MODE.MID2253_OUTPUT_PASSTHRU, 0); // new by ARLINDO 14-Jan-2015  Pass Video to Output
-
+            S2253.SetOutputMode(S2253.MID2253_OUTPUT_MODE.MID2253_OUTPUT_PASSTHRU, 0);
             S2253.SetStreamType((Int32)S2253.MID2253_STREAMTYPE.MID2253_STYPE_UYVY, 1, STREAM_A);
             S2253.SetStreamType((Int32)S2253.MID2253_STREAMTYPE.MID2253_STYPE_H264, 1, STREAM_B);
-            S2253.SetOutputMode(S2253.MID2253_OUTPUT_MODE.MID2253_OUTPUT_PASSTHRU, 1); 
+            S2253.SetOutputMode(S2253.MID2253_OUTPUT_MODE.MID2253_OUTPUT_PASSTHRU, 1);
 
-            S2253.SetRecordMode(S2253.MID2253_RECMODE.MID2253_RECMODE_AV, 0, STREAM_B);  // Video + Audio
-            S2253.SetMp4Mode(S2253.MID2253_MP4MODE.MID2253_MP4MODE_STANDARD, 0, STREAM_B); // new 6.Dec.2012
-
-            S2253.SetRecordMode(S2253.MID2253_RECMODE.MID2253_RECMODE_AV, 1, STREAM_B);  
+            S2253.SetRecordMode(S2253.MID2253_RECMODE.MID2253_RECMODE_AV, 0, STREAM_B);
+            S2253.SetMp4Mode(S2253.MID2253_MP4MODE.MID2253_MP4MODE_STANDARD, 0, STREAM_B);
+            S2253.SetRecordMode(S2253.MID2253_RECMODE.MID2253_RECMODE_AV, 1, STREAM_B);
             S2253.SetMp4Mode(S2253.MID2253_MP4MODE.MID2253_MP4MODE_STANDARD, 1, STREAM_B);
 
             S2253.SetImageSize(640, 480, 0, STREAM_A);
             S2253.SetImageSize(640, 480, 0, STREAM_B);
-
             S2253.SetImageSize(640, 480, 1, STREAM_A);
             S2253.SetImageSize(640, 480, 1, STREAM_B);
 
-            S2253.SetIDR(1, 0, STREAM_B); //new at 10.SET.2013 by Arlindo (speed-up seek in play mode)
-            S2253.SetIDR(1, 1, STREAM_B); 
+            S2253.SetIDR(1, 0, STREAM_B);
+            S2253.SetIDR(1, 1, STREAM_B);
 
-            // Memory allocation for snapshots & Overlay
+            // Memory allocation for snapshots & overlay
             bufHandle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
             bufPtr = (IntPtr)bufHandle.AddrOfPinnedObject().ToInt32();
-            //OSDOption = true;
-
-
-            // AAC Audio bit rate verification
-            //S2253.MID2253_AUDIO_BITRATE bitrate = new S2253.MID2253_AUDIO_BITRATE();
-            //S2253.GetAudioBitrate(ref bitrate, 0, STREAM_B);
 
             S2253.SetAudioInput(S2253.MID2253_AUDIO_INPUT.MID2253_AUDIO_LINE, 0);
             S2253.SetAudioInput(S2253.MID2253_AUDIO_INPUT.MID2253_AUDIO_LINE, 1);
-
-
-            /* Bitrate must be 96, otherwise it will crash due to USB bandwith - Manuel/Arlindo 02/12/2015 */
+            /* Bitrate must be 96, otherwise it will crash due to USB bandwidth - Manuel/Arlindo 02/12/2015 */
             S2253.SetAudioBitrate(S2253.MID2253_AUDIO_BITRATE.MID2253_AUDBR_96, 0, STREAM_B);
             S2253.SetAudioBitrate(S2253.MID2253_AUDIO_BITRATE.MID2253_AUDBR_96, 1, STREAM_B);
 
-            AGC = true;
-            AudioGainValue = 50;
-
-            // Display mandatory strings                 
-            SetOSDStyled2(STREAM_A);  // Company
+            SetOSDStyled2(STREAM_A);
             SetOSDStyled2(STREAM_B);
-     
-            SetOSDStyledJobName(STREAM_A); // Job Name
+            SetOSDStyledJobName(STREAM_A);
             SetOSDStyledJobName(STREAM_B);
-            
-            SetOSDStyledDiverName(STREAM_A); // Diver 1 Name
+            SetOSDStyledDiverName(STREAM_A);
             SetOSDStyledDiverName(STREAM_B);
-            SetOSDStyledDiver2Name(STREAM_A); // Diver 2 Name
+            SetOSDStyledDiver2Name(STREAM_A);
             SetOSDStyledDiver2Name(STREAM_B);
 
+            DebugLog("SetupBoard: COMPLETED");
         }
 
         private void StartRecording()

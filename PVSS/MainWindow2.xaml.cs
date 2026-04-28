@@ -132,8 +132,12 @@ namespace PVSS
                 var vm = DataContext as ViewModel.MainViewModel;
                 if (vm != null && vm.OSDPopupVisibility2)
                 {
-                    this.Activate();
-                    OSDLine122.Focus();
+                    Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Input, new Action(() =>
+                    {
+                        this.Activate();
+                        OSDLine122.Focus();
+                        OSDLine122.SelectAll();
+                    }));
                 }
             }
         }
@@ -157,12 +161,9 @@ namespace PVSS
 
                     _Diver2Window.Loaded += (s, args) =>
                     {
-                        if (vm.Video1 != null)
+                        if (!string.IsNullOrEmpty(vm.Video1Name))
                         {
-                            // Use VideoCaptureSource (name string / AddFilterByName) instead of
-                            // VideoCaptureDevice (DsDevice / AddFilterByDevicePath) — the Trust
-                            // webcam's DevicePath causes AddFilterByDevicePath to silently fail.
-                            _Diver2Window.video1Element.VideoCaptureSource = vm.Video1.Name;
+                            _Diver2Window.video1Element.VideoCaptureSource = vm.Video1Name;
                             _Diver2Window.video1Element.Play();
                         }
                     };

@@ -26,26 +26,30 @@ namespace PVSS
         {
             base.OnStartup(e);
 
-            // Catch unhandled exceptions on background threads (e.g. DotSpatial.Positioning)
+            // Safe crash log — writes next to the exe, always accessible
+            string crashLog = System.IO.Path.Combine(
+                AppDomain.CurrentDomain.BaseDirectory, "crash.log");
+
             AppDomain.CurrentDomain.UnhandledException += (s, args) =>
             {
                 var ex = args.ExceptionObject as Exception;
-                // Suppress known DotSpatial NullReferenceException from DetectionThreadProc
-                if (ex is NullReferenceException && ex.StackTrace != null &&
-                    ex.StackTrace.Contains("DotSpatial.Positioning"))
-                    return;
-                // Log or show other unhandled exceptions as needed
+                string msg = ex != null ? ex.ToString() : args.ExceptionObject?.ToString();
+                System.IO.File.AppendAllText(crashLog,
+                    $"[{DateTime.Now:dd/MM/yyyy HH:mm:ss}] [UNHANDLED] {msg}{Environment.NewLine}");
             };
 
-            // Catch unhandled exceptions on the UI dispatcher
             Current.DispatcherUnhandledException += (s, args) =>
             {
-                if (args.Exception is NullReferenceException &&
-                    args.Exception.StackTrace != null &&
-                    args.Exception.StackTrace.Contains("DotSpatial.Positioning"))
-                {
-                    args.Handled = true;
-                }
+                System.IO.File.AppendAllText(crashLog,
+                    $"[{DateTime.Now:dd/MM/yyyy HH:mm:ss}] [DISPATCHER] {args.Exception}{Environment.NewLine}");
+                // Do NOT set args.Handled — let the app crash visibly so we see it
+            };
+
+            System.Threading.Tasks.TaskScheduler.UnobservedTaskException += (s, args) =>
+            {
+                System.IO.File.AppendAllText(crashLog,
+                    $"[{DateTime.Now:dd/MM/yyyy HH:mm:ss}] [TASK] {args.Exception}{Environment.NewLine}");
+                args.SetObserved();
             };
 
             // USB Hardlock check — wrapped so a missing FTChipID.dll never crashes startup.
