@@ -90,6 +90,11 @@ namespace PVSS
         {
             this.Activate(); // Ensure Monitor 1 has OS-level focus on startup
 
+            // Subscribe ViewModel F-key handler now that the window is fully loaded
+            var mainVm = DataContext as ViewModel.MainViewModel;
+            if (mainVm != null)
+                this.KeyUp += new KeyEventHandler(mainVm.MainWindow_KeyUp);
+
             if (DataContext is System.ComponentModel.INotifyPropertyChanged notifyVm)
             {
                 notifyVm.PropertyChanged += (s, args) =>

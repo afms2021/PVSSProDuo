@@ -48,16 +48,41 @@ namespace PVSS
         
         public void Window_KeyUp2(object sender, System.Windows.Input.KeyEventArgs e)
         {
+            var vm = DataContext as ViewModel.MainViewModel;
             switch (e.Key == Key.System ? e.SystemKey : e.Key)
             {
+                case Key.F1:
+                    if (vm != null) vm.IsCameraOn1 = !vm.IsCameraOn1;
+                    break;
+                case Key.F2:
+                    if (vm != null) vm.IsCameraOn2 = !vm.IsCameraOn2;
+                    break;
+                case Key.F3:
+                    if (vm != null) vm.IsRecording = !vm.IsRecording;
+                    break;
+                case Key.F4:
+                    if (vm != null) vm.IsRecording2 = !vm.IsRecording2;
+                    break;
+                case Key.F5:
+                    if (vm != null) vm.OSDPopupVisibility = !vm.OSDPopupVisibility;
+                    break;
+                case Key.F6:
+                    if (vm != null) vm.OSDPopupVisibility2 = !vm.OSDPopupVisibility2;
+                    break;
                 case Key.F7:
                     (System.Windows.Application.Current.MainWindow as MainWindow).TakeSnapshot();
                     break;
                 case Key.F8:
                     (System.Windows.Application.Current.MainWindow as MainWindow).TakeSnapshot2();
                     break;
+                case Key.F9:
+                    if (vm != null) vm.IsLightOn = !vm.IsLightOn;
+                    break;
+                case Key.F10:
+                    if (vm != null) vm.IsLightOn2 = !vm.IsLightOn2;
+                    e.Handled = true;
+                    break;
                 case Key.Enter:
-                    var vm = DataContext as ViewModel.MainViewModel;
                     if (vm != null && vm.OSDPopupVisibility2)
                     {
                         vm.OSDLine12Submitted = vm.OSDLine12;

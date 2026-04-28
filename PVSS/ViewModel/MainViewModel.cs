@@ -936,8 +936,8 @@ namespace PVSS.ViewModel
             DisplayLineTimer.Interval = TimeSpan.FromSeconds(5);
             DisplayLineTimer.Tick += new EventHandler(DisplayLineTimer_tick);
 
-            System.Windows.Application.Current.MainWindow.KeyUp += new System.Windows.Input.KeyEventHandler(MainWindow_KeyUp);
-           
+            // KeyUp is subscribed from MainWindow_Loaded in MainWindow.xaml.cs (window guaranteed to exist there)
+
             // Instruct the file system watcher to call the FileCreated method
             // when there are files created at the folder.
             if (!Directory.Exists(JobNameDiretory1))
@@ -1099,7 +1099,7 @@ namespace PVSS.ViewModel
         }
 
             
-        void MainWindow_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        public void MainWindow_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
         {
            
             switch (e.Key == Key.System ? e.SystemKey : e.Key) // due to use of "F10" a special system key
