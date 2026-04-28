@@ -148,9 +148,10 @@
             </Grid.RowDefinitions>
             <Controls:VideoCaptureElement x:Name="videoElement" VideoCaptureSource="{Binding VideoName, Mode=OneWay}" DesiredPixelWidth="640" DesiredPixelHeight="480" Volume="100"  FPS="25" RenderTransformOrigin="0,0" IsManipulationEnabled="True" Margin="10,10,10,10" ScrollViewer.VerticalScrollBarVisibility="Disabled"/>
             <oxy:Plot x:Name="plot2" Model="{Binding MyPlotModel2}" Height="Auto" Margin="50,50,25,25" Width="Auto" Background="{x:Null}" Foreground="{x:Null}" Visibility="Hidden"/>
-            <Grid x:Name="grid" Height="82" VerticalAlignment="Center" Margin="185,0,185,0" Background="#80333333" Visibility="Hidden">
+            <Grid x:Name="grid" Height="82" VerticalAlignment="Center" Margin="185,0,185,0" Background="#80333333">
                 <Grid.Style>
                     <Style TargetType="Grid">
+                        <Setter Property="Visibility" Value="Hidden"/>
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding OSDPopupVisibility}" Value="True">
                                 <Setter Property="Visibility" Value="Visible"/>
