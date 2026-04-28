@@ -288,13 +288,35 @@ namespace PCComm
 
         public List<string> GetPortNames()
         {
-
             List<string> result = new List<string>();
-            foreach (var item in SerialPort.GetPortNames())
+
+            // Use registry enumeration — more reliable than SerialPort.GetPortNames()
+            // which can miss virtual/USB COM ports on some systems.
+            try
             {
-                result.Add(item);
+                using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"HARDWARE\DEVICEMAP\SERIALCOMM"))
+                {
+                    if (key != null)
+                    {
+                        foreach (var valueName in key.GetValueNames())
+                        {
+                            var port = key.GetValue(valueName) as string;
+                            if (!string.IsNullOrEmpty(port))
+                                result.Add(port);
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            // Fallback to standard enumeration if registry returned nothing
+            if (result.Count == 0)
+            {
+                foreach (var item in SerialPort.GetPortNames())
+                    result.Add(item);
             }
 
+            result.Sort();
             return result;
         }
 
