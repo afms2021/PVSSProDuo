@@ -327,7 +327,10 @@
                     <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" HorizontalAlignment="Left" Height="132" Margin="4,20,0,0" VerticalAlignment="Top" Width="207"/>
                     <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" HorizontalAlignment="Left" Height="61" Margin="173,166,0,0" VerticalAlignment="Top" Width="154"/>
                     <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" Margin="216,94,4,135">
-                        <TextBlock Margin="0,7,19,9" TextWrapping="Wrap" Foreground="White" FontFamily="Segoe UI Light" Text="{Binding TemperatureStatus, StringFormat=\{0:F1\} ºC}" HorizontalAlignment="Right" Width="53" TextAlignment="Center"/>
+                        <StackPanel Margin="2,4,4,4" HorizontalAlignment="Right">
+                            <TextBlock TextWrapping="Wrap" Foreground="White" FontFamily="Segoe UI Light" Text="{Binding TemperatureStatus, StringFormat=\{0:F1\} ºC}" HorizontalAlignment="Right" TextAlignment="Center"/>
+                            <TextBlock TextWrapping="Wrap" Foreground="#AAAAAA" FontFamily="Segoe UI Light" FontSize="9" Text="{Binding TemperatureSource}" HorizontalAlignment="Right" TextAlignment="Center"/>
+                        </StackPanel>
                     </Border>
                     <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" Height="22" Margin="3,242,164,0" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5"/>
                     <CheckBox Content="Interpolated" IsEnabled="{Binding SuppressEditing}" HorizontalAlignment="Left" Margin="205,243,0,8" Foreground="White" FontFamily="Segoe UI Light" FontSize="12" IsChecked="{Binding IsInterpolatedChecked}" Width="95" Opacity="0.4" Visibility="Hidden"/>
@@ -339,7 +342,10 @@
                 <StackPanel Background="#FF333333">
                     <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Bottom" Foreground="White" Text="{Binding FreeDiskSpace_GB, StringFormat=Available Disk Space: \{0\} GB}" Margin="8,0,0,0" FontWeight="Bold"/>
                     <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Bottom" Foreground="White" Text="{Binding AvailableVideoTime_Hours, StringFormat=Available Recording Time: \{0\} h}" Margin="8,0,0,0" FontWeight="Bold" />
-                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Bottom" Foreground="White" Text="{Binding TemperatureStatus, StringFormat=Internal Temperature: \{0\} ºC}" Margin="8,0,0,0" FontWeight="Bold"/>
+                    <StackPanel Orientation="Horizontal" Margin="8,0,0,0">
+                        <TextBlock TextWrapping="Wrap" VerticalAlignment="Bottom" Foreground="White" Text="{Binding TemperatureStatus, StringFormat=Internal Temperature: \{0\} ºC}" FontWeight="Bold"/>
+                        <TextBlock TextWrapping="Wrap" VerticalAlignment="Bottom" Foreground="#AAAAAA" Text="{Binding TemperatureSource, StringFormat= (\{0\})}" FontWeight="Bold"/>
+                    </StackPanel>
                     <TextBlock TextWrapping="Wrap" Foreground="White" Text="{Binding BoardInfoString}" Margin="8,0,10,0" FontWeight="Bold" />
                     <TextBlock TextWrapping="Wrap" Foreground="White" Text="{Binding BoardInfoString2}" Margin="8,0,10,0" FontWeight="Bold" />
                     <TextBlock TextWrapping="Wrap" Foreground="White" Text="{Binding DLLVersion, StringFormat=DLL: \{0\}}" Margin="8,0,0,0" FontWeight="Bold" Height="85" HorizontalAlignment="Left" Width="320"/>

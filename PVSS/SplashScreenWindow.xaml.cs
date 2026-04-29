@@ -105,8 +105,14 @@ namespace PVSS
 
             // ── 2. Sensoray S2253 Board ──────────────────────────────────── //
             SetProgress(++step, TOTAL_STEPS, "Waiting for Sensoray S2253 board…");
+#if DEBUG
+            // DEBUG: dev machine has no S2253 — bypass hardware check entirely
+            bool sensorayOk = true;
+            UpdateItem(IDX_SENSORAY, CheckItem.Warn("Sensoray S2253 — DEBUG mode (bypassed)"));
+#else
             bool sensorayOk = await Task.Run(() => CheckSensorayBoard());
             UpdateItem(IDX_SENSORAY, sensorayOk ? CheckItem.OK("Sensoray S2253") : CheckItem.Fail("Sensoray S2253 — not detected"));
+#endif
 
             // ── 3. Drive D: ──────────────────────────────────────────────── //
             SetProgress(++step, TOTAL_STEPS, "Checking Drive D:\\…");
@@ -168,7 +174,12 @@ namespace PVSS
             // ── Final ────────────────────────────────────────────────────── //
             bool anyDriveMissing = !driveDExists || !driveEExists;
             bool noComPorts      = comResult == ComPortResult.NoPorts;
+#if DEBUG
+            // DEBUG: bypass all hardware requirements on dev machine
+            bool canStart        = true;
+#else
             bool canStart        = sensorayOk && !anyDriveMissing && !noComPorts;
+#endif
 
             SetProgress(TOTAL_STEPS, TOTAL_STEPS, canStart ? "Ready!" : "Cannot start — check warnings below.");
             await Task.Delay(600);
@@ -352,8 +363,14 @@ namespace PVSS
             {
                 DriveWarningText.Text = message;
                 DriveWarningText.Visibility = Visibility.Visible;
+                CloseButton.Visibility = Visibility.Visible;
                 StatusText.Text = "Application cannot start. Fix the issue(s) above and restart.";
             });
+        }
+
+        private void CloseButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            System.Windows.Application.Current.Shutdown();
         }
 
         private void ShowComMismatchWarning(string message)

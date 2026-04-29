@@ -365,7 +365,7 @@ namespace PVSS.ViewModel
                     _dive1StartLogged = true;
                     _dive1StopLogged = false;
                     Log("Start Recording 1");
-                    Log("Start Dive - Internal Temperature: " + TemperatureStatus.ToString("00") + " ºC");
+                    Log("Start Dive - Drive Temperature: " + TemperatureStatus.ToString("F1") + " ºC (" + TemperatureSource + ")");
                     Log("Start Diving Depth 1 was: " + Depth1 + " m");
                     Log("Start Dive Profile Chart 1");
                 }
@@ -395,7 +395,7 @@ namespace PVSS.ViewModel
                     _dive1StopLogged = true;
                     _dive1StartLogged = false;
                     Log("Stop Recording 1");
-                    Log("End Dive - Internal Temperature: " + TemperatureStatus.ToString("00") + " ºC");
+                    Log("End Dive - Drive Temperature: " + TemperatureStatus.ToString("F1") + " ºC (" + TemperatureSource + ")");
                     Log("Maximum Depth 1 was: " + MaxDepthValue1 + " m");
                     Log("Ended Dive Depth 1 was: " + Depth1 + " m");
                     Log("Save Dive Profile Chart 1" + "\r\n");
@@ -493,7 +493,7 @@ namespace PVSS.ViewModel
                     _dive2StartLogged = true;
                     _dive2StopLogged = false;
                     Log("Start Recording 2");
-                    Log("Start Dive - Internal Temperature: " + TemperatureStatus.ToString("00") + " ºC");
+                    Log("Start Dive - Drive Temperature: " + TemperatureStatus.ToString("F1") + " ºC (" + TemperatureSource + ")");
                     Log("Start Diving Depth 2 was: " + Depth2 + " m");
                     Log("Start Dive Profile Chart 2");
                 }
@@ -526,7 +526,7 @@ namespace PVSS.ViewModel
                     _dive2StopLogged = true;
                     _dive2StartLogged = false;
                     Log("Stop Recording 2");
-                    Log("End Dive - Internal Temperature: " + TemperatureStatus.ToString("00") + " ºC");
+                    Log("End Dive - Drive Temperature: " + TemperatureStatus.ToString("F1") + " ºC (" + TemperatureSource + ")");
                     Log("Maximum Depth 2 was: " + MaxDepthValue2 + " m");
                     Log("Ended Dive Depth 2 was: " + Depth2 + " m");
                     Log("Save Dive Profile Chart 2" + "\r\n");
@@ -557,8 +557,10 @@ namespace PVSS.ViewModel
                     DebugLog(name + ": TIMED OUT after " + timeoutMs + "ms — skipped");
                 else if (t.IsFaulted)
                     DebugLog(name + ": EXCEPTION: " + t.Exception?.GetBaseException().Message);
+#if DEBUG
                 else
                     DebugLog(name + ": OK");
+#endif
             }
             catch (Exception ex)
             {
@@ -844,7 +846,9 @@ namespace PVSS.ViewModel
         /// </summary>
         public MainViewModel()
         {
+#if DEBUG
             DebugLog("--- MainViewModel() START ---");
+#endif
             Messenger.Default.Register<string>(this, CallCleanUp);
 
             StatusMessage = "Stopped - F3 REC";
@@ -870,15 +874,18 @@ namespace PVSS.ViewModel
 
             FileVersionInfo myFileVersionInfo = FileVersionInfo.GetVersionInfo(@"mid2253.dll");
             DLLVersion = myFileVersionInfo.FileVersion;
+#if DEBUG
             DebugLog("DLL version: " + DLLVersion);
+#endif
 
             //Just used to get all the COM Ports available
-            DebugLog("Waiting for COM ports...");
             Thread.Sleep(2000); // Arlindo NOV 2021 Wait till all COM ports come up
 
             CommunicationManager c = new CommunicationManager();
             COMPortsList = c.GetPortNames();
+#if DEBUG
             DebugLog("COM ports found: " + string.Join(", ", COMPortsList));
+#endif
 
             // If the saved COM port is not in the available list, auto-select the first available one
             if (COMPortsList.Count > 0 && !COMPortsList.Contains(COMPortListSelectedItem))
@@ -887,14 +894,17 @@ namespace PVSS.ViewModel
             }
 
             //Used to start the application with telemetry already on
-            DebugLog("Starting COM port / telemetry...");
             COMPortIsEnabled = true;
             ExecuteStartOrStopCOMPortMethod();
-            DebugLog("COM port started");
 
             SetupBoard();
-            DebugLog("SetupBoard() done");
 
+#if DEBUG
+            if (!Sensoray_codec)   // DEBUG: no Sensoray — continue without hardware encoder
+            {
+                DebugLog("DEBUG: No Sensoray codec — running in USB camera mode");
+            }
+#else
             if (!Sensoray_codec)   //Arlindo 2021
             {
                 Thread thread = new Thread(
@@ -909,6 +919,7 @@ namespace PVSS.ViewModel
                 thread.Start();
                 System.Windows.Application.Current.Shutdown();
             }
+#endif
 
             // Updates Dive time
             DivingTimer1.Interval = TimeSpan.FromSeconds(1);
@@ -1000,14 +1011,47 @@ namespace PVSS.ViewModel
 
             SetupCharting();
             SetupCharting2();
-            DebugLog("Charting setup done");
 
             // Board was already validated and opened in SetupBoard() — set device names directly.
+#if DEBUG
+            if (!Sensoray_codec)
+            {
+                // Use first available USB/webcam capture device on the dev machine
+                try
+                {
+                    var usbDevices = WPFMediaKit.DirectShow.Controls.MultimediaUtil.VideoInputDevices;
+                    if (usbDevices != null)
+                        foreach (var d in usbDevices) DebugLog("  Available camera: " + d.Name);
+
+                    // Diver 1 camera — first USB device
+                    VideoName  = (usbDevices != null && usbDevices.Length > 0) ? usbDevices[0].Name : "";
+                    // Diver 2 camera — second USB device (falls back to first if only one camera)
+                    Video1Name = (usbDevices != null && usbDevices.Length > 1) ? usbDevices[1].Name
+                               : (usbDevices != null && usbDevices.Length > 0) ? usbDevices[0].Name : "";
+
+                    DebugLog("DEBUG: Diver 1 camera: " + VideoName);
+                    DebugLog("DEBUG: Diver 2 camera: " + Video1Name);
+                }
+                catch (Exception ex)
+                {
+                    VideoName  = "";
+                    Video1Name = "";
+                    DebugLog("DEBUG: could not enumerate video devices: " + ex.Message);
+                }
+            }
+            else
+            {
+                VideoName  = "Sensoray 2253 Capture A";
+                Video1Name = "Sensoray 2253 Capture A #3";
+            }
+#else
             VideoName  = "Sensoray 2253 Capture A";
             Video1Name = "Sensoray 2253 Capture A #3";
+#endif
+#if DEBUG
             DebugLog("Video device names set");
-
             DebugLog("--- MainViewModel() END ---");
+#endif
             _startupCompleted = true;
         }
         private void CallCleanUp(string obj)
@@ -1027,7 +1071,121 @@ namespace PVSS.ViewModel
                 }
             }
 
-            // Read CPU/Motherboard temperature via WMI (MSAcpi_ThermalZoneTemperature)
+#if DEBUG
+            // One-shot: dump every storage device and its raw temperature to crash.log
+            if (!_tempDiagDone)
+            {
+                _tempDiagDone = true;
+                Task.Run(() =>
+                {
+                    try
+                    {
+                        DebugLog("=== STORAGE TEMPERATURE DIAGNOSTIC ===");
+
+                        // --- Path 1: SMART attribute 194/190 via MSStorageDriver_ATAPISmartData ---
+                        try
+                        {
+                            using (var s = new System.Management.ManagementObjectSearcher(
+                                @"root\WMI",
+                                "SELECT InstanceName, VendorSpecific FROM MSStorageDriver_ATAPISmartData"))
+                            {
+                                int rows = 0;
+                                foreach (System.Management.ManagementObject obj in s.Get())
+                                {
+                                    rows++;
+                                    string inst = obj["InstanceName"]?.ToString() ?? "?";
+                                    byte[] data = obj["VendorSpecific"] as byte[];
+                                    double temp = double.MinValue;
+                                    if (data != null)
+                                    {
+                                        for (int i = 0; i < 30; i++)
+                                        {
+                                            int off = 2 + i * 12;
+                                            if (off + 11 >= data.Length) break;
+                                            byte id = data[off];
+                                            if (id == 0) break;
+                                            if (id == 194 || id == 190)
+                                            { temp = data[off + 5]; break; }
+                                        }
+                                    }
+                                    string tStr = temp == double.MinValue ? "attr 194/190 not found" : temp + " °C";
+                                    DebugLog($"  [SMART] {inst} → Temp: {tStr}");
+                                }
+                                if (rows == 0) DebugLog("  [SMART] no rows returned (access denied or no SATA drives)");
+                            }
+                        }
+                        catch (Exception ex) { DebugLog("  [SMART] failed: " + ex.Message); }
+
+                        // --- Path 2: MSFT_PhysicalDisk (enumerate drives) ---
+                        try
+                        {
+                            using (var s = new System.Management.ManagementObjectSearcher(
+                                @"root\Microsoft\Windows\Storage",
+                                "SELECT DeviceId, FriendlyName, MediaType FROM MSFT_PhysicalDisk"))
+                            {
+                                int rows = 0;
+                                foreach (System.Management.ManagementObject obj in s.Get())
+                                {
+                                    rows++;
+                                    string id    = obj["DeviceId"]?.ToString() ?? "?";
+                                    string fname = obj["FriendlyName"]?.ToString() ?? "?";
+                                    string media = obj["MediaType"]?.ToString() ?? "?"; // 3=HDD 4=SSD 5=SCM
+                                    DebugLog($"  [PhysicalDisk] ID:{id} Name:{fname} MediaType:{media}");
+                                }
+                                if (rows == 0) DebugLog("  [PhysicalDisk] no rows returned");
+                            }
+                        }
+                        catch (Exception ex) { DebugLog("  [PhysicalDisk] failed: " + ex.Message); }
+
+                        // --- Path 3: Win32_DiskDrive (always available) ---
+                        try
+                        {
+                            using (var s = new System.Management.ManagementObjectSearcher(
+                                "SELECT DeviceID, Model, Size FROM Win32_DiskDrive"))
+                            {
+                                int rows = 0;
+                                foreach (System.Management.ManagementObject obj in s.Get())
+                                {
+                                    rows++;
+                                    string id    = obj["DeviceID"]?.ToString() ?? "?";
+                                    string model = obj["Model"]?.ToString()    ?? "?";
+                                    string size  = obj["Size"]?.ToString()     ?? "?";
+                                    DebugLog($"  [Win32_DiskDrive] ID:{id} Model:{model} Size:{size}");
+                                }
+                                if (rows == 0) DebugLog("  [Win32_DiskDrive] no rows returned");
+                            }
+                        }
+                        catch (Exception ex) { DebugLog("  [Win32_DiskDrive] failed: " + ex.Message); }
+
+                        // --- Path 4: MSAcpi_ThermalZoneTemperature ---
+                        try
+                        {
+                            using (var s = new System.Management.ManagementObjectSearcher(
+                                @"root\WMI",
+                                "SELECT InstanceName, CurrentTemperature FROM MSAcpi_ThermalZoneTemperature"))
+                            {
+                                int rows = 0;
+                                foreach (System.Management.ManagementObject obj in s.Get())
+                                {
+                                    rows++;
+                                    string name = obj["InstanceName"]?.ToString() ?? "?";
+                                    double raw  = System.Convert.ToDouble(obj["CurrentTemperature"]);
+                                    double c    = Math.Round((raw / 10.0) - 273.15, 1);
+                                    DebugLog($"  [ThermalZone] {name} = {c} °C");
+                                }
+                                if (rows == 0) DebugLog("  [ThermalZone] no rows returned");
+                            }
+                        }
+                        catch (Exception ex) { DebugLog("  [ThermalZone] failed: " + ex.Message); }
+
+                        DebugLog("=== END STORAGE DIAGNOSTIC ===");
+                    }
+                    catch (Exception ex) { DebugLog("Storage diagnostic failed: " + ex.Message); }
+                });
+            }
+#endif
+
+            // Read CPU/Motherboard/SSD temperature via WMI (MSAcpi_ThermalZoneTemperature)
             try
             {
                 var temps = Temperature.Temperatures;
@@ -1036,44 +1194,49 @@ namespace PVSS.ViewModel
                     TemperatureStatus = (float)temps[0].CurrentValue;
                     string tempStr = TemperatureStatus.ToString("00");
 
-                    // Critical: > 55 ºC  (ambient/chassis thermal zone — not CPU core)
-                    if (TemperatureStatus > 55 && !AlreadyShownCriticalOverTemperature)
+                    // Show source label: "SSD" when reading from storage, "MB" for thermal zone
+                    string instanceName = temps[0].InstanceName ?? "";
+                    TemperatureSource = instanceName.StartsWith("SSD", StringComparison.OrdinalIgnoreCase)
+                        ? "SSD" : "MB";
+
+                    // Critical: > 65 ºC  (SMART drive temperature — SSD/HDD)
+                    if (TemperatureStatus > 65 && !AlreadyShownCriticalOverTemperature)
                     {
                         AlreadyShownCriticalOverTemperature = true;
-                        Log("CRITICAL Ambient Over Temperature at: " + tempStr + " ºC");
+                        Log("CRITICAL Drive Over Temperature at: " + tempStr + " ºC");
                         Thread tcrit = new Thread(() =>
                         {
                             System.Windows.MessageBox.Show(
-                                "  CRITICAL Ambient Temperature at " + tempStr + " ºC !!!\n" +
+                                "  CRITICAL Drive Temperature at " + tempStr + " ºC !!!\n" +
                                 " !! Check system ventilation and cooling immediately !! ",
-                                "* CRITICAL * Ambient Temperature",
+                                "* CRITICAL * Drive Temperature",
                                 MessageBoxButton.OK,
                                 MessageBoxImage.Error);
                         });
                         tcrit.Start();
                     }
-                    else if (TemperatureStatus <= 50)
+                    else if (TemperatureStatus <= 58)
                     {
                         AlreadyShownCriticalOverTemperature = false; // re-arm once cooled
                     }
 
-                    // Warning: > 45 ºC
-                    if (TemperatureStatus > 45 && !AlreadyShownWarningOverTemperature)
+                    // Warning: > 55 ºC
+                    if (TemperatureStatus > 55 && !AlreadyShownWarningOverTemperature)
                     {
                         AlreadyShownWarningOverTemperature = true;
-                        Log("Warning Ambient Over Temperature at: " + tempStr + " ºC");
+                        Log("Warning Drive Over Temperature at: " + tempStr + " ºC");
                         Thread twarn = new Thread(() =>
                         {
                             System.Windows.MessageBox.Show(
-                                "  Ambient Temperature at " + tempStr + " ºC, too High\n" +
+                                "  Drive Temperature at " + tempStr + " ºC, too High\n" +
                                 " !! Check system ventilation !! ",
-                                "* WARNING * Ambient Temperature",
+                                "* WARNING * Drive Temperature",
                                 MessageBoxButton.OK,
                                 MessageBoxImage.Warning);
                         });
                         twarn.Start();
                     }
-                    else if (TemperatureStatus <= 40)
+                    else if (TemperatureStatus <= 48)
                     {
                         AlreadyShownWarningOverTemperature = false; // re-arm once cooled down
                     }
@@ -1163,8 +1326,11 @@ namespace PVSS.ViewModel
        
         // Just because we are using PRODIVING telemetry
         private bool AlreadyShownWarningChargerOn = false; // Power Line Warning Always on
-        private bool AlreadyShownWarningOverTemperature = false;   // CPU Warning  > 70 ºC
-        private bool AlreadyShownCriticalOverTemperature = false;   // CPU Critical > 85 ºC
+        private bool AlreadyShownWarningOverTemperature = false;   // Drive Warning  > 55 ºC
+        private bool AlreadyShownCriticalOverTemperature = false;   // Drive Critical > 65 ºC
+#if DEBUG
+        private bool _tempDiagDone = false; // one-shot storage temperature diagnostic
+#endif
 
         // Calculate Checksum of incoming string to check if is valid
         public static string GetChecksum(string sentence)
@@ -1630,6 +1796,28 @@ namespace PVSS.ViewModel
 
             // Board was already opened by SplashScreenWindow.CheckSensorayBoard()
             // Get Board Info  try it 4 times, some MB USB ports are too slow by Arlindo 18-SET-2013
+#if DEBUG
+            // DEBUG: attempt to detect board but do not block startup if absent
+            try
+            {
+                int tries = 4;
+                do
+                {
+                    S2253.GetNumDevices(ref numDevices);
+                    Thread.Sleep(100);
+                    tries--;
+                }
+                while (numDevices < 1 && tries > 0);
+            }
+            catch { numDevices = 0; }
+
+            if (numDevices == 0)
+            {
+                Sensoray_codec = false;
+                DebugLog("SetupBoard: no Sensoray detected — DEBUG mode, skipping board configuration");
+                return;
+            }
+#else
             int tries = 4;
             do
             {
@@ -1638,6 +1826,7 @@ namespace PVSS.ViewModel
                 tries--;
             }
             while (numDevices < 1 && tries > 0);
+#endif
 
             S2253.GetSerialNumber(ref serial_number, 0);
             S2253.GetParam(S2253.MID2253_PARAM.MID2253_PARAM_FIRMWARE, ref param, 0, 0);
@@ -1659,10 +1848,11 @@ namespace PVSS.ViewModel
             BoardInfoString2 = String.Format("Board Info: ID:{0} SN:{1} FW:{2}", deviceId2, serial_number2, param2);
 
             Sensoray_codec = numDevices > 0;
-
+#if DEBUG
             DebugLog(String.Format("Sensoray detected: {0} device(s)", numDevices));
             DebugLog(String.Format("  Board 1 — ID:{0}  SN:{1}  FW:{2}", deviceId1, serial_number, param));
             DebugLog(String.Format("  Board 2 — ID:{0}  SN:{1}  FW:{2}", deviceId2, serial_number2, param2));
+#endif
 
             #region Set Board Clock
 
@@ -1744,8 +1934,9 @@ namespace PVSS.ViewModel
             SetOSDStyledDiverName(STREAM_B);
             SetOSDStyledDiver2Name(STREAM_A);
             SetOSDStyledDiver2Name(STREAM_B);
-
+#if DEBUG
             DebugLog("SetupBoard: COMPLETED");
+#endif
         }
 
         private void StartRecording()
@@ -4266,6 +4457,19 @@ namespace PVSS.ViewModel
         public const string TemperatureStatusPropertyName = "TemperatureStatus";
 
         private float _temperature = 0f;
+
+        private string _temperatureSource = "";
+        /// <summary>"SSD" when reading from storage reliability counter, "MB" for ACPI thermal zone.</summary>
+        public string TemperatureSource
+        {
+            get { return _temperatureSource; }
+            set
+            {
+                if (_temperatureSource == value) return;
+                _temperatureSource = value;
+                RaisePropertyChanged(nameof(TemperatureSource));
+            }
+        }
 
         /// <summary>
         /// Sets and gets the TemperatureStatus property.

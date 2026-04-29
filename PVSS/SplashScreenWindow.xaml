@@ -131,14 +131,26 @@
                            Margin="0,6,0,0"/>
 
                 <!-- ===== DRIVE WARNING ===== -->
-                <TextBlock x:Name="DriveWarningText" Grid.Row="6"
-                           Text=""
-                           FontSize="10" Foreground="#FF4444"
-                           FontFamily="Segoe UI" FontWeight="SemiBold"
-                           HorizontalAlignment="Center"
-                           TextWrapping="Wrap" TextAlignment="Center"
-                           Margin="16,4,16,0"
-                           Visibility="Collapsed"/>
+                <StackPanel Grid.Row="6" HorizontalAlignment="Center">
+                    <TextBlock x:Name="DriveWarningText"
+                               Text=""
+                               FontSize="10" Foreground="#FF4444"
+                               FontFamily="Segoe UI" FontWeight="SemiBold"
+                               HorizontalAlignment="Center"
+                               TextWrapping="Wrap" TextAlignment="Center"
+                               Margin="16,4,16,0"
+                               Visibility="Collapsed"/>
+                    <Button x:Name="CloseButton"
+                            Content="Close"
+                            Visibility="Collapsed"
+                            Margin="0,8,0,0"
+                            Padding="24,5"
+                            FontSize="10" FontFamily="Segoe UI"
+                            Background="#8B1A1A" Foreground="White"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Click="CloseButton_Click"/>
+                </StackPanel>
             </Grid>
 
             <!-- Version watermark -->
