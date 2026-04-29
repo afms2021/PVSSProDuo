@@ -364,10 +364,10 @@ namespace PVSS.ViewModel
                 {
                     _dive1StartLogged = true;
                     _dive1StopLogged = false;
-                    Log("Start Recording 1");
+                    Log("Start Recording - " + DiverName);
                     Log("Start Dive - Drive Temperature: " + TemperatureStatus.ToString("F1") + " ºC (" + TemperatureSource + ")");
-                    Log("Start Diving Depth 1 was: " + Depth1 + " m");
-                    Log("Start Dive Profile Chart 1");
+                    Log("Start Diving Depth - " + DiverName + " was: " + Depth1 + " m");
+                    Log("Start Dive Profile Chart - " + DiverName);
                 }
             }
             else
@@ -394,11 +394,11 @@ namespace PVSS.ViewModel
                 {
                     _dive1StopLogged = true;
                     _dive1StartLogged = false;
-                    Log("Stop Recording 1");
+                    Log("Stop Recording - " + DiverName);
                     Log("End Dive - Drive Temperature: " + TemperatureStatus.ToString("F1") + " ºC (" + TemperatureSource + ")");
-                    Log("Maximum Depth 1 was: " + MaxDepthValue1 + " m");
-                    Log("Ended Dive Depth 1 was: " + Depth1 + " m");
-                    Log("Save Dive Profile Chart 1" + "\r\n");
+                    Log("Maximum Depth - " + DiverName + " was: " + MaxDepthValue1 + " m");
+                    Log("Ended Dive Depth - " + DiverName + " was: " + Depth1 + " m");
+                    Log("Save Dive Profile Chart - " + DiverName + "\r\n");
                 }
                 StatusMessage = "Stopped - F3 REC";
 
@@ -492,10 +492,10 @@ namespace PVSS.ViewModel
                 {
                     _dive2StartLogged = true;
                     _dive2StopLogged = false;
-                    Log("Start Recording 2");
+                    Log("Start Recording - " + Diver2Name);
                     Log("Start Dive - Drive Temperature: " + TemperatureStatus.ToString("F1") + " ºC (" + TemperatureSource + ")");
-                    Log("Start Diving Depth 2 was: " + Depth2 + " m");
-                    Log("Start Dive Profile Chart 2");
+                    Log("Start Diving Depth - " + Diver2Name + " was: " + Depth2 + " m");
+                    Log("Start Dive Profile Chart - " + Diver2Name);
                 }
             }
             else
@@ -525,11 +525,11 @@ namespace PVSS.ViewModel
                 {
                     _dive2StopLogged = true;
                     _dive2StartLogged = false;
-                    Log("Stop Recording 2");
+                    Log("Stop Recording - " + Diver2Name);
                     Log("End Dive - Drive Temperature: " + TemperatureStatus.ToString("F1") + " ºC (" + TemperatureSource + ")");
-                    Log("Maximum Depth 2 was: " + MaxDepthValue2 + " m");
-                    Log("Ended Dive Depth 2 was: " + Depth2 + " m");
-                    Log("Save Dive Profile Chart 2" + "\r\n");
+                    Log("Maximum Depth - " + Diver2Name + " was: " + MaxDepthValue2 + " m");
+                    Log("Ended Dive Depth - " + Diver2Name + " was: " + Depth2 + " m");
+                    Log("Save Dive Profile Chart - " + Diver2Name + "\r\n");
                 }
                 StatusMessage2 = "Stopped - F4 REC";
 
@@ -2018,7 +2018,7 @@ namespace PVSS.ViewModel
                           "*** WARNING ***",
                           MessageBoxButton.OK,
                           MessageBoxImage.Warning); // file existe but is empty
-                Log("Diver 1 Video File is Empty or Severe Corruted");
+                Log(DiverName + " Video File is Empty or Severe Corruted");
             }
         }
 
@@ -2033,7 +2033,7 @@ namespace PVSS.ViewModel
                           "*** WARNING ***",
                           MessageBoxButton.OK,
                           MessageBoxImage.Warning); // file existe but is empty
-                Log("Diver 2 Video File is Empty or Severe Corruted");
+                Log(Diver2Name + " Video File is Empty or Severe Corruted");
             }
         }
 
@@ -4942,7 +4942,7 @@ namespace PVSS.ViewModel
 
             });
 
-            MyPlotModel2.Title = "DIVER 1 DEPTH PROFILE";
+            MyPlotModel2.Title = DiverName.ToUpper() + " DEPTH PROFILE";
 
             MyPlotModel2.Axes.Add(new TimeSpanAxis(AxisPosition.Bottom, "Time (hh:mm:ss)", "hh:mm:ss"));
             MyPlotModel2.Axes.Add(new LinearAxis(AxisPosition.Left, "Depth (m)"));
@@ -5004,7 +5004,7 @@ namespace PVSS.ViewModel
 
             });
 
-            MyPlotModel22.Title = "DIVER 2 DEPTH PROFILE";
+            MyPlotModel22.Title = Diver2Name.ToUpper() + " DEPTH PROFILE";
 
             MyPlotModel22.Axes.Add(new TimeSpanAxis(AxisPosition.Bottom, "Time (hh:mm:ss)", "hh:mm:ss"));
             MyPlotModel22.Axes.Add(new LinearAxis(AxisPosition.Left, "Depth (m)"));
@@ -5667,8 +5667,8 @@ namespace PVSS.ViewModel
                     _Chart1_saved = true;
                 }
 
-                Log("Stop Recording 1 (shutdown)");
-                Log("Maximum Depth was: " + MaxDepthValue1 + " m");
+                Log("Stop Recording - " + DiverName + " (shutdown)");
+                Log("Maximum Depth - " + DiverName + " was: " + MaxDepthValue1 + " m");
                 StatusMessage = "Stopped - F3 REC";
                 DivingTimer1.Stop();
 
@@ -5723,8 +5723,8 @@ namespace PVSS.ViewModel
                 {
                     _dive2StopLogged = true;
                     _dive2StartLogged = false;
-                    Log("Stop Recording 2 (Diver2 window closed)");
-                    Log("Maximum Depth 2 was: " + MaxDepthValue2 + " m");
+                    Log("Stop Recording - " + Diver2Name + " (window closed)");
+                    Log("Maximum Depth - " + Diver2Name + " was: " + MaxDepthValue2 + " m");
                 }
                 StatusMessage2 = "Stopped - F4 REC";
                 DivingTimer2.Stop();
