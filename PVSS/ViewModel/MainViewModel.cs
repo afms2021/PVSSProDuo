@@ -100,6 +100,8 @@ namespace PVSS.ViewModel
     {
         public string JobNameDiretory1 = "D:\\PVSS DUO PRO 1";
         public string JobNameDiretory2 = "F:\\PVSS DUO PRO 2";
+        // Holds the original typed job name for OSD display (no date suffix)
+        private string _JobNameOSD = Properties.Settings.Default.JobNameText;
         public string VideoDirectoryPath1 = "D:\\PVSS DUO PRO 1" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos1";
         public string VideoDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos2";
         public string SnapshotsDirectoryPath1 = "D:\\PVSS DUO PRO 1" + "\\" + Properties.Settings.Default.JobNameText + "\\Snapshots1";
@@ -328,8 +330,14 @@ namespace PVSS.ViewModel
             }
         }
 
+        private bool _isRecordingBusy = false;  // re-entrancy guard for Diver 1 toggle
+
         private void ExecuteExecuteStartOrStopRecording()
         {
+            if (_isRecordingBusy) return;
+            _isRecordingBusy = true;
+            try
+            {
             if (IsRecording)
             {
 
@@ -407,7 +415,19 @@ namespace PVSS.ViewModel
                 string fullPathToSound = Path.GetFullPath(@"Stop_Rec.wav");
                 try { var simpleSound = new SoundPlayer(fullPathToSound); simpleSound.Play(); } catch { }
             }
-
+            } // end try
+            catch (Exception ex)
+            {
+                // Reset toggle so the user can retry — prevents the button getting stuck
+                _isRecording = false;
+                RaisePropertyChanged(IsRecordingPropertyName);
+                StatusMessage = "Error - F3 REC";
+                DebugLog("ExecuteStartOrStopRecording FAILED: " + ex.Message);
+            }
+            finally
+            {
+                _isRecordingBusy = false;
+            }
         }
 
         /// <summary>
@@ -453,8 +473,14 @@ namespace PVSS.ViewModel
             }
         }
 
+        private bool _isRecordingBusy2 = false;  // re-entrancy guard for Diver 2 toggle
+
         private void ExecuteExecuteStartOrStopRecording2()
         {
+            if (_isRecordingBusy2) return;
+            _isRecordingBusy2 = true;
+            try
+            {
             if (IsRecording2)
             {
                 SetOSDStyledREC2(STREAM_A);
@@ -538,7 +564,19 @@ namespace PVSS.ViewModel
                 string fullPathToSound = Path.GetFullPath(@"Stop_Rec.wav");
                 try { var simpleSound = new SoundPlayer(fullPathToSound); simpleSound.Play(); } catch { }
             }
-
+            } // end try
+            catch (Exception ex)
+            {
+                // Reset toggle so the user can retry — prevents the button getting stuck
+                _isRecording2 = false;
+                RaisePropertyChanged(IsRecordingPropertyName2);
+                StatusMessage2 = "Error - F4 REC";
+                DebugLog("ExecuteStartOrStopRecording2 FAILED: " + ex.Message);
+            }
+            finally
+            {
+                _isRecordingBusy2 = false;
+            }
         }
         #region Log File 
         /// <summary>
@@ -583,10 +621,17 @@ namespace PVSS.ViewModel
         public void Log(string logMessage)
         {
             LogPath = "D:\\PVSS DUO PRO 1" + "\\" + Properties.Settings.Default.JobNameText + "\\log.txt";
-           
-            using (StreamWriter w = File.AppendText(LogPath))
-            w.WriteLine($"{DateTime.Now.ToShortDateString()} {DateTime.Now.ToLongTimeString()} {"- " + logMessage}");
-            
+
+            try
+            {
+                string logDir = Path.GetDirectoryName(LogPath);
+                if (!Directory.Exists(logDir))
+                    Directory.CreateDirectory(logDir);
+
+                using (StreamWriter w = File.AppendText(LogPath))
+                    w.WriteLine($"{DateTime.Now.ToShortDateString()} {DateTime.Now.ToLongTimeString()} {"- " + logMessage}");
+            }
+            catch (Exception) { /* Drive not ready or path invalid — log silently skipped */ }
         }
         #endregion
 
@@ -869,6 +914,17 @@ namespace PVSS.ViewModel
                 DepthString2 = "22,4 m";
                 Longitude = "41º11'14,2139''N";
                 Latitude = "08º42'12,269''W";
+                return;
+            }
+
+            if (!System.IO.File.Exists(@"mid2253.dll"))
+            {
+                System.Windows.MessageBox.Show(
+                    "mid2253.dll not found.\n\nPlease ensure the Sensoray driver files are installed correctly next to PVSS.exe.",
+                    "Missing DLL — Cannot Start",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                System.Windows.Application.Current.Shutdown();
                 return;
             }
 
@@ -1941,7 +1997,16 @@ namespace PVSS.ViewModel
 
         private void StartRecording()
         {
-            VideoDirectoryPath1 = "D:\\PVSS DUO PRO 1" + "\\"  + Properties.Settings.Default.JobNameText + "\\Videos1";
+            // If the job folder already existed from a previous day, append today's date for a unique folder.
+            // The clean name stays in settings and the textbox — only the local path variable gets the suffix.
+            string jobName1 = Properties.Settings.Default.JobNameText;
+            string jobFolder1 = JobNameDiretory1 + "\\" + jobName1;
+            if (FolderExistsFromPreviousDay(jobFolder1))
+            {
+                jobName1 = jobName1 + "-" + DateTime.Now.ToString("ddMMyyyy");
+                // Do NOT save back to settings — keeps the textbox clean
+            }
+            VideoDirectoryPath1 = "D:\\PVSS DUO PRO 1" + "\\" + jobName1 + "\\Videos1";
         
             if (!Directory.Exists(VideoDirectoryPath1))
             {
@@ -1975,7 +2040,16 @@ namespace PVSS.ViewModel
         }
         private void StartRecording2()
         {
-            VideoDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + Properties.Settings.Default.JobNameText + "\\Videos2";
+            // If the job folder already existed from a previous day, append today's date for a unique folder.
+            // The clean name stays in settings and the textbox — only the local path variable gets the suffix.
+            string jobName2 = Properties.Settings.Default.JobNameText;
+            string jobFolder2 = JobNameDiretory2 + "\\" + jobName2;
+            if (FolderExistsFromPreviousDay(jobFolder2))
+            {
+                jobName2 = jobName2 + "-" + DateTime.Now.ToString("ddMMyyyy");
+                // Do NOT save back to settings — keeps the textbox clean
+            }
+            VideoDirectoryPath2 = "F:\\PVSS DUO PRO 2" + "\\" + jobName2 + "\\Videos2";
 
             if (!Directory.Exists(VideoDirectoryPath2))
             {
@@ -2049,8 +2123,17 @@ namespace PVSS.ViewModel
             st_osd_lat_long.yoffset = 400;
             st_osd_lat_long.size = 14;
             st_osd_lat_long.font = "Segoe UI";
-            st_osd_lat_long.line = Latitude + "  " + Longitude;
-
+            // Switch OSD display between LAT/LON (degrees) and Northing/Easting (UTM) based on user selection
+            if (_useNEonOSD)
+            {
+                // Strip UTM zone code (e.g. "29T") from Northing for OSD display
+                string northingOsd = Northing;
+                int lastSpace = northingOsd.LastIndexOf(' ');
+                if (lastSpace > 0) northingOsd = northingOsd.Substring(0, lastSpace);
+                st_osd_lat_long.line = northingOsd + "  " + Easting;
+            }
+            else
+                st_osd_lat_long.line = Latitude + "  " + Longitude;
 
             if (GPSIsEnabled && !Longitude.Contains("!"))
             {
@@ -2243,7 +2326,7 @@ namespace PVSS.ViewModel
             st_osdjob.yoffset = 440;
             st_osdjob.size = 14;
             st_osdjob.font = "Segoe UI";
-            st_osdjob.line = "Job: " + JobName; //Job line into OSD
+            st_osdjob.line = "Job: " + _JobNameOSD; //Job line into OSD (shows typed name, no date suffix)
             st_osdjob.style = S2253.MID2253_STYLE_OUTLINE;
             st_osdjob.outline = 4;
             st_osdjob.background = 0;
@@ -2941,6 +3024,11 @@ namespace PVSS.ViewModel
                 }
 
                 _JobName = MakeValidFileName(value);
+
+                // Store the clean typed name in settings — no date suffix.
+                // The suffix is applied at recording time (StartRecording/StartRecording2)
+                // so the textbox and settings always show the original job name (e.g. "WFA-3").
+                _JobNameOSD = _JobName; // OSD always shows the original typed name
                 Properties.Settings.Default.JobNameText = _JobName;
                 Properties.Settings.Default.Save();
 
@@ -2959,6 +3047,16 @@ namespace PVSS.ViewModel
             string invalidRegex = string.Format(@"([{0}]*\.+$)|([{0}]+)", escapedInvalidChars);
 
             return Regex.Replace(name, invalidRegex, "").Trim();
+        }
+
+        /// <summary>
+        /// Returns true only if the folder exists AND was created before today.
+        /// A folder created today belongs to the current session — no suffix needed.
+        /// </summary>
+        private static bool FolderExistsFromPreviousDay(string folderPath)
+        {
+            return Directory.Exists(folderPath) &&
+                   Directory.GetCreationTime(folderPath).Date < DateTime.Today;
         }
 
         #endregion
@@ -5056,6 +5154,18 @@ namespace PVSS.ViewModel
                 RaisePropertyChanged(COMPortsListPropertyName);
             }
         }
+
+        /// <summary>
+        /// Re-scans all serial ports and updates <see cref="COMPortsList"/>.
+        /// Call this whenever the COM port dropdowns are opened so that
+        /// devices plugged in after app launch (e.g. GPS USB adapters) appear.
+        /// </summary>
+        public void RefreshCOMPortsList()
+        {
+            var fresh = new List<string>(System.IO.Ports.SerialPort.GetPortNames());
+            fresh.Sort();
+            COMPortsList = fresh;
+        }
         #endregion
 
         #region COMPortListSelectedItem
@@ -5099,7 +5209,7 @@ namespace PVSS.ViewModel
 
         public const string GPSCOMPortListSelectedItemPropertyName = "GPSCOMPortListSelectedItem";
 
-        private string _GPSCOMPortListSelectedItem = "COM6";
+        private string _GPSCOMPortListSelectedItem = Properties.Settings.Default.GPSCOMPort;
 
         /// <summary>
         /// Sets and gets the GPS COM port selection property.
@@ -5111,6 +5221,8 @@ namespace PVSS.ViewModel
             {
                 if (_GPSCOMPortListSelectedItem == value) return;
                 _GPSCOMPortListSelectedItem = value;
+                Properties.Settings.Default.GPSCOMPort = value;
+                Properties.Settings.Default.Save();
                 RaisePropertyChanged(GPSCOMPortListSelectedItemPropertyName);
             }
         }
@@ -5121,7 +5233,7 @@ namespace PVSS.ViewModel
 
         public List<int> GPSBaudRatesList { get; } = new List<int> { 4800, 9600, 19200, 38400, 57600, 115200 };
 
-        private int _GPSBaudRateSelected = 4800;
+        private int _GPSBaudRateSelected = Properties.Settings.Default.GPSBaudRate;
         public int GPSBaudRateSelected
         {
             get { return _GPSBaudRateSelected; }
@@ -5129,6 +5241,8 @@ namespace PVSS.ViewModel
             {
                 if (_GPSBaudRateSelected == value) return;
                 _GPSBaudRateSelected = value;
+                Properties.Settings.Default.GPSBaudRate = value;
+                Properties.Settings.Default.Save();
                 RaisePropertyChanged(nameof(GPSBaudRateSelected));
             }
         }
@@ -5395,63 +5509,84 @@ namespace PVSS.ViewModel
         {
             if (_gpsMethodRunning) return;
             _gpsMethodRunning = true;
-            try
-            {
+
             if (GPSIsEnabled)
             {
-                try
+                // Run port open on background thread — SerialPort.Open() can block the UI thread
+                // for several seconds on virtual/Bluetooth ports.
+                GPSStatus = "Connecting...";
+                Task.Run(() =>
                 {
-                    _gpsSerialPort = new System.IO.Ports.SerialPort(
-                        GPSCOMPortListSelectedItem, GPSBaudRateSelected,
-                        System.IO.Ports.Parity.None, 8,
-                        System.IO.Ports.StopBits.One);
-                    _gpsSerialPort.ReadTimeout = 5000;
-                    _gpsSerialPort.DtrEnable = true;
-                    _gpsSerialPort.RtsEnable = true;
-                    _gpsSerialPort.Open();
+                    System.IO.Ports.SerialPort port = null;
+                    try
+                    {
+                        port = new System.IO.Ports.SerialPort(
+                            GPSCOMPortListSelectedItem, GPSBaudRateSelected,
+                            System.IO.Ports.Parity.None, 8,
+                            System.IO.Ports.StopBits.One);
+                        port.ReadTimeout = 5000;
+                        port.DtrEnable = true;
+                        port.RtsEnable = true;
+                        port.Open();
 
-                    _gpsReadThreadRunning = true;
-                    _gpsReadThread = new Thread(GpsReadLoop) { IsBackground = true, Name = "GPS Read Thread" };
-                    _gpsReadThread.Start();
-
-                    Latitude = "";
-                    Longitude = "";
-                    GPSStatus = "Connected at " + GPSCOMPortListSelectedItem + " @ " + GPSBaudRateSelected;
-                    Log("GPS connected at port " + GPSCOMPortListSelectedItem + " @ " + GPSBaudRateSelected + " baud");
-                }
-                catch (Exception ex)
-                {
-                    Latitude = "";
-                    Longitude = "";
-                    GPSStatus = "Error: " + ex.Message;
-                    Log("GPS Error: " + ex.Message);
-                    _gpsReadThreadRunning = false;
-                    try { _gpsSerialPort?.Close(); _gpsSerialPort?.Dispose(); _gpsSerialPort = null; } catch { }
-                    _GPSIsEnabled = false;
-                    RaisePropertyChanged(GPSIsEnabledPropertyName);
-                }
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            _gpsSerialPort = port;
+                            _gpsReadThreadRunning = true;
+                            _gpsReadThread = new Thread(GpsReadLoop) { IsBackground = true, Name = "GPS Read Thread" };
+                            _gpsReadThread.Start();
+                            Latitude = "";
+                            Longitude = "";
+                            GPSStatus = "Connected at " + GPSCOMPortListSelectedItem + " @ " + GPSBaudRateSelected;
+                            Log("GPS connected at port " + GPSCOMPortListSelectedItem + " @ " + GPSBaudRateSelected + " baud");
+                            _gpsMethodRunning = false;
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        try { port?.Close(); port?.Dispose(); } catch { }
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            Latitude = "";
+                            Longitude = "";
+                            GPSStatus = "Error: " + ex.Message;
+                            Log("GPS Error: " + ex.Message);
+                            _gpsReadThreadRunning = false;
+                            _gpsSerialPort = null;
+                            _GPSIsEnabled = false;
+                            RaisePropertyChanged(GPSIsEnabledPropertyName);
+                            _gpsMethodRunning = false;
+                        });
+                    }
+                });
             }
             else
             {
-                    _gpsReadThreadRunning = false;
-
-                try
+                // Run port close on background thread — Close() can block if read thread is mid-read
+                Task.Run(() =>
                 {
-                    if (_gpsSerialPort != null && _gpsSerialPort.IsOpen)
+                    _gpsReadThreadRunning = false;
+                    try
                     {
-                        _gpsSerialPort.Close();
-                        _gpsSerialPort.Dispose();
-                        _gpsSerialPort = null;
+                        if (_gpsSerialPort != null && _gpsSerialPort.IsOpen)
+                        {
+                            _gpsSerialPort.Close();
+                            _gpsSerialPort.Dispose();
+                        }
                     }
-                }
-                catch { }
+                    catch { }
 
-                Latitude = "";
-                Longitude = "";
-                GPSStatus = "Disconnected";
-                Log("GPS disconnected from port " + GPSCOMPortListSelectedItem);
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        _gpsSerialPort = null;
+                        Latitude = "";
+                        Longitude = "";
+                        GPSStatus = "Disconnected";
+                        Log("GPS disconnected from port " + GPSCOMPortListSelectedItem);
+                        _gpsMethodRunning = false;
+                    });
+                });
             }
-            } finally { _gpsMethodRunning = false; }
         }
 
         private void GpsReadLoop()
@@ -5481,6 +5616,60 @@ namespace PVSS.ViewModel
                 catch (InvalidOperationException) { break; }
                 catch { break; }
             }
+        }
+
+        /// <summary>
+        /// Converts WGS84 lat/lon (decimal degrees) to UTM Northing/Easting.
+        /// Returns zone string e.g. "29N", northing and easting in metres.
+        /// </summary>
+        private static void LatLonToUtm(double lat, double lon,
+            out string zone, out double northing, out double easting)
+        {
+            const double a = 6378137.0;           // WGS84 semi-major axis
+            const double f = 1.0 / 298.257223563; // flattening
+            const double k0 = 0.9996;             // scale factor
+            const double E0 = 500000.0;           // false easting
+
+            double e2 = 2 * f - f * f;
+            double e4 = e2 * e2; double e6 = e4 * e2;
+            double n = f / (2 - f);
+            double n2 = n * n; double n3 = n2 * n; double n4 = n3 * n;
+
+            double latR = lat * Math.PI / 180.0;
+            double lonR = lon * Math.PI / 180.0;
+
+            int zoneNum = (int)Math.Floor((lon + 180.0) / 6.0) + 1;
+            double lonOrigin = (zoneNum - 1) * 6.0 - 180.0 + 3.0;
+            double lonOriginR = lonOrigin * Math.PI / 180.0;
+
+            char zoneLetter = lat < -72 ? 'C' : lat < -64 ? 'D' : lat < -56 ? 'E' :
+                lat < -48 ? 'F' : lat < -40 ? 'G' : lat < -32 ? 'H' : lat < -24 ? 'J' :
+                lat < -16 ? 'K' : lat < -8 ? 'L' : lat < 0 ? 'M' : lat < 8 ? 'N' :
+                lat < 16 ? 'P' : lat < 24 ? 'Q' : lat < 32 ? 'R' : lat < 40 ? 'S' :
+                lat < 48 ? 'T' : lat < 56 ? 'U' : lat < 64 ? 'V' : lat < 72 ? 'W' : 'X';
+
+            zone = zoneNum.ToString() + zoneLetter;
+
+            double N = a / Math.Sqrt(1 - e2 * Math.Sin(latR) * Math.Sin(latR));
+            double T = Math.Tan(latR) * Math.Tan(latR);
+            double C = e2 / (1 - e2) * Math.Cos(latR) * Math.Cos(latR);
+            double A = Math.Cos(latR) * (lonR - lonOriginR);
+
+            double M = a * (
+                (1 - e2 / 4 - 3 * e4 / 64 - 5 * e6 / 256) * latR
+                - (3 * e2 / 8 + 3 * e4 / 32 + 45 * e6 / 1024) * Math.Sin(2 * latR)
+                + (15 * e4 / 256 + 45 * e6 / 1024) * Math.Sin(4 * latR)
+                - (35 * e6 / 3072) * Math.Sin(6 * latR));
+
+            easting = k0 * N * (A + (1 - T + C) * A * A * A / 6.0
+                + (5 - 18 * T + T * T + 72 * C - 58 * e2 / (1 - e2)) * Math.Pow(A, 5) / 120.0)
+                + E0;
+
+            double N0 = lat < 0 ? 10000000.0 : 0.0; // false northing for S hemisphere
+            northing = k0 * (M + N * Math.Tan(latR) * (A * A / 2.0
+                + (5 - T + 9 * C + 4 * C * C) * Math.Pow(A, 4) / 24.0
+                + (61 - 58 * T + T * T + 600 * C - 330 * e2 / (1 - e2)) * Math.Pow(A, 6) / 720.0))
+                + N0;
         }
 
         /// Converts decimal degrees to DMS string matching the app's display format: 41º11'14,2139''N
@@ -5539,6 +5728,8 @@ namespace PVSS.ViewModel
                     {
                         Latitude = "";
                         Longitude = "";
+                        Northing = "";
+                        Easting = "";
                         GPSStatus = "Waiting for GPS fix...";
                     }));
                     return;
@@ -5557,11 +5748,33 @@ namespace PVSS.ViewModel
                 string latStr = ToNmeaDms(Math.Abs(latDeg), latDeg >= 0 ? "N" : "S");
                 string lonStr = ToNmeaDms(Math.Abs(lonDeg), lonDeg >= 0 ? "E" : "W");
 
+                // Only GGA carries satellite count – keep existing status when processing RMC
+                string statusStr = _gpsStatus;
+                if (isGga)
+                {
+                    string sats = f.Length > 7 ? f[7].TrimStart('0') : "?";
+                    if (string.IsNullOrEmpty(sats)) sats = "0";
+                    string fixType = f[6] == "2" ? "DGPS" : "GPS";
+                    statusStr = fixType + " fix   Sats: " + sats;
+                }
+
+                string utmZone, northingStr, eastingStr;
+                try
+                {
+                    LatLonToUtm(latDeg, lonDeg, out utmZone, out double utmN, out double utmE);
+                    northingStr = "N " + utmN.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) + " " + utmZone;
+                    eastingStr  = "E " + utmE.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+                }
+                catch { utmZone = ""; northingStr = ""; eastingStr = ""; }
+
+                string ns = northingStr, es = eastingStr, ss = statusStr;
                 System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
                     Latitude = latStr;
                     Longitude = lonStr;
-                    GPSStatus = "";
+                    Northing = ns;
+                    Easting = es;
+                    GPSStatus = ss;
                 }));
             }
             catch { }
@@ -5640,6 +5853,53 @@ namespace PVSS.ViewModel
                 if (_gpsStatus == value) return;
                 _gpsStatus = value;
                 RaisePropertyChanged(GPSStatusPropertyName);
+            }
+        }
+        #endregion
+
+        public const string NorthingPropertyName = "Northing";
+        private string _northing = "";
+        public string Northing
+        {
+            get { return _northing; }
+            set
+            {
+                if (_northing == value) return;
+                _northing = value;
+                RaisePropertyChanged(NorthingPropertyName);
+                if (_useNEonOSD) { SetOSDStyled_LAT_LONG(STREAM_A); SetOSDStyled_LAT_LONG(STREAM_B); }
+            }
+        }
+
+        public const string EastingPropertyName = "Easting";
+        private string _easting = "";
+        public string Easting
+        {
+            get { return _easting; }
+            set
+            {
+                if (_easting == value) return;
+                _easting = value;
+                RaisePropertyChanged(EastingPropertyName);
+                if (_useNEonOSD) { SetOSDStyled_LAT_LONG(STREAM_A); SetOSDStyled_LAT_LONG(STREAM_B); }
+            }
+        }
+
+        #region UseNEonOSD
+        public const string UseNEonOSDPropertyName = "UseNEonOSD";
+        private bool _useNEonOSD = Properties.Settings.Default.GPSOSDUseNE;
+        public bool UseNEonOSD
+        {
+            get { return _useNEonOSD; }
+            set
+            {
+                if (_useNEonOSD == value) return;
+                _useNEonOSD = value;
+                Properties.Settings.Default.GPSOSDUseNE = value;
+                Properties.Settings.Default.Save();
+                RaisePropertyChanged(UseNEonOSDPropertyName);
+                SetOSDStyled_LAT_LONG(STREAM_A);
+                SetOSDStyled_LAT_LONG(STREAM_B);
             }
         }
         #endregion

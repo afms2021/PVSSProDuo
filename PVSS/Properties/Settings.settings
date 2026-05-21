@@ -32,5 +32,14 @@
     <Setting Name="COMPort" Type="System.String" Scope="User">
       <Value Profile="(Default)">COM2</Value>
     </Setting>
+    <Setting Name="GPSCOMPort" Type="System.String" Scope="User">
+      <Value Profile="(Default)">COM3</Value>
+    </Setting>
+    <Setting Name="GPSBaudRate" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">4800</Value>
+    </Setting>
+    <Setting Name="GPSOSDUseNE" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

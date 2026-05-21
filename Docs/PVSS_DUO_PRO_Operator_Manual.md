@@ -70,35 +70,34 @@ It simultaneously records video from two divers, logs depth data in real time, c
 4. If all checks pass, the application opens automatically.
 5. If a check fails, a warning message is shown in red. An **X (Close)** button appears — click it to exit and investigate the issue before retrying.
 
+
+
+
+
+
+
+
+
+
+
+
+
 ---
 
 ## 4. Main Screen Layout
 
-The screen is divided into two side-by-side panels:
+The screen is divided into two panels:
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  LEFT PANEL – Diver 1                  RIGHT PANEL – Diver 2                │
-│  ┌─────────────────┐                  ┌─────────────────────────────────┐   │
-│  │ DIVER 1 label   │                  │ DIVER 2 label                   │   │
-│  │ Depth (large)   │                  │ Depth (large)                   │   │
-│  │ Sensor status   │                  │ Sensor status                   │   │
-│  │ Max Depth       │                  │ Max Depth                       │   │
-│  │ Dive Timer      │                  │ Dive Timer                      │   │
-│  │ REC toggle      │                  │ REC toggle                      │   │
-│  │ Camera toggle   │                  │ Camera toggle                   │   │
-│  │ Light toggle    │                  │ Light toggle                    │   │
-│  │ Video feed      │                  │ Video feed                      │   │
-│  │ Tabs: Snapshot  │                  │ Tabs: Snapshot                  │   │
-│  │       Chart     │                  │       Chart                     │   │
-│  │       Video     │                  │       Video                     │   │
-│  │       Info      │                  │       Info                      │   │
-│  │       Settings  │                  │       Settings                  │   │
-│  └─────────────────┘                  └─────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+
+
+![diver 1](C:\Users\arlindosilva\Desktop\diver 1.JPG)
+
+
+
+![diver 2](C:\Users\arlindosilva\Desktop\diver 2.JPG)
 
 **Depth display colours:**
+
 - Normal reading — white
 - Sensor fault / no data — red or amber warning text below the depth
 

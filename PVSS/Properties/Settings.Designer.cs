@@ -142,5 +142,41 @@ namespace PVSS.Properties {
                 this["COMPort"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("COM3")]
+        public string GPSCOMPort {
+            get {
+                return ((string)(this["GPSCOMPort"]));
+            }
+            set {
+                this["GPSCOMPort"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("4800")]
+        public int GPSBaudRate {
+            get {
+                return ((int)(this["GPSBaudRate"]));
+            }
+            set {
+                this["GPSBaudRate"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool GPSOSDUseNE {
+            get {
+                return ((bool)(this["GPSOSDUseNE"]));
+            }
+            set {
+                this["GPSOSDUseNE"] = value;
+            }
+        }
     }
 }

@@ -43,47 +43,45 @@ namespace PVSS
         public MainWindow()
         {
             this.WindowState = System.Windows.WindowState.Maximized;
+
+            // InitializeComponent MUST be called first so the window is always fully
+            // initialised even if directory creation fails (e.g. drive F: absent on dev machine).
+            InitializeComponent();
+
             try
-            {   
+            {
                 if (!Directory.Exists(VideoDirectoryPath1))
-                {
                     Directory.CreateDirectory(VideoDirectoryPath1);
-                }
+
                 if (!Directory.Exists(VideoDirectoryPath2))
-                {
                     Directory.CreateDirectory(VideoDirectoryPath2);
-                }
 
                 if (!Directory.Exists(SnapshotsDirectoryPath1))
-                {
                     Directory.CreateDirectory(SnapshotsDirectoryPath1);
-                }
+
                 if (!Directory.Exists(SnapshotsDirectoryPath2))
-                {
                     Directory.CreateDirectory(SnapshotsDirectoryPath2);
-                }
 
                 if (!Directory.Exists(ChartsDirectoryPath1))
-                {
                     Directory.CreateDirectory(ChartsDirectoryPath1);
-                }
+
                 if (!Directory.Exists(ChartsDirectoryPath2))
-                {
                     Directory.CreateDirectory(ChartsDirectoryPath2);
-                }
 
                 if (!File.Exists(LogPath))
-                {
                     File.Create(LogPath);
-                }
-                InitializeComponent();
             }
             catch (Exception)
             {
-
+                // Drive not available (e.g. F: absent on dev machine) — safe to continue.
             }
             Closing += (s, e) => ViewModelLocator.Cleanup();
             Loaded += MainWindow_Loaded;
+        }
+
+        private void COMPortComboBox_DropDownOpened(object sender, EventArgs e)
+        {
+            (DataContext as ViewModel.MainViewModel)?.RefreshCOMPortsList();
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)

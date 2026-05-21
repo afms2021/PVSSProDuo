@@ -265,8 +265,8 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock HorizontalAlignment="Left" Margin="26,7,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontFamily="Segoe UI Light" Foreground="White" FontSize="12" Width="62" Height="19"><Run Text="   Company"/><Run Text=":"/></TextBlock>
                             <TextBox x:Name="CompanyBox" IsEnabled="{Binding SuppressEditing}" Height="20" Margin="93,7,0,0" TextWrapping="WrapWithOverflow" Text="{Binding OSDLine2, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Background="#FF333333" BorderBrush="White" Foreground="White" FontFamily="Segoe UI Light" FontSize="12" MaxLength="15" MaxLines="1" HorizontalAlignment="Left" Width="106" />
-                            <CheckBox Margin="93,112,0,0" Style="{DynamicResource SimpleCheckBox}" Foreground="White" FontFamily="Segoe UI Light" IsChecked="{Binding ShowTime}" Height="16" VerticalAlignment="Top" FontSize="10" Content="  Time" HorizontalAlignment="Left" RenderTransformOrigin="1.752,0.521"/>
-                            <CheckBox Margin="161,112,0,0" Style="{DynamicResource SimpleCheckBox}" Foreground="White" FontFamily="Segoe UI Light" IsChecked="{Binding ShowDate}" Height="16" VerticalAlignment="Top" FontSize="10" Content="  Date" HorizontalAlignment="Left"/>
+                            <CheckBox Margin="93,112,0,0" Background="#FFF4F4F4" Foreground="White" FontFamily="Segoe UI Light" IsChecked="{Binding ShowTime}" Height="16" VerticalAlignment="Top" FontSize="10" Content="  Time" HorizontalAlignment="Left" RenderTransformOrigin="1.752,0.521" Width="48"/>
+                            <CheckBox Margin="146,112,0,0" Background="#FFF4F4F4" Foreground="White" FontFamily="Segoe UI Light" IsChecked="{Binding ShowDate}" Height="16" VerticalAlignment="Top" FontSize="10" Content="  Date" HorizontalAlignment="Left" Width="53"/>
                             <Slider Height="16" Margin="112,84,34,0" Style="{DynamicResource SimpleSlider}" VerticalAlignment="Top" Value="{Binding OSDOffsetX}" Maximum="500" SmallChange="1" Visibility="Hidden"/>
                             <Slider Margin="0,37,-16,0" Style="{DynamicResource SimpleSlider}" Value="{Binding OSDOffsetY}" Maximum="450" SmallChange="1" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Right" Width="74" Height="16" VerticalAlignment="Top" Visibility="Hidden">
                                 <Slider.RenderTransform>
@@ -324,7 +324,7 @@
                         </Grid>
                         <TextBlock Margin="0,0,84,29" TextWrapping="Wrap" VerticalAlignment="Bottom" Foreground="White" HorizontalAlignment="Right" Width="72" FontSize="10" FontWeight="Bold" RenderTransformOrigin="0.514,2.729"><Run Language="pt-pt" Text="Lights Control :"/></TextBlock>
                     </Grid>
-                    <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" HorizontalAlignment="Left" Height="132" Margin="4,20,0,0" VerticalAlignment="Top" Width="207"/>
+                    <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" HorizontalAlignment="Left" Height="132" Margin="4,21,0,0" VerticalAlignment="Top" Width="207"/>
                     <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" HorizontalAlignment="Left" Height="61" Margin="173,166,0,0" VerticalAlignment="Top" Width="154"/>
                     <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" Margin="216,94,4,135">
                         <StackPanel Margin="2,4,4,4" HorizontalAlignment="Right">
@@ -361,10 +361,12 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock HorizontalAlignment="Left" Margin="83,7,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="#FFF1F1F1" FontSize="14" Height="16" Width="60" FontWeight="Bold" RenderTransformOrigin="0.79,1.531"><Run Language="pt-pt" Text="Diver 2:"/></TextBlock>
                     <ToggleSwitch:HorizontalToggleSwitch HorizontalAlignment="Stretch" Margin="164,7,79,0" VerticalAlignment="Top" IsChecked="{Binding Diver2IsEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="Auto"/>
-                    <TextBlock HorizontalAlignment="Left" Margin="8,42,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontSize="10" Height="13" Width="100"><Run Language="pt-pt" Text="Telemetry COM Port:"/></TextBlock>
-                    <ComboBox HorizontalAlignment="Left" VerticalAlignment="Top" Width="120" Margin="8,55,0,0" ItemsSource="{Binding COMPortsList}" SelectedValue="{Binding COMPortListSelectedItem}" Height="25"/>
+                    <TextBlock HorizontalAlignment="Left" Margin="8,36,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontSize="10" Height="13" Width="100"><Run Language="pt-pt" Text="Telemetry COM Port:"/></TextBlock>
+                    <ComboBox HorizontalAlignment="Left" VerticalAlignment="Top" Width="120" Margin="8,49,0,0"
+                              ItemsSource="{Binding COMPortsList}" SelectedValue="{Binding COMPortListSelectedItem}" Height="25"
+                              DropDownOpened="COMPortComboBox_DropDownOpened"/>
                     <TextBlock HorizontalAlignment="Left" Margin="8,82,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontFamily="Segoe UI Light" Foreground="Black" FontSize="10" Visibility="Hidden" Height="13" Width="45"><Run Language="pt-pt" Text="Baud Rate:"/></TextBlock>
-                    <ToggleSwitch:HorizontalToggleSwitch HorizontalAlignment="Stretch" Margin="164,55,79,0" VerticalAlignment="Top" IsChecked="{Binding COMPortIsEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="Auto">
+                    <ToggleSwitch:HorizontalToggleSwitch HorizontalAlignment="Stretch" Margin="164,49,79,0" VerticalAlignment="Top" IsChecked="{Binding COMPortIsEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="Auto">
                         <i:Interaction.Triggers>
                             <ei:PropertyChangedTrigger Binding="{Binding COMPortIsEnabled}">
                                 <Custom:EventToCommand Command="{Binding ExecuteStartOrStopCOMPort, Mode=OneWay}"/>
@@ -372,36 +374,43 @@
                         </i:Interaction.Triggers>
                     </ToggleSwitch:HorizontalToggleSwitch>
                     <TextBox HorizontalAlignment="Left" TextWrapping="Wrap" Text="{Binding BaudRate, Mode=TwoWay, UpdateSourceTrigger=Default}" VerticalAlignment="Top" Margin="8,99,0,0" Width="120" Visibility="Hidden" Height="21"/>
-                    <ToggleSwitch:HorizontalToggleSwitch HorizontalAlignment="Stretch" Margin="164,101,79,0" VerticalAlignment="Top" IsChecked="{Binding GPSIsEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="Auto">
+                    <ToggleSwitch:HorizontalToggleSwitch HorizontalAlignment="Stretch" Margin="164,92,79,0" VerticalAlignment="Top" IsChecked="{Binding GPSIsEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="Auto">
                         <i:Interaction.Triggers>
                             <ei:PropertyChangedTrigger Binding="{Binding GPSIsEnabled}">
                                 <Custom:EventToCommand Command="{Binding ExecuteStartOrStopGPSPort, Mode=OneWay}"/>
                             </ei:PropertyChangedTrigger>
                         </i:Interaction.Triggers>
                     </ToggleSwitch:HorizontalToggleSwitch>
-                    <TextBlock HorizontalAlignment="Left" Margin="8,88,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontSize="10" Height="13" Width="100"><Run Language="pt-pt" Text="GPS COM Port:"/></TextBlock>
-                    <ComboBox HorizontalAlignment="Left" VerticalAlignment="Top" Width="120" Margin="8,101,0,0" ItemsSource="{Binding COMPortsList}" SelectedValue="{Binding GPSCOMPortListSelectedItem}" Height="25"/>
-                    <TextBlock HorizontalAlignment="Left" Margin="8,129,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontSize="10" Height="13" Width="100"><Run Text="GPS Baud Rate:"/></TextBlock>
-                    <ComboBox HorizontalAlignment="Left" VerticalAlignment="Top" Width="80" Margin="8,142,0,0" ItemsSource="{Binding GPSBaudRatesList}" SelectedValue="{Binding GPSBaudRateSelected}" Height="25"/>
-                    <TextBlock TextWrapping="Wrap" Foreground="#FFFFA500" FontFamily="Segoe UI Light" FontSize="10" Margin="8,171,8,0" Text="{Binding GPSStatus}" VerticalAlignment="Top" />
-                    <TextBlock HorizontalAlignment="Left" Margin="167,136,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontSize="10" Height="13" Width="60" Visibility="{Binding GPSIsEnabled, Converter={StaticResource BoolToVis}}"><Run Text="Longitude:"/></TextBlock>
-                    <TextBlock TextWrapping="Wrap" Foreground="#FF00FF99" FontFamily="Segoe UI Light" FontSize="11" Margin="167,149,68,0" Text="{Binding Longitude}" VerticalAlignment="Top" Height="18" Visibility="{Binding GPSIsEnabled, Converter={StaticResource BoolToVis}}" />
-                    <TextBlock HorizontalAlignment="Left" Margin="167,160,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontSize="10" Height="13" Width="60" Visibility="{Binding GPSIsEnabled, Converter={StaticResource BoolToVis}}"><Run Text="Latitude:"/></TextBlock>
-                    <TextBlock TextWrapping="Wrap" Foreground="#FF00FF99" FontFamily="Segoe UI Light" FontSize="11" Margin="167,173,79,0" Text="{Binding Latitude}" VerticalAlignment="Top" Height="18" Visibility="{Binding GPSIsEnabled, Converter={StaticResource BoolToVis}}" />
-                    <TextBlock HorizontalAlignment="Left" Margin="13,189,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontFamily="Segoe UI Light" Foreground="White" FontSize="10" Visibility="Hidden" Height="13" Width="94"><Run Language="pt-pt" Text="Depth Sensor Settings:"/></TextBlock>
+                    <TextBlock HorizontalAlignment="Left" Margin="10,79,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontSize="10" Height="13" Width="100"><Run Language="pt-pt" Text="GPS COM Port:"/></TextBlock>
+                    <ComboBox HorizontalAlignment="Left" VerticalAlignment="Top" Width="120" Margin="8,92,0,0"
+                              ItemsSource="{Binding COMPortsList}" SelectedValue="{Binding GPSCOMPortListSelectedItem}" Height="25"
+                              DropDownOpened="COMPortComboBox_DropDownOpened"/>
+                    <TextBlock HorizontalAlignment="Left" Margin="8,122,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontSize="10" Height="13" Width="100"><Run Text="GPS Baud Rate:"/></TextBlock>
+                    <ComboBox HorizontalAlignment="Left" VerticalAlignment="Top" Width="80" Margin="8,136,0,0" ItemsSource="{Binding GPSBaudRatesList}" SelectedValue="{Binding GPSBaudRateSelected}" Height="24"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="#FFFFA500" FontFamily="Segoe UI Light" FontSize="10" Margin="8,173,170,0" Text="{Binding GPSStatus}" VerticalAlignment="Top" />
+                    <TextBlock HorizontalAlignment="Left" Margin="104,144,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontSize="10" Height="16" Width="60" Visibility="{Binding GPSIsEnabled, Converter={StaticResource BoolToVis}}" d:Visibility="Visible"><Run Text="Longitude:"/></TextBlock>
+                    <TextBlock TextWrapping="Wrap" Foreground="#FF00FF99" FontFamily="Segoe UI Light" FontSize="11" Margin="164,144,71,0" Text="{Binding Longitude}" VerticalAlignment="Top" Height="18" Visibility="{Binding GPSIsEnabled, Converter={StaticResource BoolToVis}}" d:Visibility="Visible" d:Text="008º42'12,269''W" RenderTransformOrigin="-0.222,0.463"/>
+                    <TextBlock HorizontalAlignment="Left" Margin="113,131,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontSize="10" Height="13" Width="60" Visibility="{Binding GPSIsEnabled, Converter={StaticResource BoolToVis}}" d:Visibility="Visible"><Run Text="Latitude:"/></TextBlock>
+                    <TextBlock TextWrapping="Wrap" Foreground="#FF00FF99" FontFamily="Segoe UI Light" FontSize="11" Margin="164,131,81,0" Text="{Binding Latitude}" VerticalAlignment="Top" Height="18" Visibility="{Binding GPSIsEnabled, Converter={StaticResource BoolToVis}}" d:Visibility="Visible" d:Text="41º11'14,2139''N"/>
+                    <!-- UTM Northing / Easting display -->
+                    <TextBlock HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="#FFAAD4FF" FontFamily="Segoe UI Light" FontSize="11" Margin="166,160,0,0" Height="18" Text="{Binding Northing}" d:Text="N 4316247.25 m  29N" TextTrimming="CharacterEllipsis" Visibility="{Binding GPSIsEnabled, Converter={StaticResource BoolToVis}}" d:Visibility="Visible" RenderTransformOrigin="0.315,0.472"/>
+                    <TextBlock HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="#FFAAD4FF" FontFamily="Segoe UI Light" FontSize="11" Margin="166,173,0,0" Height="18" Text="{Binding Easting}"  d:Text="E 499254.01 m" TextTrimming="CharacterEllipsis" Visibility="{Binding GPSIsEnabled, Converter={StaticResource BoolToVis}}" d:Visibility="Visible" RenderTransformOrigin="0.493,0.722"/>
+                    <!-- Toggle OSD between LAT/LON and UTM Northing/Easting -->
+                    <CheckBox Content="OSD: UTM" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="255,132,0,0" Foreground="White" FontFamily="Segoe UI Light" FontSize="10" IsChecked="{Binding UseNEonOSD, Mode=TwoWay}" Visibility="{Binding GPSIsEnabled, Converter={StaticResource BoolToVis}}" d:Visibility="Visible" ToolTip="Checked: OSD shows UTM Northing/Easting. Unchecked: OSD shows LAT/LON degrees." RenderTransformOrigin="1.106,-0.552"/>
+                    <TextBlock HorizontalAlignment="Left" Margin="13,230,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontFamily="Segoe UI Light" Foreground="White" FontSize="10" Visibility="Hidden" Height="13" Width="94"><Run Language="pt-pt" Text="Depth Sensor Settings:"/></TextBlock>
                     <TextBlock HorizontalAlignment="Left" Margin="231,189,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontFamily="Segoe UI Light" Foreground="White" FontSize="10" Visibility="Hidden" Height="13" Width="58"><Run Language="pt-pt" Text="Sensor Offset:"/></TextBlock>
-                    <RadioButton Name="mySeaWater" Content=" Sea Water" HorizontalAlignment="Left" Margin="16,215,0,0"  Style="{DynamicResource SimpleRadioButton}" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="10" GroupName="WaterType" IsChecked="{Binding IsSeaWaterChecked}" Height="13" Width="58"  />
-                    <RadioButton Name="myFreshWater" Content=" Fresh Water" HorizontalAlignment="Left" Margin="16,233,0,0"  Style="{DynamicResource SimpleRadioButton}" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="10" GroupName="WaterType" IsChecked="{Binding IsFreshWaterChecked}" Height="13" Width="65"  />
+                    <RadioButton Name="mySeaWater" Content=" Sea Water" HorizontalAlignment="Left" Margin="28,215,0,0"  Style="{DynamicResource SimpleRadioButton}" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="10" GroupName="WaterType" IsChecked="{Binding IsSeaWaterChecked}" Height="13" Width="58"  />
+                    <RadioButton Name="myFreshWater" Content=" Fresh Water" HorizontalAlignment="Left" Margin="28,233,0,0"  Style="{DynamicResource SimpleRadioButton}" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="10" GroupName="WaterType" IsChecked="{Binding IsFreshWaterChecked}" Height="13" Width="64"  />
                     <RadioButton Name="my10BarG" Content=" 10 BarG 100msw" HorizontalAlignment="Center" Margin="0,215,0,0"  Style="{DynamicResource SimpleRadioButton}" VerticalAlignment="Top" Foreground="White" FontFamily="Segoe UI Light" FontSize="10" GroupName="SensorType" IsChecked="{ Binding Is_10_BarG}" Height="13" Width="83"  />
                     <RadioButton Name="my25BarG" Content=" 25 BarG 250msw" HorizontalAlignment="Left" Margin="124,233,0,0"  Style="{DynamicResource SimpleRadioButton}" VerticalAlignment="Top" Foreground="Red" FontFamily="Segoe UI Light" FontSize="10" GroupName="SensorType" IsChecked="{Binding Is_25_BarG}" ToolTip="!! WARNING !! to be use only with a special sensor." Height="13" Width="86"/>
                     <xctk:DoubleUpDown Name="mySensorOffset" Margin="244,217,29,23" FormatString="F1" Increment=".1" Value="{Binding Sensor1_Offset_Value, UpdateSourceTrigger=PropertyChanged}"  Maximum="200" Minimum="-2" FontSize="12" />
                     <Label Content="Depth Sensor Offset" HorizontalAlignment="Left" Margin="217,188,0,0" VerticalAlignment="Top" FontSize="10" Foreground="White" RenderTransformOrigin="0.047,0.636" Width="104" Height="22"/>
                     <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" HorizontalAlignment="Center" Height="46" Margin="0,210,0,0" VerticalAlignment="Top" Width="98" RenderTransformOrigin="0.5,0.5"/>
                     <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" HorizontalAlignment="Left" Height="46" Margin="224,210,0,0" VerticalAlignment="Top" Width="86" RenderTransformOrigin="0.5,0.5"/>
-                    <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" HorizontalAlignment="Left" Height="46" Margin="10,210,0,0" VerticalAlignment="Top" Width="94" RenderTransformOrigin="0.5,0.5"/>
+                    <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" HorizontalAlignment="Left" Height="46" Margin="13,210,0,0" VerticalAlignment="Top" Width="94" RenderTransformOrigin="0.5,0.5"/>
 
-                    <Label Content="Sensor Type" HorizontalAlignment="Left" Margin="121,188,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.128,0.379" Width="82" Height="26" FontSize="10" Foreground="White"/>
-                    <Label Content="Water Type" HorizontalAlignment="Left" Margin="7,188,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.128,0.379" Width="83" Height="26" FontSize="10" Foreground="White"/>
+                    <Label Content="Sensor Type" HorizontalAlignment="Left" Margin="116,188,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.128,0.379" Width="82" Height="26" FontSize="10" Foreground="White"/>
+                    <Label Content="Water Type" HorizontalAlignment="Left" Margin="8,190,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.128,0.379" Width="82" Height="26" FontSize="10" Foreground="White"/>
                 </Grid>
             </TabItem>
         </TabControl>
