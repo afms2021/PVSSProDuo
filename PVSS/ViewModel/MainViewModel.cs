@@ -5504,6 +5504,7 @@ namespace PVSS.ViewModel
         private Thread _gpsReadThread;
         private volatile bool _gpsReadThreadRunning = false;
         private bool _gpsMethodRunning = false;
+        private string _gpsLastSats = "?";
 
         private void ExecuteStartOrStopGPSPortMethod()
         {
@@ -5754,8 +5755,14 @@ namespace PVSS.ViewModel
                 {
                     string sats = f.Length > 7 ? f[7].TrimStart('0') : "?";
                     if (string.IsNullOrEmpty(sats)) sats = "0";
+                    _gpsLastSats = sats;
                     string fixType = f[6] == "2" ? "DGPS" : "GPS";
                     statusStr = fixType + " fix   Sats: " + sats;
+                }
+                else if (!statusStr.Contains("fix"))
+                {
+                    // RMC with valid fix but no GGA has arrived yet (or a timeout/error wiped the fix message)
+                    statusStr = "GPS fix   Sats: " + _gpsLastSats;
                 }
 
                 string utmZone, northingStr, eastingStr;

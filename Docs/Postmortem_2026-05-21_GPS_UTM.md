@@ -92,7 +92,39 @@ The **Time** and **Date** checkboxes in the Video tab were using `Style="{Dynami
 
 ---
 
-## 5. Known Limitations / Future Work
+## 5. Follow-up Session — GPS Fix Status & Satellite Count Fallback
+**Date:** 21 May 2026 (later in day)
+
+### Problem
+When only `GPRMC`/`GNRMC` sentences were arriving (no GGA), `GPSStatus` retained whatever stale string was last set (e.g. `"Connected at COM3 @ 4800"` or a previous timeout message) because the RMC branch never updated it after a valid fix was obtained. Satellite count was also lost between GGA sentences.
+
+### Root Cause
+The `ParseNmeaSentence()` RMC branch lacked:
+1. A cached satellite count from the last GGA sentence.
+2. A fallback that sets a valid fix + sat count status when RMC confirms a fix but `GPSStatus` no longer contains `"fix"`.
+
+### Fix Applied — `PVSS/ViewModel/MainViewModel.cs`
+Ported from PVSS 5.6 reference (`MainViewModel.cs` lines 4086, 4315–4327).
+
+| Change | Detail |
+|--------|--------|
+| Added field | `private string _gpsLastSats = "?";` — persists last satellite count across sentences |
+| GGA branch | `_gpsLastSats = sats;` now caches the count each time a GGA arrives |
+| RMC fallback | Added `else if (!statusStr.Contains("fix"))` → sets `GPSStatus = "GPS fix   Sats: " + _gpsLastSats` |
+
+### Result
+`GPSStatus` now always shows `"GPS fix   Sats: N"` (or `"DGPS fix   Sats: N"`) as soon as a valid fix is confirmed, even in RMC-only streams or after a timeout/reconnect clears the previous fix message.
+
+### Diagnostic Messages Observed (Normal)
+```
+Exception thrown: 'System.IO.IOException' in System.dll
+The thread 'GPS Read Thread' (xxxxx) has exited with code 0 (0x0).
+```
+These are **expected** on serial port disconnect. `GpsReadLoop` catches `IOException` and breaks cleanly. Exit code 0 = normal thread termination. No action required.
+
+---
+
+## 6. Known Limitations / Future Work
 
 | Item | Notes |
 |------|-------|
